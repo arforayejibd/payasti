@@ -146,6 +146,130 @@ img {
   color: #068200;
 }
 
+/* Navigation Dropdown Menu (#-pro-menu-123-3856) */
+.nav-item-dropdown {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.dropdown-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+}
+
+.dropdown-chevron {
+  transition: transform 0.25s ease;
+  stroke: currentColor;
+  margin-top: 2px;
+}
+
+.nav-item-dropdown:hover .dropdown-chevron {
+  transform: rotate(180deg);
+}
+
+.nav-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: #ffffff;
+  min-width: 180px;
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+  border: 1px solid #eaeaea;
+  padding: 8px 0;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(10px);
+  transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease;
+  z-index: 1000;
+}
+
+.nav-item-dropdown:hover .nav-dropdown-menu,
+.nav-item-dropdown:focus-within .nav-dropdown-menu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.dropdown-item {
+  display: block;
+  padding: 8px 18px;
+  font-size: 20px;
+  font-weight: 500;
+  color: #352e21;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  line-height: 1.4;
+}
+
+.dropdown-item:hover,
+.dropdown-item.active {
+  background-color: #f0f7ef;
+  color: #068200;
+  padding-left: 22px;
+}
+
+.dropdown-item-all {
+  font-weight: 600;
+  border-bottom: 1px solid #f0f0f0;
+  margin-bottom: 4px;
+  padding-bottom: 8px;
+}
+
+/* Category & Subcategory Archive Tabs */
+.category-main-title {
+  font-size: 34px;
+  font-weight: 700;
+  color: #075603;
+  margin-bottom: 20px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #068200;
+  display: inline-block;
+  line-height: 1.3;
+}
+
+.subcategory-tabs-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 25px;
+  align-items: center;
+}
+
+.subcat-tab-link {
+  font-size: 20px;
+  font-weight: 500;
+  color: #352e21;
+  background-color: #ffffff;
+  padding: 6px 18px;
+  border-radius: 20px;
+  border: 1px solid #e2e2e2;
+  text-decoration: none;
+  transition: all 0.25s ease;
+  display: inline-flex;
+  align-items: center;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+}
+
+.subcat-tab-link:hover {
+  background-color: #f0f7ef;
+  color: #068200;
+  border-color: #068200;
+}
+
+.subcat-tab-link.active {
+  background-color: #068200;
+  color: #ffffff !important;
+  border-color: #068200;
+  font-weight: 600;
+  box-shadow: 0 4px 10px rgba(6, 130, 0, 0.25);
+}
+
+
 /* Author Panel Button (#text_block-130-3856) */
 .btn-author-panel,
 #text_block-130-3856 {
@@ -2521,6 +2645,74 @@ ul.author-posts-list li a:hover {
 
 /* Responsive Media Queries */
 @media (max-width: 991px) {
+  .mobile-nav-toggle {
+    display: flex;
+  }
+
+  .main-nav-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background-color: #ffffff;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 15px 20px;
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+    z-index: 999;
+    border-top: 1px solid #e2e2e2;
+    gap: 12px;
+  }
+
+  .main-nav-menu.mobile-open,
+  .main-nav-menu.active {
+    display: flex;
+  }
+
+  .nav-menu-item {
+    padding: 8px 0;
+    width: 100%;
+    font-size: 22px;
+  }
+
+  .nav-item-dropdown {
+    width: 100%;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .nav-item-dropdown .dropdown-toggle {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .nav-dropdown-menu {
+    position: static;
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    box-shadow: none;
+    border: none;
+    border-left: 3px solid #068200;
+    margin-left: 10px;
+    padding: 4px 0 4px 10px;
+    background: #f9fbf9;
+    border-radius: 4px;
+    width: calc(100% - 10px);
+  }
+
+  .dropdown-item {
+    font-size: 19px;
+    padding: 6px 12px;
+  }
+
+  .btn-author-panel {
+    margin-left: 0;
+    margin-top: 10px;
+    width: 100%;
+  }
+
   #section-2-36.single-post-layout-container {
     flex-direction: column;
     padding-top: 20px;

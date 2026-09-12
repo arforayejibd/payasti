@@ -385,6 +385,7 @@ async function runSeed() {
   `);
 
   const catWpTaxToNewId = new Map();
+  const catWpTermToNewId = new Map();
   const tagWpTaxToNewId = new Map();
 
   const insertTaxTx = db.transaction(() => {
@@ -398,11 +399,12 @@ async function runSeed() {
           taxId,
           term.name,
           term.slug || `cat-${tax.term_id}`,
-          tax.parent,
+          0, // will be updated with mapped parent_id below
           tax.description,
           tax.count
         );
         catWpTaxToNewId.set(taxId, info.lastInsertRowid);
+        catWpTermToNewId.set(tax.term_id, info.lastInsertRowid);
       } else if (tax.taxonomy === 'post_tag') {
         try {
           const info = insertTag.run(
@@ -416,9 +418,21 @@ async function runSeed() {
         }
       }
     }
+
+    // Update category parent_id to point to new SQLite category IDs
+    const updateParent = db.prepare('UPDATE categories SET parent_id = ? WHERE id = ?');
+    for (const [taxId, tax] of rawTaxonomies.entries()) {
+      if (tax.taxonomy === 'category' && tax.parent > 0) {
+        const currentCatId = catWpTaxToNewId.get(taxId);
+        const parentCatId = catWpTermToNewId.get(tax.parent);
+        if (currentCatId && parentCatId) {
+          updateParent.run(parentCatId, currentCatId);
+        }
+      }
+    }
   });
   insertTaxTx();
-  console.log(`Seeded categories & tags successfully.`);
+  console.log(`Seeded categories & tags successfully with hierarchy.`);
 
   // Map post categories & tags relationships
   const postCategoriesMap = new Map(); // wp_post_id -> [category_new_ids]

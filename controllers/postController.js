@@ -129,8 +129,15 @@ exports.getSinglePost = (req, res) => {
 
 // Category Archive Page
 exports.getCategoryPage = (req, res) => {
-  const { slug } = req.params;
-  const subSlug = req.query.sub;
+  let parentSlug = req.params.parent;
+  let slug = req.params.slug;
+  let subSlug = req.query.sub;
+
+  if (parentSlug) {
+    subSlug = slug;
+    slug = parentSlug;
+  }
+
   const page = parseInt(req.query.page) || 1;
   const limit = 20;
   const offset = (page - 1) * limit;
@@ -161,55 +168,77 @@ exports.getCategoryPage = (req, res) => {
     };
   }
 
-  // Subcategories definition (dynamic from database)
+  // Subcategories definition & Parent-Child Hierarchy (dynamic from database)
   let subcategories = [];
-  const catUrl = `/category/${encodeURIComponent(category.slug || resolvedSlug)}`;
-  
+  let parentCategory = null;
+  let activeSubCategory = null;
+  let activeSubSlug = subSlug || null;
+
   if (category.id > 0) {
-    const children = db.prepare('SELECT * FROM categories WHERE parent_id = ? ORDER BY count DESC, id ASC').all(category.id);
+    if (category.parent_id > 0) {
+      // Direct access to a subcategory (e.g. /section/কবিতা or /category/ছোটগল্প)
+      parentCategory = db.prepare('SELECT * FROM categories WHERE id = ?').get(category.parent_id) || category;
+      activeSubCategory = category;
+      activeSubSlug = category.slug;
+    } else {
+      // Parent category (e.g. /section/পদ্য or /section/গদ্য)
+      parentCategory = category;
+      if (subSlug) {
+        const decodedSub = decodeURIComponent(subSlug);
+        activeSubCategory = db.prepare('SELECT * FROM categories WHERE (parent_id = ? OR id = ?) AND (slug = ? OR name = ?)').get(category.id, category.id, decodedSub, decodedSub);
+        if (!activeSubCategory) {
+          activeSubCategory = db.prepare('SELECT * FROM categories WHERE slug = ? OR name = ?').get(decodedSub, decodedSub);
+        }
+        if (activeSubCategory) {
+          activeSubSlug = activeSubCategory.slug;
+        }
+      }
+    }
+
+    const targetParentId = parentCategory.id;
+    const children = db.prepare('SELECT * FROM categories WHERE parent_id = ? ORDER BY count DESC, id ASC').all(targetParentId);
     if (children.length > 0) {
       subcategories = children.map(c => ({
+        id: c.id,
         name: c.name,
         slug: c.slug,
-        url: `${catUrl}?sub=${encodeURIComponent(c.slug)}`
+        count: c.count,
+        url: `/section/${encodeURIComponent(parentCategory.slug)}/${encodeURIComponent(c.slug)}`
       }));
     }
   }
 
   // Build query
-  let countQuery = "SELECT COUNT(*) AS total FROM posts p LEFT JOIN categories c ON p.category_id = c.id WHERE p.status = 'publish'";
+  let countQuery = `
+    SELECT COUNT(DISTINCT p.id) AS total 
+    FROM posts p 
+    LEFT JOIN categories c ON p.category_id = c.id 
+    LEFT JOIN categories sc ON p.subcategory_id = sc.id 
+    WHERE p.status = 'publish'
+  `;
   let postsQuery = `
-    SELECT p.*, u.display_name AS author_name, u.nicename AS author_slug, u.avatar AS author_avatar,
-           c.name AS category_name, c.slug AS category_slug
+    SELECT DISTINCT p.*, u.display_name AS author_name, u.nicename AS author_slug, u.avatar AS author_avatar,
+           c.name AS category_name, c.slug AS category_slug,
+           sc.name AS subcategory_name, sc.slug AS subcategory_slug
     FROM posts p
     LEFT JOIN users u ON p.author_id = u.id
     LEFT JOIN categories c ON p.category_id = c.id
+    LEFT JOIN categories sc ON p.subcategory_id = sc.id
     WHERE p.status = 'publish'
   `;
   const params = [];
   const countParams = [];
 
-  if (subSlug) {
-    // Decode the sub slug and find the matching subcategory
-    const decodedSub = decodeURIComponent(subSlug);
-    const subCat = db.prepare('SELECT * FROM categories WHERE slug = ? OR name = ?').get(decodedSub, decodedSub);
-    
-    if (subCat) {
-      countQuery += " AND p.category_id = ?";
-      countParams.push(subCat.id);
-      postsQuery += " AND p.category_id = ?";
-      params.push(subCat.id);
-    } else {
-      countQuery += " AND (c.name LIKE ? OR c.slug LIKE ?)";
-      countParams.push(`%${decodedSub}%`, `%${decodedSub}%`);
-      postsQuery += " AND (c.name LIKE ? OR c.slug LIKE ?)";
-      params.push(`%${decodedSub}%`, `%${decodedSub}%`);
-    }
+  if (activeSubCategory) {
+    countQuery += " AND (p.category_id = ? OR p.subcategory_id = ?)";
+    countParams.push(activeSubCategory.id, activeSubCategory.id);
+    postsQuery += " AND (p.category_id = ? OR p.subcategory_id = ?)";
+    params.push(activeSubCategory.id, activeSubCategory.id);
   } else if (category.id > 0) {
-    countQuery += " AND (p.category_id = ? OR c.parent_id = ?)";
-    countParams.push(category.id, category.id);
-    postsQuery += " AND (p.category_id = ? OR c.parent_id = ?)";
-    params.push(category.id, category.id);
+    countQuery += " AND (p.category_id = ? OR p.subcategory_id = ? OR c.parent_id = ? OR sc.parent_id = ?)";
+    countParams.push(category.id, category.id, category.id, category.id);
+    postsQuery += " AND (p.category_id = ? OR p.subcategory_id = ? OR c.parent_id = ? OR sc.parent_id = ?)";
+    params.push(category.id, category.id, category.id, category.id);
   }
 
   const totalPostsRow = db.prepare(countQuery).get(...countParams);
@@ -226,33 +255,52 @@ exports.getCategoryPage = (req, res) => {
     { name: 'প্রচ্ছদ', url: '/' }
   ];
 
-  if (category.parent_id > 0) {
-    const parentCat = db.prepare('SELECT * FROM categories WHERE id = ?').get(category.parent_id);
-    if (parentCat) {
-      breadcrumbs.push({ name: parentCat.name, url: `/category/${encodeURIComponent(parentCat.slug)}` });
-    }
+  if (parentCategory && parentCategory.id !== category.id) {
+    breadcrumbs.push({ name: parentCategory.name, url: `/section/${encodeURIComponent(parentCategory.slug)}` });
   }
-  breadcrumbs.push({ name: category.name, url: `/category/${encodeURIComponent(category.slug)}` });
+  if (activeSubCategory) {
+    if (!parentCategory || parentCategory.id === category.id) {
+      breadcrumbs.push({ name: category.name, url: `/section/${encodeURIComponent(category.slug)}` });
+    }
+    breadcrumbs.push({ name: activeSubCategory.name, url: `/section/${encodeURIComponent((parentCategory || category).slug)}/${encodeURIComponent(activeSubCategory.slug)}` });
+  } else {
+    breadcrumbs.push({ name: category.name, url: `/section/${encodeURIComponent(category.slug)}` });
+  }
+
+  const pageTitle = activeSubCategory 
+    ? `${activeSubCategory.name} - ${parentCategory ? parentCategory.name : category.name} | ${SITE_NAME}`
+    : `${category.name} | ${SITE_NAME}`;
+
+  const currentCanonicalUrl = activeSubCategory 
+    ? `/section/${encodeURIComponent((parentCategory || category).slug)}/${encodeURIComponent(activeSubCategory.slug)}`
+    : `/section/${encodeURIComponent(category.slug)}`;
 
   const seo = generateSeoMeta({
-    title: `${category.name} - সাহিত্য স্মারক`,
-    description: category.description || `${category.name} বিভাগের সকল সাহিত্য, কবিতা, প্রবন্ধ ও গল্প সংকলন।`,
-    url: `/category/${slug}`,
+    title: pageTitle,
+    description: (activeSubCategory && activeSubCategory.description) || category.description || `${category.name} বিভাগের সকল সাহিত্য, কবিতা, প্রবন্ধ ও গল্প সংকলন।`,
+    url: currentCanonicalUrl,
     schema: getBreadcrumbSchema(breadcrumbs)
   });
 
+  const paginationBasePath = activeSubCategory 
+    ? `/section/${encodeURIComponent((parentCategory || category).slug)}/${encodeURIComponent(activeSubCategory.slug)}`
+    : `/section/${encodeURIComponent(category.slug)}`;
+
   res.render('category', {
     category,
+    parentCategory: parentCategory || category,
+    activeSubCategory,
     subcategories,
-    activeSubSlug: subSlug,
+    activeSubSlug,
     posts,
     pagination: {
       currentPage: page,
       totalPages: totalPages,
       totalItems: totalPosts,
-      basePath: `/category/${slug}${subSlug ? `?sub=${subSlug}` : ''}`
+      basePath: paginationBasePath
     },
     seo,
+    currentPath: req.originalUrl,
     toBengaliNumber,
     formatBengaliDate,
     navMenu: NAV_MENU,

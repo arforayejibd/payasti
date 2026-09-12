@@ -13,18 +13,28 @@ module.exports = {
     { 
       title: 'গদ্য', 
       url: '/section/গদ্য',
+      slug: 'গদ্য',
       subcategories: [
-        { title: 'অণুগল্প', slug: 'অনুগল্প', url: '/section/গদ্য/অনুগল্প' },
         { title: 'ছোটগল্প', slug: 'ছোটগল্প', url: '/section/গদ্য/ছোটগল্প' },
-        { title: 'বড় গল্প', slug: 'বড়-গল্প', url: '/section/গদ্য/বড়-গল্প' }
+        { title: 'অণুগল্প', slug: 'অনুগল্প', url: '/section/গদ্য/অনুগল্প' },
+        { title: 'বড় গল্প', slug: 'বড়-গল্প', url: '/section/গদ্য/বড়-গল্প' }
       ]
     },
-    { title: 'পদ্য', url: '/section/পদ্য' },
-    { title: 'প্রবন্ধ', url: '/section/প্রবন্ধ' },
-    { title: 'অনুবাদ', url: '/section/অনুবাদ' },
-    { title: 'ধারাবাহিক', url: '/section/ধারাবাহিক' },
-    { title: 'সাক্ষাৎকার', url: '/section/সাক্ষাৎকার' },
-    { title: 'অন্য সাহিত্য', url: '/section/অন্য-সাহিত্য' },
+    { 
+      title: 'পদ্য', 
+      url: '/section/পদ্য',
+      slug: 'পদ্য',
+      subcategories: [
+        { title: 'কবিতা', slug: 'কবিতা', url: '/section/পদ্য/কবিতা' },
+        { title: 'ছড়া', slug: 'ছড়া', url: '/section/পদ্য/ছড়া' },
+        { title: 'গীতি কবিতা', slug: 'গীতি-কবিতা', url: '/section/পদ্য/গীতি-কবিতা' }
+      ]
+    },
+    { title: 'প্রবন্ধ', url: '/section/প্রবন্ধ', slug: 'প্রবন্ধ' },
+    { title: 'অনুবাদ', url: '/section/অনুবাদ', slug: 'অনুবাদ' },
+    { title: 'ধারাবাহিক', url: '/section/ধারাবাহিক', slug: 'ধারাবাহিক' },
+    { title: 'সাক্ষাৎকার', url: '/section/সাক্ষাৎকার', slug: 'সাক্ষাৎকার' },
+    { title: 'অন্য সাহিত্য', url: '/section/অন্য-সাহিত্য', slug: 'অন্য-সাহিত্য' },
     { title: 'বানান শুদ্ধিকরণ', url: '/bangla-spell' }
   ],
   EDITORIAL_BOARD: [
@@ -45,6 +55,13 @@ module.exports = {
     'onubad': 'অনুবাদ',
     'dharabahik': 'ধারাবাহিক',
     'shakkhatkar': 'সাক্ষাৎকার',
-    'onno-shahitto': 'অন্য-সাহিত্য'
+    'onno-shahitto': 'অন্য-সাহিত্য',
+    'kobita': 'কবিতা',
+    'chora': 'ছড়া',
+    'chotogolpo': 'ছোটগল্প',
+    'onugolpo': 'অনুগল্প',
+    'boro-golpo': 'বড় গল্প',
+    'giti-kobita': 'গীতি কবিতা',
+    'pathprotikriya': 'পাঠপতিক্রিয়া'
   }
 };

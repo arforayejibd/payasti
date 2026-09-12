@@ -3,18 +3,22 @@
 <main class="page-main-content">
   <div class="ct-section-inner-wrap section-inner-container" style="padding-top: 30px; padding-bottom: 20px;">
     <!-- Category Main Title (#headline-4-91) -->
-    <h1 class="category-main-title" id="headline-4-91"><%= category.name %></h1>
+    <h1 class="category-main-title" id="headline-4-91">
+      <%= (typeof activeSubCategory !== 'undefined' && activeSubCategory) ? activeSubCategory.name : category.name %>
+    </h1>
 
     <!-- Subcategory Tabs Bar (#div_block-767-3860) -->
-    <% if (subcategories && subcategories.length) { %>
+    <% if (subcategories && subcategories.length) { 
+         const currentParent = (typeof parentCategory !== 'undefined' && parentCategory) ? parentCategory : category;
+    %>
       <div class="subcategory-tabs-bar" id="div_block-767-3860">
-        <a href="/category/<%= encodeURIComponent(category.slug) %>" class="subcat-tab-link <%= !activeSubSlug ? 'active' : '' %>">
-          সকল <%= category.name %>
+        <a href="/section/<%= encodeURIComponent(currentParent.slug) %>" class="subcat-tab-link <%= !activeSubSlug ? 'active' : '' %>">
+          সকল <%= currentParent.name %>
         </a>
         <% subcategories.forEach(sub => { 
              const isActive = activeSubSlug && (activeSubSlug === sub.slug || decodeURIComponent(activeSubSlug) === sub.slug);
         %>
-          <a href="<%= sub.url %>" class="subcat-tab-link <%= isActive ? 'active' : '' %>">
+          <a href="/section/<%= encodeURIComponent(currentParent.slug) %>/<%= encodeURIComponent(sub.slug) %>" class="subcat-tab-link <%= isActive ? 'active' : '' %>">
             <%= sub.name %>
           </a>
         <% }) %>

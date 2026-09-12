@@ -66,7 +66,28 @@
       <nav class="main-nav-menu" id="mainNav">
         <% if (navMenu && navMenu.length) { %>
           <% navMenu.forEach(item => { %>
-            <a href="<%= item.url %>" class="nav-menu-item <%= (typeof currentPath !== 'undefined' && currentPath === item.url) ? 'current-menu-item' : '' %>"><%= item.title %></a>
+            <% if (item.subcategories && item.subcategories.length) { %>
+              <div class="nav-item-dropdown">
+                <a href="<%= item.url %>" class="nav-menu-item dropdown-toggle <%= (typeof currentPath !== 'undefined' && (currentPath === item.url || currentPath.startsWith(item.url + '/') || (item.slug && currentPath.includes(item.slug)))) ? 'current-menu-item' : '' %>">
+                  <span><%= item.title %></span>
+                  <svg class="dropdown-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg>
+                </a>
+                <div class="nav-dropdown-menu">
+                  <a href="<%= item.url %>" class="dropdown-item dropdown-item-all <%= (typeof currentPath !== 'undefined' && currentPath === item.url) ? 'active' : '' %>">
+                    সকল <%= item.title %>
+                  </a>
+                  <% item.subcategories.forEach(sub => { %>
+                    <a href="<%= sub.url %>" class="dropdown-item <%= (typeof currentPath !== 'undefined' && (currentPath === sub.url || (sub.slug && currentPath.includes(sub.slug)))) ? 'active' : '' %>">
+                      <%= sub.title %>
+                    </a>
+                  <% }) %>
+                </div>
+              </div>
+            <% } else { %>
+              <a href="<%= item.url %>" class="nav-menu-item <%= (typeof currentPath !== 'undefined' && currentPath === item.url) ? 'current-menu-item' : '' %>"><%= item.title %></a>
+            <% } %>
           <% }) %>
         <% } %>
 

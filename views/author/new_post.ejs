@@ -152,11 +152,17 @@
         <div class="admin-card-body">
           <select name="category_id" class="admin-form-select" required style="width: 100%;">
             <option value="">-- বিভাগ নির্বাচন করুন --</option>
-            <% if (categories && categories.length) { %>
-              <% categories.forEach(cat => { %>
-                <option value="<%= cat.id %>"><%= cat.name %></option>
+            <% if (categories && categories.length) { 
+                 const rootCats = categories.filter(c => !c.parent_id || c.parent_id === 0);
+                 rootCats.forEach(cat => {
+                   const children = categories.filter(c => c.parent_id === cat.id);
+            %>
+              <option value="<%= cat.id %>" style="font-weight: 700;"><%= cat.name %></option>
+              <% children.forEach(child => { %>
+                <option value="<%= child.id %>">&nbsp;&nbsp;&nbsp;— <%= child.name %></option>
               <% }) %>
-            <% } %>
+            <%   });
+               } %>
           </select>
         </div>
       </div>

@@ -33,12 +33,12 @@ router.get('/books', bookController.getBooksList);
 router.get('/book/:slug', bookController.getSingleBook);
 
 // Category Archive (Supports both /category/... and WordPress /section/...)
-router.get(['/category/:slug', '/section/:slug'], postController.getCategoryPage);
-router.get('/section/:parent/:slug', (req, res) => {
-  req.query.sub = req.params.slug;
-  req.params.slug = req.params.parent;
-  postController.getCategoryPage(req, res);
-});
+router.get([
+  '/category/:slug',
+  '/section/:slug',
+  '/category/:parent/:slug',
+  '/section/:parent/:slug'
+], postController.getCategoryPage);
 
 // Selected Literature (/topic/selected)
 router.get(['/topic/selected', '/topic/:slug'], (req, res) => {
