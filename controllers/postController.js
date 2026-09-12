@@ -142,8 +142,8 @@ exports.getCategoryPage = (req, res) => {
   const limit = 20;
   const offset = (page - 1) * limit;
 
-  // Resolve English slug to Bengali if needed
-  const resolvedSlug = CATEGORY_SLUG_MAP[slug] || decodeURIComponent(slug);
+  // Resolve English slug to Bengali if needed with Unicode normalization
+  const resolvedSlug = (CATEGORY_SLUG_MAP[slug] || decodeURIComponent(slug)).normalize('NFC');
 
   // Find Category
   let category = db.prepare('SELECT * FROM categories WHERE slug = ?').get(resolvedSlug);
@@ -172,7 +172,7 @@ exports.getCategoryPage = (req, res) => {
   let subcategories = [];
   let parentCategory = null;
   let activeSubCategory = null;
-  let activeSubSlug = subSlug || null;
+  let activeSubSlug = subSlug ? (CATEGORY_SLUG_MAP[subSlug] || decodeURIComponent(subSlug)).normalize('NFC') : null;
 
   if (category.id > 0) {
     if (category.parent_id > 0) {
@@ -184,7 +184,7 @@ exports.getCategoryPage = (req, res) => {
       // Parent category (e.g. /section/পদ্য or /section/গদ্য)
       parentCategory = category;
       if (subSlug) {
-        const decodedSub = decodeURIComponent(subSlug);
+        const decodedSub = (CATEGORY_SLUG_MAP[subSlug] || decodeURIComponent(subSlug)).normalize('NFC');
         activeSubCategory = db.prepare('SELECT * FROM categories WHERE (parent_id = ? OR id = ?) AND (slug = ? OR name = ?)').get(category.id, category.id, decodedSub, decodedSub);
         if (!activeSubCategory) {
           activeSubCategory = db.prepare('SELECT * FROM categories WHERE slug = ? OR name = ?').get(decodedSub, decodedSub);
