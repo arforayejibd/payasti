@@ -17,12 +17,17 @@ exports.getHomePage = (req, res) => {
   const offset = (page - 1) * limit;
 
   // 1. Fetch Books
-  const books = db.prepare('SELECT * FROM books ORDER BY id DESC LIMIT 30').all();
+  const books = db.prepare('SELECT id, title, slug, author_name, cover_image, regular_price, discounted_price, order_url FROM books ORDER BY id DESC LIMIT 30').all();
 
   // 2. Fetch Featured Posts (4 posts for the 4-column grid)
+  const cardFields = `
+    p.id, p.title, p.slug, p.excerpt, p.published_at, p.views, p.category_id, p.subcategory_id,
+    u.display_name AS author_name, u.nicename AS author_slug, u.avatar AS author_avatar,
+    c.name AS category_name, c.slug AS category_slug
+  `;
+
   let featuredPosts = db.prepare(`
-    SELECT p.*, u.display_name AS author_name, u.nicename AS author_slug, u.avatar AS author_avatar,
-           c.name AS category_name, c.slug AS category_slug
+    SELECT ${cardFields}
     FROM posts p
     LEFT JOIN users u ON p.author_id = u.id
     LEFT JOIN categories c ON p.category_id = c.id
@@ -34,8 +39,7 @@ exports.getHomePage = (req, res) => {
   // If absolutely no posts are marked as featured, fallback to latest published posts
   if (featuredPosts.length === 0) {
     featuredPosts = db.prepare(`
-      SELECT p.*, u.display_name AS author_name, u.nicename AS author_slug, u.avatar AS author_avatar,
-             c.name AS category_name, c.slug AS category_slug
+      SELECT ${cardFields}
       FROM posts p
       LEFT JOIN users u ON p.author_id = u.id
       LEFT JOIN categories c ON p.category_id = c.id
@@ -51,8 +55,7 @@ exports.getHomePage = (req, res) => {
   const totalPages = Math.ceil(totalPosts / limit);
 
   const latestPosts = db.prepare(`
-    SELECT p.*, u.display_name AS author_name, u.nicename AS author_slug, u.avatar AS author_avatar,
-           c.name AS category_name, c.slug AS category_slug
+    SELECT ${cardFields}
     FROM posts p
     LEFT JOIN users u ON p.author_id = u.id
     LEFT JOIN categories c ON p.category_id = c.id

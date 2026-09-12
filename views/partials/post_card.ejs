@@ -25,7 +25,7 @@
 
     <!-- Excerpt -->
     <a href="/post/<%= encodeURIComponent(post.slug || '') %>" class="post-excerpt-link">
-      <div class="post-excerpt-text" data-id="<%= typeof isSelected !== 'undefined' && isSelected ? 'code_block-181-3916' : 'code_block-1128-2678' %>"><%- formatCardExcerpt(post.content || post.excerpt) %></div>
+      <div class="post-excerpt-text" data-id="<%= typeof isSelected !== 'undefined' && isSelected ? 'code_block-181-3916' : 'code_block-1128-2678' %>"><%- formatCardExcerpt(post.excerpt || post.content) %></div>
     </a>
   </div>
 

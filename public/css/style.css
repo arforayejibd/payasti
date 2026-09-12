@@ -3,12 +3,10 @@
    Directly mapped to live site CSS (universal.css, 3856.css, 2678.css, 4047.css, 3923.css, 3860.css)
    ========================================================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap');
-
 @font-face {
   font-family: 'payasti_uni';
   src: url('/fonts/8029Payasti_uni.woff2') format('woff2');
-  font-display: auto;
+  font-display: swap;
 }
 
 :root {

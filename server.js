@@ -23,6 +23,20 @@ app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
 // Middlewares
+try {
+  const compression = require('compression');
+  app.use(compression({
+    level: 6,
+    threshold: 1024,
+    filter: (req, res) => {
+      if (req.headers['x-no-compression']) return false;
+      return compression.filter(req, res);
+    }
+  }));
+} catch (e) {
+  console.warn('Compression package not loaded, continuing without it:', e.message);
+}
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -33,8 +47,19 @@ app.use(session({
   cookie: { maxAge: 30 * 24 * 60 * 60 * 1000 }
 }));
 
-// Static files
-app.use(express.static(path.join(__dirname, 'public')));
+// Static files (ETag enabled for instant freshness checks, no stale caching)
+app.use(express.static(path.join(__dirname, 'public'), {
+  etag: true,
+  lastModified: true
+}));
+
+// Dynamic routes: Never cache HTML pages so updates and new posts are immediately visible
+app.use((req, res, next) => {
+  res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.set('Pragma', 'no-cache');
+  res.set('Expires', '0');
+  next();
+});
 
 // Global User / Auth state
 app.use(checkUser);

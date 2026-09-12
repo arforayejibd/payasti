@@ -130,7 +130,8 @@ exports.getAuthorProfile = (req, res) => {
 
   // Fetch author's posts
   const posts = db.prepare(`
-    SELECT p.*, c.name AS category_name, c.slug AS category_slug
+    SELECT p.id, p.title, p.slug, p.excerpt, p.published_at, p.views, p.category_id, p.subcategory_id,
+           c.name AS category_name, c.slug AS category_slug
     FROM posts p
     LEFT JOIN categories c ON p.category_id = c.id
     WHERE p.author_id = ? AND p.status = 'publish'

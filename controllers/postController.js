@@ -46,7 +46,8 @@ exports.getSinglePost = (req, res) => {
 
   // Fetch Related Posts (same category)
   const relatedPosts = db.prepare(`
-    SELECT p.*, u.display_name AS author_name, u.nicename AS author_slug, u.avatar AS author_avatar, u.email AS author_email,
+    SELECT p.id, p.title, p.slug, p.excerpt, p.published_at, p.views, p.category_id, p.subcategory_id,
+           u.display_name AS author_name, u.nicename AS author_slug, u.avatar AS author_avatar,
            c.name AS category_name, c.slug AS category_slug
     FROM posts p
     LEFT JOIN users u ON p.author_id = u.id
@@ -217,7 +218,8 @@ exports.getCategoryPage = (req, res) => {
     WHERE p.status = 'publish'
   `;
   let postsQuery = `
-    SELECT DISTINCT p.*, u.display_name AS author_name, u.nicename AS author_slug, u.avatar AS author_avatar,
+    SELECT DISTINCT p.id, p.title, p.slug, p.excerpt, p.published_at, p.views, p.category_id, p.subcategory_id,
+           u.display_name AS author_name, u.nicename AS author_slug, u.avatar AS author_avatar,
            c.name AS category_name, c.slug AS category_slug,
            sc.name AS subcategory_name, sc.slug AS subcategory_slug
     FROM posts p
@@ -333,7 +335,8 @@ exports.searchPosts = (req, res) => {
   const totalPages = Math.ceil(totalPosts / limit);
 
   const posts = db.prepare(`
-    SELECT p.*, u.display_name AS author_name, u.nicename AS author_slug, u.avatar AS author_avatar,
+    SELECT p.id, p.title, p.slug, p.excerpt, p.published_at, p.views, p.category_id, p.subcategory_id,
+           u.display_name AS author_name, u.nicename AS author_slug, u.avatar AS author_avatar,
            c.name AS category_name, c.slug AS category_slug
     FROM posts p
     LEFT JOIN users u ON p.author_id = u.id

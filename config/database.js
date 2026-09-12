@@ -6,7 +6,11 @@ const db = new Database(dbPath, {
   // verbose: console.log
 });
 
-// Enable WAL mode for better concurrency and performance
+// Enable high-performance Pragmas
 db.pragma('journal_mode = WAL');
+db.pragma('synchronous = NORMAL');
+db.pragma('cache_size = -64000'); // 64MB memory cache
+db.pragma('temp_store = MEMORY');
+db.pragma('mmap_size = 268435456'); // 256MB memory mapped I/O
 
 module.exports = db;

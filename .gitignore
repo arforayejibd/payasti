@@ -16,3 +16,7 @@ data/*.db.bak
 # Ignore reference folder except gz database dump
 ref/*
 !ref/payasti_wp737.sql.gz
+
+# Scratch directory
+scratch/
+
