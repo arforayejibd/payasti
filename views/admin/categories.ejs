@@ -1,0 +1,104 @@
+<%- include('partials/admin_layout_start', { 
+  pageTitle: 'বিভাগ / ক্যাটাগরি ব্যবস্থাপনা', 
+  pageBreadcrumb: 'Categories'
+}) %>
+
+<div class="admin-two-col-grid">
+  <!-- Add New Category Form (Left) -->
+  <div class="admin-card">
+    <div class="admin-card-header">
+      <div class="admin-card-title">
+        <span>+ নতুন ক্যাটাগরি তৈরি</span>
+      </div>
+    </div>
+    <div class="admin-card-body">
+      <form action="/admin/categories/add" method="POST">
+        <div class="admin-form-group">
+          <label class="admin-form-label">বিভাগের নাম *</label>
+          <input type="text" name="name" class="admin-form-input" required placeholder="যেমন: ছোটগল্প, কবিতা">
+        </div>
+
+        <div class="admin-form-group">
+          <label class="admin-form-label">স্লাগ (Slug - ইংরেজিতে ঐচ্ছিক)</label>
+          <input type="text" name="slug" class="admin-form-input" placeholder="যেমন: short-story">
+          <span style="font-size: 14px; color: var(--admin-text-sub);">খালি রাখলে স্বয়ংক্রিয় তৈরি হবে।</span>
+        </div>
+
+        <div class="admin-form-group">
+          <label class="admin-form-label">বিবরণ (ঐচ্ছিক)</label>
+          <textarea name="description" class="admin-form-textarea" rows="3" placeholder="বিভাগের বিবরণ..."></textarea>
+        </div>
+
+        <button type="submit" class="btn-new-action" style="width: 100%; justify-content: center; padding: 12px; font-size: 17px;">
+          ক্যাটাগরি যুক্ত করুন
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Categories List Table (Right) -->
+  <div class="admin-card">
+    <div class="admin-card-header">
+      <div class="admin-card-title">
+        <span>সকল সাহিত্য বিভাগ</span>
+        <span class="admin-card-badge"><%= toBengaliNumber(categories.length) %> টি</span>
+      </div>
+    </div>
+
+    <div class="admin-table-wrap">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>নাম</th>
+            <th>স্লাগ</th>
+            <th>মোট পোস্ট</th>
+            <th style="text-align: right;">অ্যাকশন</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (categories && categories.length) { %>
+            <% categories.forEach(c => { %>
+              <tr>
+                <td>
+                  <strong style="color: var(--admin-text-main); font-size: 18px;"><%= c.name %></strong>
+                  <% if (c.description) { %>
+                    <div style="font-size: 15px; color: var(--admin-text-sub); margin-top: 3px;"><%= c.description %></div>
+                  <% } %>
+                </td>
+                <td>
+                  <code style="background: #f1f5f9; padding: 4px 8px; border-radius: 4px; font-size: 15px; color: #475569;"><%= c.slug %></code>
+                </td>
+                <td>
+                  <a href="/admin/posts?category=<%= c.id %>" style="color: var(--admin-primary); font-weight: 600; text-decoration: underline;">
+                    <%= toBengaliNumber(c.post_count || 0) %> টি
+                  </a>
+                </td>
+                <td>
+                  <div class="actions-group" style="justify-content: flex-end;">
+                    <a href="/category/<%= c.slug %>" target="_blank" class="btn-table-action" style="background: #f1f5f9; color: #334155;" title="সাইটে বিভাগ দেখুন">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                        <polyline points="15 3 21 3 21 9"></polyline>
+                        <line x1="10" y1="14" x2="21" y2="3"></line>
+                      </svg>
+                    </a>
+                    <form action="/admin/categories/<%= c.id %>/delete" method="POST" style="display: inline;" onsubmit="return confirm('ক্যাটাগরি মুছে ফেলতে চান?');">
+                      <button type="submit" class="btn-table-action btn-reject" title="মুছে ফেলুন">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <polyline points="3 6 5 6 21 6"></polyline>
+                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                        </svg>
+                      </button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+            <% }) %>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<%- include('partials/admin_layout_end') %>

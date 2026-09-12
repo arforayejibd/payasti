@@ -1,0 +1,42 @@
+    </main>
+  </div>
+</div>
+
+<script>
+  // Responsive Sidebar Toggle
+  const sidebar = document.getElementById('adminSidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+  const toggleBtn = document.getElementById('adminSidebarToggle');
+
+  if (toggleBtn && sidebar && overlay) {
+    toggleBtn.addEventListener('click', () => {
+      sidebar.classList.toggle('open');
+      overlay.classList.toggle('active');
+    });
+
+    overlay.addEventListener('click', () => {
+      sidebar.classList.remove('open');
+      overlay.classList.remove('active');
+    });
+  }
+
+  // Submenu Accordion Toggle
+  document.querySelectorAll('.admin-nav-item.has-submenu > a').forEach(toggleLink => {
+    toggleLink.addEventListener('click', (e) => {
+      const parentLi = toggleLink.parentElement;
+      const arrowClicked = e.target.closest('.submenu-arrow');
+      
+      if (arrowClicked || e.currentTarget.classList.contains('menu-toggle')) {
+        parentLi.classList.toggle('open');
+      }
+    });
+  });
+</script>
+
+<!-- Universal Media Modal & Assets -->
+<link rel="stylesheet" href="/css/media-modal.css">
+<%- include('../../partials/media_modal') %>
+<script src="/js/media-modal.js"></script>
+
+</body>
+</html>

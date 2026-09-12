@@ -1,0 +1,85 @@
+<%- include('partials/admin_layout_start', { 
+  pageTitle: 'নতুন লেখক তৈরি করুন', 
+  pageBreadcrumb: 'নতুন লেখক যুক্তকরণ',
+  topbarButton: { text: '&larr; সকল লেখকে ফিরে যান', url: '/admin/users' }
+}) %>
+
+<div class="admin-card" style="max-width: 760px; margin: 0 auto;">
+  <div class="admin-card-header">
+    <div class="admin-card-title">
+      <span>নতুন লেখক / ইউজারের তথ্য দিন</span>
+    </div>
+  </div>
+
+  <div class="admin-card-body">
+    <% if (typeof error !== 'undefined' && error) { %>
+      <div style="background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px;">
+        <%= error %>
+      </div>
+    <% } %>
+
+    <form action="/admin/users/new" method="POST" enctype="multipart/form-data">
+      <div class="admin-form-grid">
+        <!-- Display Name -->
+        <div class="admin-form-group">
+          <label class="admin-form-label">লেখকের পূর্ণ নাম (বাংলায়) *</label>
+          <input type="text" name="display_name" class="admin-form-input" required placeholder="যেমন: মোস্তাফিজ ফরায়েজী">
+        </div>
+
+        <!-- Username -->
+        <div class="admin-form-group">
+          <label class="admin-form-label">ইউজারনেম (ছোট হাতের ইংরেজি) *</label>
+          <input type="text" name="username" class="admin-form-input" required placeholder="যেমন: mrforayeji" pattern="^[a-zA-Z0-9_-]+$">
+        </div>
+      </div>
+
+      <div class="admin-form-grid">
+        <!-- Email -->
+        <div class="admin-form-group">
+          <label class="admin-form-label">ইমেইল ঠিকানা *</label>
+          <input type="email" name="email" class="admin-form-input" required placeholder="author@example.com">
+        </div>
+
+        <!-- Password -->
+        <div class="admin-form-group">
+          <label class="admin-form-label">প্রাথমিক পাসওয়ার্ড *</label>
+          <input type="password" name="password" class="admin-form-input" required placeholder="কমপক্ষে ৬ অক্ষরের পাসওয়ার্ড">
+        </div>
+      </div>
+
+      <div class="admin-form-grid">
+        <!-- Role -->
+        <div class="admin-form-group">
+          <label class="admin-form-label">রোল / পদবী নির্ধারণ *</label>
+          <select name="role" class="admin-form-select" required>
+            <option value="author" selected>সম্মানিত লেখক (Author)</option>
+            <option value="editor">সহযোগী সম্পাদক (Editor)</option>
+            <option value="admin">প্রধান এডমিন (Administrator)</option>
+          </select>
+        </div>
+
+        <!-- Avatar -->
+        <div class="admin-form-group">
+          <label class="admin-form-label">প্রোফাইল ছবি (Avatar)</label>
+          <div class="payasti-image-dropzone" data-name="avatar" data-prompt="অবতার ছবি ড্র্যাগ করে ছাড়ুন" data-hint="ক্লিক করে মিডিয়া লাইব্রেরি থেকে ছবি বাছুন"></div>
+        </div>
+      </div>
+
+      <!-- Bio -->
+      <div class="admin-form-group">
+        <label class="admin-form-label">সংক্ষিপ্ত লেখক পরিচিতি / বায়ো (ঐচ্ছিক)</label>
+        <textarea name="bio" class="admin-form-textarea" rows="4" placeholder="লেখকের সাহিত্যচর্চা, জন্মস্থান বা সংক্ষিপ্ত পরিচয়..."></textarea>
+      </div>
+
+      <!-- Actions -->
+      <div style="display: flex; align-items: center; justify-content: space-between; padding-top: 20px; border-top: 1px solid var(--admin-border);">
+        <a href="/admin/users" class="btn-view-site" style="padding: 10px 20px; font-size: 16px;">বাতিল করুন</a>
+        <button type="submit" class="btn-new-action" style="padding: 11px 30px; font-size: 17px;">
+          লেখক অ্যাকাউন্ট তৈরি করুন
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<%- include('partials/admin_layout_end') %>

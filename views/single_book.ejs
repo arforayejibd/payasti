@@ -1,0 +1,66 @@
+<%- include('partials/header') %>
+
+<main class="container">
+  <div class="article-container" style="max-width: 960px; margin: 30px auto;">
+    <div style="display: grid; grid-template-columns: 320px 1fr; gap: 36px; align-items: start;">
+      <!-- Cover -->
+      <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; text-align: center;">
+        <% if (book.cover_image) { %>
+          <img src="<%= book.cover_image %>" alt="<%= book.title %>" style="width: 100%; border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+        <% } else { %>
+          <div style="font-size: 64px; padding: 60px 0;">📖</div>
+        <% } %>
+      </div>
+
+      <!-- Details -->
+      <div>
+        <span class="article-category-badge">পয়স্তি প্রকাশন</span>
+        <h1 style="font-size: 28px; font-weight: 700; color: #111; margin-bottom: 8px;"><%= book.title %></h1>
+        <div style="font-size: 16px; color: #555; margin-bottom: 16px;">
+          লেখক: <strong style="color: var(--primary);"><%= book.author_name %></strong>
+        </div>
+
+        <!-- Pricing -->
+        <div style="font-size: 20px; margin-bottom: 20px; padding: 12px 16px; background: #f8fafc; border-radius: 6px; border: 1px solid #e2e8f0; display: inline-block;">
+          <% if (book.regular_price) { %>
+            <span style="color: #dc2626; text-decoration: line-through; margin-right: 12px; font-size: 16px;"><%= book.regular_price %></span>
+          <% } %>
+          <% if (book.discounted_price) { %>
+            <strong style="color: #111;"><%= book.discounted_price %></strong>
+          <% } %>
+        </div>
+
+        <!-- Description -->
+        <div style="font-size: 15px; color: #374151; line-height: 1.8; margin-bottom: 24px;">
+          <%= book.description || `${book.author_name} রচিত ${book.title} বইটি সাহিত্যপ্রেমী পাঠকদের জন্য একটি অনন্য গ্রন্থ।` %>
+        </div>
+
+        <!-- Order Button -->
+        <% if (book.order_url) { %>
+          <a href="<%= book.order_url %>" target="_blank" rel="noopener noreferrer" class="btn-primary-action" style="display: inline-flex; align-items: center; gap: 8px; padding: 12px 28px; font-size: 16px;">
+            🛒 রকমারি / ওয়েবসাইট থেকে অর্ডার করুন
+          </a>
+        <% } %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Other Books -->
+  <% if (otherBooks && otherBooks.length) { %>
+    <section class="site-section books-section" style="margin-top: 50px; border-radius: 12px; padding: 24px 20px;">
+      <div class="books-section-heading" style="margin-bottom: 20px;">
+        <h2 class="books-heading-title" style="margin: 0; font-size: 22px;">পয়স্তি প্রকাশনের অন্যান্য বই</h2>
+        <a href="/books" class="books-heading-link" style="font-size: 16px;">সকল বই »</a>
+      </div>
+      <div class="books-grid">
+        <% otherBooks.forEach(b => { %>
+          <div class="grid-book-card-item">
+            <%- include('partials/book_card', { book: b }) %>
+          </div>
+        <% }) %>
+      </div>
+    </section>
+  <% } %>
+</main>
+
+<%- include('partials/footer') %>

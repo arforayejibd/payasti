@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <!-- Theme Color matching live site -->
+  <meta name="theme-color" content="#068200">
+
+  <!-- Favicons matching live site -->
+  <link rel="icon" href="/images/favicon-32x32.png" sizes="32x32">
+  <link rel="icon" href="/images/favicon-192x192.png" sizes="192x192">
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+  <meta name="msapplication-TileImage" content="/images/favicon-192x192.png">
+
+  <!-- Dynamic SEO Meta Tags (Rank Math PRO equivalent) -->
+  <title><%= seo.title %></title>
+  <meta name="description" content="<%= seo.description %>">
+  <link rel="canonical" href="<%= seo.canonical %>">
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="<%= seo.og.type %>">
+  <meta property="og:title" content="<%= seo.og.title %>">
+  <meta property="og:description" content="<%= seo.og.description %>">
+  <meta property="og:url" content="<%= seo.og.url %>">
+  <meta property="og:site_name" content="<%= seo.og.site_name %>">
+  <meta property="og:locale" content="<%= seo.og.locale %>">
+  <meta property="og:image" content="<%= seo.og.image %>">
+  <meta property="fb:app_id" content="560602190786845">
+
+  <!-- Twitter Cards -->
+  <meta name="twitter:card" content="<%= seo.twitter.card %>">
+  <meta name="twitter:title" content="<%= seo.twitter.title %>">
+  <meta name="twitter:description" content="<%= seo.twitter.description %>">
+  <meta name="twitter:image" content="<%= seo.twitter.image %>">
+
+  <% if (seo.articleMeta) { %>
+    <meta property="article:author" content="<%= seo.articleMeta.author %>">
+    <meta property="article:published_time" content="<%= seo.articleMeta.publishedTime %>">
+  <% } %>
+
+  <!-- Google Schema.org JSON-LD Structured Data -->
+  <% if (seo.schemaJson) { %>
+    <script type="application/ld+json">
+      <%- seo.schemaJson %>
+    </script>
+  <% } %>
+
+  <link rel="stylesheet" href="/css/style.css">
+  <% if (typeof isDashboard !== 'undefined' && isDashboard) { %>
+    <link rel="stylesheet" href="/css/dashboard.css">
+  <% } %>
+</head>
+<body class="oxygen-body">
+
+<header id="section-116-3856" class="site-header">
+  <div class="ct-section-inner-wrap header-inner">
+    <div id="div_block-118-3856" class="header-nav-group">
+      <!-- Brand Logo (#link-122-3856 > #image-121-3856) -->
+      <a id="link-122-3856" href="/" class="header-logo-link" title="পয়স্তি - সাহিত্য স্মারক">
+        <img id="image-121-3856" src="/images/Payasti-logo.png" alt="পয়স্তি" class="header-logo-img">
+      </a>
+
+      <!-- Navigation Menu (#-pro-menu-123-3856) -->
+      <nav class="main-nav-menu" id="mainNav">
+        <% if (navMenu && navMenu.length) { %>
+          <% navMenu.forEach(item => { %>
+            <a href="<%= item.url %>" class="nav-menu-item <%= (typeof currentPath !== 'undefined' && currentPath === item.url) ? 'current-menu-item' : '' %>"><%= item.title %></a>
+          <% }) %>
+        <% } %>
+
+        <!-- Author Panel Button (#text_block-130-3856) -->
+        <a id="text_block-130-3856" href="<%= (typeof user !== 'undefined' && user) ? '/author/dashboard' : '/login' %>" class="btn-author-panel">
+          লেখক প্যানেল
+        </a>
+      </nav>
+    </div>
+
+    <!-- Search Button (#-header-search-124-3856) -->
+    <div id="-header-search-124-3856" class="header-search-box">
+      <button class="header-search-btn" id="searchToggleBtn" aria-label="অনুসন্ধান" title="অনুসন্ধান">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Mobile Hamburger Toggle -->
+    <button class="mobile-nav-toggle" id="mobileMenuToggle" aria-label="মেনু খুলুন">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+  </div>
+</header>
+
+<!-- Search Overlay Modal -->
+<div class="search-modal-overlay" id="searchModal">
+  <div class="search-modal-content">
+    <div class="search-modal-header">
+      <span class="search-modal-title">অনুসন্ধান করুন</span>
+      <button class="search-modal-close" id="closeSearchBtn" aria-label="বন্ধ করুন">&times;</button>
+    </div>
+    <form action="/search" method="GET" class="search-form-wrap">
+      <div class="search-input-group">
+        <input 
+          type="text" 
+          name="q" 
+          id="liveSearchInput" 
+          class="search-input-field" 
+          placeholder="কবিতা, গল্প, প্রবন্ধ কিংবা যে লেখা খুঁজতে চাচ্ছেন সে লেখার শিরোনাম লিখুন..." 
+          autocomplete="off"
+          autofocus
+        >
+        <button type="submit" class="search-submit-btn">খুঁজুন</button>
+      </div>
+    </form>
+    <div class="search-results-dropdown" id="searchResultsContainer" style="display: none;"></div>
+  </div>
+</div>

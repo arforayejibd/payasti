@@ -1,0 +1,79 @@
+<%- include('partials/admin_layout_start', { 
+  pageTitle: 'মিডিয়া লাইব্রেরি (Media)', 
+  pageBreadcrumb: 'Media Library'
+}) %>
+
+<!-- Upload Media Card -->
+<div class="admin-card" style="margin-bottom: 24px;">
+  <div class="admin-card-header">
+    <div class="admin-card-title">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--admin-primary);">
+        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+        <circle cx="8.5" cy="8.5" r="1.5"></circle>
+        <polyline points="21 15 16 10 5 21"></polyline>
+      </svg>
+      <span>নতুন ছবি বা ফাইল আপলোড</span>
+    </div>
+  </div>
+  <div class="admin-card-body">
+    <form action="/admin/media/upload" method="POST" enctype="multipart/form-data" style="display: flex; gap: 14px; align-items: center; flex-wrap: wrap;">
+      <input type="file" name="media_file" class="admin-form-input" required accept="image/*" style="max-width: 380px;">
+      <button type="submit" class="btn-new-action" style="padding: 10px 20px;">
+        আপলোড করুন
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- Media Grid -->
+<div class="admin-card">
+  <div class="admin-card-header">
+    <div class="admin-card-title">
+      <span>আপলোডকৃত ছবিসমূহ</span>
+      <span class="admin-card-badge"><%= toBengaliNumber(mediaFiles.length) %> টি ফাইল</span>
+    </div>
+  </div>
+
+  <div class="admin-card-body">
+    <% if (mediaFiles && mediaFiles.length) { %>
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px;">
+        <% mediaFiles.forEach(file => { %>
+          <div style="border: 1px solid var(--admin-border); border-radius: 10px; overflow: hidden; background: #fff; box-shadow: var(--admin-shadow-sm); display: flex; flex-direction: column;">
+            <div style="height: 140px; background: #f8fafc; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+              <img src="<%= file.url %>" alt="" style="width: 100%; height: 100%; object-fit: cover;">
+            </div>
+            <div style="padding: 12px; flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
+              <div>
+                <div style="font-size: 15px; font-weight: 600; color: var(--admin-text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="<%= file.filename %>">
+                  <%= file.filename %>
+                </div>
+                <div style="font-size: 13px; color: var(--admin-text-sub); margin-top: 4px;">
+                  <%= file.size %>
+                </div>
+              </div>
+              <div style="margin-top: 12px; display: flex; align-items: center; justify-content: space-between; gap: 6px;">
+                <button type="button" class="btn-view-site" style="padding: 6px 12px; font-size: 14px;" onclick="navigator.clipboard.writeText(window.location.origin + '<%= file.url %>'); alert('ছবির লিংক কপি করা হয়েছে!');">
+                  কপি লিংক
+                </button>
+                <form action="/admin/media/delete" method="POST" onsubmit="return confirm('ফাইলটি মুছে ফেলতে চান?');" style="display: inline;">
+                  <input type="hidden" name="filename" value="<%= file.filename %>">
+                  <button type="submit" class="btn-table-action btn-reject" style="padding: 6px 12px; font-size: 14px;">
+                    ডিলিট
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    <% } else { %>
+      <div class="admin-empty-state">
+        <div class="empty-icon">🖼️</div>
+        <div class="empty-title">কোনো মিডিয়া ফাইল পাওয়া যায়নি</div>
+        <div class="empty-desc">উপরের ফর্ম থেকে নতুন ছবি আপলোড করুন।</div>
+      </div>
+    <% } %>
+  </div>
+</div>
+
+<%- include('partials/admin_layout_end') %>

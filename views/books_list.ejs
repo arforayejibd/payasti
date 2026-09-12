@@ -1,0 +1,33 @@
+<%- include('partials/header') %>
+
+<main class="page-main-content">
+  <section class="site-section books-section" style="min-height: 70vh; padding-top: 30px; padding-bottom: 60px;">
+    <div class="ct-section-inner-wrap section-inner-container">
+      <div class="books-section-heading" id="div_block-271-4047">
+        <div>
+          <h1 class="books-heading-title" id="text_block-274-4047" style="margin: 0; font-size: 26px;">পয়স্তি প্রকাশন-এর প্রকাশিত বইসমূহ</h1>
+          <p style="font-size: 15px; color: #53585c; margin: 6px 0 0 0;">পয়স্তি প্রকাশন থেকে প্রকাশিত কাব্যগ্রন্থ, উপন্যাস, গল্পগ্রন্থ ও মননশীল প্রবন্ধের বিশেষ সম্ভার।</p>
+        </div>
+        <% if (books && books.length) { %>
+          <div style="font-size: 16px; color: #075603; font-weight: 700; background: #eaf5ea; padding: 6px 16px; border-radius: 20px; white-space: nowrap;">
+            মোট <%= toBengaliNumber(books.length) %> টি বই
+          </div>
+        <% } %>
+      </div>
+
+      <div class="books-grid" id="_dynamic_list-79-4047" style="margin-top: 24px;">
+        <% if (books && books.length) { %>
+          <% books.forEach(book => { %>
+            <div class="grid-book-card-item">
+              <%- include('partials/book_card', { book: book }) %>
+            </div>
+          <% }) %>
+        <% } else { %>
+          <p class="no-posts-msg" style="grid-column: 1 / -1; text-align: center; color: #888; padding: 60px 0;">কোনো বই পাওয়া যায়নি।</p>
+        <% } %>
+      </div>
+    </div>
+  </section>
+</main>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,99 @@
+<!-- Universal Media Modal Dialog (#payastiMediaModal) -->
+<div class="payasti-media-backdrop" id="payastiMediaModal" aria-hidden="true" role="dialog">
+  <div class="payasti-media-window">
+    
+    <!-- Modal Header -->
+    <div class="media-modal-header">
+      <div class="media-header-left">
+        <h3 class="media-modal-title">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+            <circle cx="8.5" cy="8.5" r="1.5"></circle>
+            <polyline points="21 15 16 10 5 21"></polyline>
+          </svg>
+          <span>মিডিয়া ফাইল নির্বাচন</span>
+        </h3>
+
+        <div class="media-tab-nav">
+          <button type="button" class="media-tab-btn active" data-tab="library">
+            মিডিয়া লাইব্রেরি
+          </button>
+          <button type="button" class="media-tab-btn" data-tab="upload">
+            নতুন আপলোড
+          </button>
+        </div>
+      </div>
+
+      <button type="button" class="media-modal-close" id="closeMediaModalBtn" aria-label="বন্ধ করুন" title="বন্ধ করুন">
+        &times;
+      </button>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="media-modal-body">
+      
+      <!-- Tab 1: Media Library Pane -->
+      <div class="media-tab-pane active" id="mediaLibraryPane">
+        <div class="media-library-toolbar">
+          <input type="text" id="mediaSearchInput" class="media-search-input" placeholder="ছবির নাম দিয়ে খুঁজুন..." autocomplete="off">
+          <span class="media-count-badge" id="mediaCountBadge">লোড হচ্ছে...</span>
+        </div>
+
+        <div class="media-library-content">
+          <div class="media-grid-scroll">
+            <div class="media-items-grid" id="mediaItemsGrid">
+              <!-- Loaded dynamically via JS -->
+            </div>
+          </div>
+
+          <!-- Details Sidebar -->
+          <div class="media-details-sidebar" id="mediaDetailsSidebar" style="display: none;">
+            <img src="" alt="" class="media-details-preview" id="mediaDetailsPreview">
+            <div class="media-details-info">
+              <div class="media-details-filename" id="mediaDetailsFilename"></div>
+              <div id="mediaDetailsSize"></div>
+              <div id="mediaDetailsDate"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 2: Upload Pane -->
+      <div class="media-tab-pane" id="mediaUploadPane">
+        <div class="media-upload-pane">
+          <div class="modal-dropzone-box" id="modalDropzoneBox">
+            <input type="file" id="modalFileInput" accept="image/*" style="display: none;">
+            <div class="modal-upload-icon">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+              </svg>
+            </div>
+            <div class="modal-upload-title">এখানে ছবি টেনে এনে ছেড়ে দিন</div>
+            <p class="modal-upload-hint">অথবা আপনার কম্পিউটার থেকে ছবি সিলেক্ট করতে নিচের বাটনে ক্লিক করুন</p>
+            <button type="button" class="btn-modal-browse" id="btnModalBrowse">ছবি নির্বাচন করুন</button>
+            <p style="font-size: 12px; color: #94a3b8; margin: 0;">সর্বোচ্চ সাইজ: ৫ মেগাবাইট (JPG, PNG, WebP)</p>
+            
+            <div class="modal-upload-progress" id="modalUploadProgress">
+              <div class="modal-upload-progress-bar" id="modalUploadProgressBar"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="media-modal-footer">
+      <div class="media-footer-status" id="mediaFooterStatus">
+        কোনো ছবি নির্বাচিত হয়নি
+      </div>
+      <div class="media-footer-actions">
+        <button type="button" class="btn-media-cancel" id="btnMediaCancel">বাতিল</button>
+        <button type="button" class="btn-media-select" id="btnMediaConfirmSelect" disabled>বাছাই করুন</button>
+      </div>
+    </div>
+
+  </div>
+</div>

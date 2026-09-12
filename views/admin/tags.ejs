@@ -1,0 +1,92 @@
+<%- include('partials/admin_layout_start', { 
+  pageTitle: 'ট্যাগ (Tags) ব্যবস্থাপনা', 
+  pageBreadcrumb: 'Tags'
+}) %>
+
+<div class="admin-two-col-grid">
+  <!-- Add New Tag Form (Left) -->
+  <div class="admin-card">
+    <div class="admin-card-header">
+      <div class="admin-card-title">
+        <span>+ নতুন ট্যাগ তৈরি</span>
+      </div>
+    </div>
+    <div class="admin-card-body">
+      <form action="/admin/tags/add" method="POST">
+        <div class="admin-form-group">
+          <label class="admin-form-label">ট্যাগের নাম *</label>
+          <input type="text" name="name" class="admin-form-input" required placeholder="যেমন: আধুনিক কবিতা, সমকাল">
+        </div>
+
+        <div class="admin-form-group">
+          <label class="admin-form-label">স্লাগ (Slug - ঐচ্ছিক)</label>
+          <input type="text" name="slug" class="admin-form-input" placeholder="যেমন: modhonik-kobita">
+        </div>
+
+        <button type="submit" class="btn-new-action" style="width: 100%; justify-content: center; padding: 12px; font-size: 17px;">
+          ট্যাগ যুক্ত করুন
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Tags Table (Right) -->
+  <div class="admin-card">
+    <div class="admin-card-header">
+      <div class="admin-card-title">
+        <span>সকল সক্রিয় ট্যাগ</span>
+        <span class="admin-card-badge"><%= toBengaliNumber(tags.length) %> টি</span>
+      </div>
+    </div>
+
+    <div class="admin-table-wrap">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>ট্যাগের নাম</th>
+            <th>স্লাগ</th>
+            <th>মোট পোস্ট</th>
+            <th style="text-align: right;">অ্যাকশন</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (tags && tags.length) { %>
+            <% tags.forEach(t => { %>
+              <tr>
+                <td>
+                  <strong style="color: var(--admin-text-main); font-size: 18px;"># <%= t.name %></strong>
+                </td>
+                <td>
+                  <code style="background: #f1f5f9; padding: 4px 8px; border-radius: 4px; font-size: 15px; color: #475569;"><%= t.slug %></code>
+                </td>
+                <td>
+                  <span style="color: var(--admin-text-muted); font-weight: 600;">
+                    <%= toBengaliNumber(t.post_count || 0) %> টি
+                  </span>
+                </td>
+                <td>
+                  <div class="actions-group" style="justify-content: flex-end;">
+                    <form action="/admin/tags/<%= t.id %>/delete" method="POST" style="display: inline;" onsubmit="return confirm('ট্যাগটি মুছে ফেলতে চান?');">
+                      <button type="submit" class="btn-table-action btn-reject" title="মুছে ফেলুন">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <polyline points="3 6 5 6 21 6"></polyline>
+                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                        </svg>
+                      </button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+            <% }) %>
+          <% } else { %>
+            <tr>
+              <td colspan="4" style="text-align: center; color: #94a3b8; padding: 32px;">কোনো ট্যাগ নেই।</td>
+            </tr>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<%- include('partials/admin_layout_end') %>

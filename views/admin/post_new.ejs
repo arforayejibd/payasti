@@ -1,0 +1,170 @@
+<%- include('partials/admin_layout_start', { 
+  pageTitle: 'নতুন পোস্ট তৈরি', 
+  pageBreadcrumb: 'নতুন লেখা',
+  topbarButton: { text: 'সকল লেখায় ফিরে যান', url: '/admin/posts' }
+}) %>
+
+<!-- Quill Editor CSS -->
+<link rel="stylesheet" href="/vendor/quill/quill.snow.css">
+
+<% if (typeof error !== 'undefined' && error) { %>
+  <div style="background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; padding: 14px 18px; border-radius: 10px; margin-bottom: 24px; font-size: 16px;">
+    ⚠️ <%= error %>
+  </div>
+<% } %>
+
+<form id="postForm" action="/admin/posts/new" method="POST" enctype="multipart/form-data">
+  <div class="admin-editor-layout">
+    <!-- বাম পাশের প্রধান কলাম (শিরোনাম ও মূল লেখা) -->
+    <div class="admin-editor-main">
+      <!-- শিরোনাম -->
+      <div class="admin-card" style="margin-bottom: 0;">
+        <div class="admin-card-header">
+          <div class="admin-card-title">
+            <span>লেখার শিরোনাম *</span>
+          </div>
+        </div>
+        <div class="admin-card-body">
+          <input 
+            type="text" 
+            name="title" 
+            class="admin-form-input" 
+            required 
+            placeholder="এখানে সুন্দর একটি শিরোনাম লিখুন..." 
+            style="font-size: 20px; font-weight: 600; padding: 12px 16px;"
+          >
+        </div>
+      </div>
+
+      <!-- মূল লেখা (WYSIWYG রিচ টেক্সট এডিটর) -->
+      <div class="admin-card" style="margin-bottom: 0;">
+        <div class="admin-card-header">
+          <div class="admin-card-title">
+            <span>মূল সাহিত্য / লেখা *</span>
+          </div>
+        </div>
+        <div class="admin-card-body" style="padding: 16px;">
+          <div class="payasti-editor-wrapper">
+            <div id="quillEditor"></div>
+          </div>
+          <!-- Hidden input holding the HTML content for form submission -->
+          <input type="hidden" name="content" id="postContentInput">
+        </div>
+      </div>
+    </div>
+
+    <!-- ডান পাশের সাইডবার কলাম (মেটাডাটা ও অ্যাকশন বক্স) -->
+    <div class="admin-editor-sidebar">
+      <!-- প্রকাশনা নিয়ন্ত্রণ বক্স -->
+      <div class="admin-card" style="margin-bottom: 0;">
+        <div class="admin-card-header">
+          <div class="admin-card-title">
+            <span>প্রকাশনা নিয়ন্ত্রণ</span>
+          </div>
+        </div>
+        <div class="admin-card-body" style="display: flex; flex-direction: column; gap: 16px;">
+          <div class="admin-form-group" style="margin-bottom: 0;">
+            <label class="admin-form-label">স্ট্যাটাস</label>
+            <select name="status" class="admin-form-select" required>
+              <option value="publish" selected>সরাসরি প্রকাশিত (Publish)</option>
+              <option value="draft">ড্রাফট সংরক্ষণ (Draft)</option>
+              <option value="pending">পেন্ডিং কিউ (Pending)</option>
+            </select>
+          </div>
+
+          <div style="padding: 10px 0; border-top: 1px solid var(--admin-border); border-bottom: 1px solid var(--admin-border);">
+            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 16px; font-weight: 500;">
+              <input type="checkbox" name="is_featured" value="1" style="width: 20px; height: 20px; accent-color: var(--admin-primary);">
+              <span>প্রধান ফিচারে প্রদর্শন করুন</span>
+            </label>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 10px; padding-top: 4px;">
+            <button type="submit" class="btn-new-action" style="width: 100%; justify-content: center; padding: 12px; font-size: 17px;">
+              পোস্ট প্রকাশ করুন
+            </button>
+            <a href="/admin/posts" class="btn-view-site" style="width: 100%; justify-content: center; padding: 10px; font-size: 16px;">
+              বাতিল করুন
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- সাহিত্য বিভাগ -->
+      <div class="admin-card" style="margin-bottom: 0;">
+        <div class="admin-card-header">
+          <div class="admin-card-title">
+            <span>সাহিত্য বিভাগ *</span>
+          </div>
+        </div>
+        <div class="admin-card-body">
+          <select name="category_id" class="admin-form-select" required style="width: 100%;">
+            <% if (categories && categories.length) { %>
+              <% categories.forEach(c => { %>
+                <option value="<%= c.id %>"><%= c.name %></option>
+              <% }) %>
+            <% } %>
+          </select>
+        </div>
+      </div>
+
+      <!-- লেখক নির্বাচন -->
+      <div class="admin-card" style="margin-bottom: 0;">
+        <div class="admin-card-header">
+          <div class="admin-card-title">
+            <span>লেখক নির্বাচন *</span>
+          </div>
+        </div>
+        <div class="admin-card-body">
+          <select name="author_id" class="admin-form-select" required style="width: 100%;">
+            <% if (authors && authors.length) { %>
+              <% authors.forEach(a => { %>
+                <option value="<%= a.id %>" <%= user && user.id == a.id ? 'selected' : '' %>>
+                  <%= a.display_name %> (@<%= a.username %>)
+                </option>
+              <% }) %>
+            <% } %>
+          </select>
+        </div>
+      </div>
+
+      <!-- ফিচার্ড ছবি -->
+      <div class="admin-card" style="margin-bottom: 0;">
+        <div class="admin-card-header">
+          <div class="admin-card-title">
+            <span>ফিচার্ড ছবি</span>
+          </div>
+        <div class="admin-card-body">
+          <div class="payasti-image-dropzone" data-name="featured_image" data-prompt="ফিচার্ড ছবি ড্র্যাগ করে ছাড়ুন অথবা ক্লিক করুন" data-hint="ক্লিক করে মিডিয়া লাইব্রেরি থেকে ছবি বাছুন"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>
+
+<!-- Quill Editor JS & Initialization -->
+<script src="/vendor/quill/quill.min.js"></script>
+<script src="/js/payasti-quill.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const quill = window.createPayastiEditor('#quillEditor', {
+      placeholder: 'সম্পূর্ণ সাহিত্যকর্ম, কবিতা, প্রবন্ধ বা গল্প এখানে লিখুন...'
+    });
+
+    const form = document.getElementById('postForm');
+    const contentInput = document.getElementById('postContentInput');
+
+    form.addEventListener('submit', function(e) {
+      const html = quill.root.innerHTML;
+      const text = quill.getText().trim();
+      if (!text || text.length === 0) {
+        alert('অনুগ্রহ করে মূল সাহিত্য বা লেখার বিষয়বস্তু লিখুন।');
+        e.preventDefault();
+        return false;
+      }
+      contentInput.value = html;
+    });
+  });
+</script>
+
+<%- include('partials/admin_layout_end') %>

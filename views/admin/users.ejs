@@ -1,0 +1,161 @@
+<%- include('partials/admin_layout_start', { 
+  pageTitle: 'লেখক ও ইউজার ব্যবস্থাপনা', 
+  pageBreadcrumb: 'লেখক তালিকা',
+  topbarButton: { text: '+ নতুন লেখক যোগ করুন', url: '/admin/users/new' }
+}) %>
+
+<!-- Role Tabs & Search Filter -->
+<div class="admin-card" style="margin-bottom: 20px;">
+  <div style="padding: 16px 20px; display: flex; flex-wrap: wrap; gap: 16px; align-items: center; justify-content: space-between;">
+    <!-- Role Filter Tabs -->
+    <div style="display: flex; gap: 6px; overflow-x: auto;">
+      <a href="/admin/users?role=all&q=<%= searchQuery %>" 
+         class="btn-view-site" 
+         style="<%= roleFilter === 'all' ? 'background: var(--admin-primary); color: #fff; border-color: var(--admin-primary);' : '' %>">
+        সকল ইউজার (<%= toBengaliNumber(userStats.total) %>)
+      </a>
+      <a href="/admin/users?role=admin&q=<%= searchQuery %>" 
+         class="btn-view-site" 
+         style="<%= roleFilter === 'admin' ? 'background: #dc2626; color: #fff; border-color: #dc2626;' : '' %>">
+        এডমিন (<%= toBengaliNumber(userStats.admins) %>)
+      </a>
+      <a href="/admin/users?role=editor&q=<%= searchQuery %>" 
+         class="btn-view-site" 
+         style="<%= roleFilter === 'editor' ? 'background: #2563eb; color: #fff; border-color: #2563eb;' : '' %>">
+        সম্পাদক (<%= toBengaliNumber(userStats.editors) %>)
+      </a>
+      <a href="/admin/users?role=author&q=<%= searchQuery %>" 
+         class="btn-view-site" 
+         style="<%= roleFilter === 'author' ? 'background: var(--admin-accent); color: #fff; border-color: var(--admin-accent);' : '' %>">
+        লেখক (<%= toBengaliNumber(userStats.authors) %>)
+      </a>
+    </div>
+
+    <!-- Search Form -->
+    <form action="/admin/users" method="GET" style="display: flex; gap: 8px;">
+      <input type="hidden" name="role" value="<%= roleFilter %>">
+      <input 
+        type="text" 
+        name="q" 
+        value="<%= searchQuery %>" 
+        class="admin-form-input" 
+        placeholder="নাম, ইউজারনেম বা ইমেইল..." 
+        style="width: 240px; padding: 8px 14px; font-size: 16px;"
+      >
+      <button type="submit" class="btn-view-site" style="padding: 8px 16px; font-size: 16px;">অনুসন্ধান</button>
+      <% if (searchQuery || roleFilter !== 'all') { %>
+        <a href="/admin/users" class="btn-view-site" style="padding: 8px 14px; color: #dc2626; font-size: 16px;" title="ফিল্টার রিসেট">✕</a>
+      <% } %>
+    </form>
+  </div>
+</div>
+
+<!-- Users Table Card -->
+<div class="admin-card">
+  <div class="admin-card-header">
+    <div class="admin-card-title">
+      <span>নিবন্ধিত লেখক ও পরিচালনাকারী দল</span>
+      <span class="admin-card-badge"><%= toBengaliNumber(users.length) %> জন</span>
+    </div>
+  </div>
+
+  <div class="admin-table-wrap">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th style="width: 44px;">ছবি</th>
+          <th>পূর্ণ নাম ও ইউজারনেম</th>
+          <th>ইমেইল</th>
+          <th>রোল / পদবী</th>
+          <th>মোট পোস্ট</th>
+          <th>যোগদানের তারিখ</th>
+          <th style="text-align: right; min-width: 130px;">অ্যাকশন</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (users && users.length > 0) { %>
+          <% users.forEach(u => { %>
+            <tr>
+              <td>
+                <% if (u.avatar) { %>
+                  <img src="<%= u.avatar %>" alt="" style="width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 1px solid #e2e8f0;">
+                <% } else { %>
+                  <div style="width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, #075603 0%, #068200 100%); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 18px;">
+                    <%= u.display_name ? u.display_name.charAt(0) : 'প' %>
+                  </div>
+                <% } %>
+              </td>
+              <td>
+                <div class="author-name">
+                  <a href="/admin/users/<%= u.id %>/edit" style="color: var(--admin-text-main); text-decoration: none;">
+                    <%= u.display_name || 'নাম নেই' %>
+                  </a>
+                </div>
+                <div class="author-email">@<%= u.username %></div>
+              </td>
+              <td style="color: var(--admin-text-muted); font-size: 16px;">
+                <%= u.email %>
+              </td>
+              <td>
+                <% if (u.role === 'admin') { %>
+                  <span class="status-badge" style="background: #fef2f2; color: #dc2626; border: 1px solid #fecaca;">🛡️ এডমিন</span>
+                <% } else if (u.role === 'editor') { %>
+                  <span class="status-badge" style="background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe;">🖋️ সম্পাদক</span>
+                <% } else { %>
+                  <span class="status-badge" style="background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0;">সম্মানিত লেখক</span>
+                <% } %>
+              </td>
+              <td>
+                <strong style="color: var(--admin-text-main); font-size: 17px;">
+                  <%= toBengaliNumber(u.post_count || 0) %>
+                </strong>
+                <span style="font-size: 14px; color: var(--admin-text-sub);">
+                  (<%= toBengaliNumber(u.published_count || 0) %> টি প্রকাশিত)
+                </span>
+              </td>
+              <td style="white-space: nowrap; color: var(--admin-text-muted); font-size: 16px;">
+                <%= formatBengaliDate(u.registered_at || u.created_at) %>
+              </td>
+              <td>
+                <div class="actions-group" style="justify-content: flex-end;">
+                  <!-- Edit User -->
+                  <a href="/admin/users/<%= u.id %>/edit" class="btn-table-action" style="background: #e0f2fe; color: #0284c7;" title="ইউজার সম্পাদনা">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                    </svg>
+                    এডিট
+                  </a>
+
+                  <!-- Delete User (prevent deleting own account) -->
+                  <% if (user.id !== u.id) { %>
+                    <form action="/admin/users/<%= u.id %>/delete" method="POST" style="display: inline;" onsubmit="return confirm('আপনি কি নিশ্চিত যে এই লেখককে ডিলিট করতে চান? (তার সকল লেখা মূল এডমিনের অধীনে স্থানান্তরিত হবে)');">
+                      <button type="submit" class="btn-table-action btn-reject" title="ডিলিট করুন">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <polyline points="3 6 5 6 21 6"></polyline>
+                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                        </svg>
+                      </button>
+                    </form>
+                  <% } %>
+                </div>
+              </td>
+            </tr>
+          <% }) %>
+        <% } else { %>
+          <tr>
+            <td colspan="7">
+              <div class="admin-empty-state">
+                <div class="empty-icon">👥</div>
+                <div class="empty-title">কোনো লেখক বা ইউজার পাওয়া যায়নি</div>
+                <div class="empty-desc">অনুসন্ধানের সাথে মিল রেখে কোনো রেকর্ড নেই।</div>
+              </div>
+            </td>
+          </tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<%- include('partials/admin_layout_end') %>

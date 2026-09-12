@@ -1,0 +1,106 @@
+<%- include('partials/admin_layout_start', { 
+  pageTitle: 'পেন্ডিং লেখা অনুমোদন কিউ', 
+  pageBreadcrumb: 'মডারেশন কিউ'
+}) %>
+
+<div class="admin-card">
+  <div class="admin-card-header">
+    <div class="admin-card-title">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--admin-warning);">
+        <circle cx="12" cy="12" r="10"></circle>
+        <polyline points="12 6 12 12 16 14"></polyline>
+      </svg>
+      <span>অনুমোদনের অপেক্ষায় থাকা লেখা</span>
+      <span class="admin-card-badge"><%= toBengaliNumber(pendingPosts.length) %> টি পোস্ট</span>
+    </div>
+  </div>
+
+  <div class="admin-table-wrap">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>শিরোনাম ও সারসংক্ষেপ</th>
+          <th>লেখক ও ইমেইল</th>
+          <th>বিভাগ</th>
+          <th>জমা দেওয়ার সময়</th>
+          <th style="text-align: right; min-width: 200px;">সিদ্ধান্ত</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (pendingPosts && pendingPosts.length > 0) { %>
+          <% pendingPosts.forEach(p => { %>
+            <tr>
+              <td>
+                <div class="post-title-cell">
+                  <a href="/admin/posts/<%= p.id %>/edit" title="লেখাটি দেখে এডিট করুন">
+                    <%= p.title %>
+                  </a>
+                </div>
+                <% if (p.excerpt) { %>
+                  <div style="font-size: 15px; color: var(--admin-text-sub); margin-top: 4px; line-height: 1.5; max-width: 360px;">
+                    <%= p.excerpt %>
+                  </div>
+                <% } %>
+              </td>
+              <td>
+                <div class="author-cell">
+                  <div class="author-mini-avatar">
+                    <%= p.author_name ? p.author_name.charAt(0) : 'ল' %>
+                  </div>
+                  <div class="author-cell-info">
+                    <span class="author-name"><%= p.author_name %></span>
+                    <span class="author-email"><%= p.author_email %></span>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <span class="category-pill"><%= p.category_name || 'অন্য সাহিত্য' %></span>
+              </td>
+              <td style="white-space: nowrap; color: var(--admin-text-muted); font-size: 16px;">
+                <%= formatBengaliDate(p.created_at) %>
+              </td>
+              <td>
+                <div class="actions-group" style="justify-content: flex-end;">
+                  <!-- Edit link -->
+                  <a href="/admin/posts/<%= p.id %>/edit" class="btn-table-action" style="background: #e0f2fe; color: #0284c7;" title="সম্পাদনা করুন">
+                    এডিট
+                  </a>
+
+                  <!-- Approve form -->
+                  <form action="/admin/post/<%= p.id %>/approve" method="POST" style="display: inline;" onsubmit="return confirm('লেখাটি কি অনুমোদন ও পাবলিশ করতে চান?');">
+                    <button type="submit" class="btn-table-action btn-approve">
+                      ✓ এপ্রুভ
+                    </button>
+                  </form>
+
+                  <!-- Reject form -->
+                  <form action="/admin/post/<%= p.id %>/reject" method="POST" style="display: inline;" onsubmit="return confirm('লেখাটি রিজেক্ট করে ড্রাফট হিসেবে সংরক্ষণ করতে চান?');">
+                    <button type="submit" class="btn-table-action btn-reject">
+                      ✕ রিজেক্ট
+                    </button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          <% }) %>
+        <% } else { %>
+          <tr>
+            <td colspan="5">
+              <div class="admin-empty-state">
+                <div class="empty-icon" style="color: #10b981; background: #ecfdf5;">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                </div>
+                <div class="empty-title">অনুমোদনের অপেক্ষায় কোনো লেখা নেই!</div>
+                <div class="empty-desc">সব লেখকের লেখা ইতিমধ্যে অনুমোদিত বা পর্যালোচিত হয়ে গেছে।</div>
+              </div>
+            </td>
+          </tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<%- include('partials/admin_layout_end') %>

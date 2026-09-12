@@ -1,0 +1,214 @@
+<%- include('partials/admin_layout_start', { 
+  pageTitle: 'সকল লেখা পরিচালনা', 
+  pageBreadcrumb: 'পোস্ট তালিকা',
+  topbarButton: { text: '+ নতুন পোস্ট লিখুন', url: '/admin/posts/new' }
+}) %>
+
+<!-- Filter Bar & Tabs -->
+<div class="admin-card" style="margin-bottom: 20px;">
+  <div style="padding: 16px 20px; display: flex; flex-wrap: wrap; gap: 16px; align-items: center; justify-content: space-between;">
+    <!-- Status Tabs -->
+    <div style="display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px;">
+      <a href="/admin/posts?status=all&category=<%= categoryFilter %>&q=<%= searchQuery %>" 
+         class="btn-view-site" 
+         style="<%= statusFilter === 'all' ? 'background: var(--admin-primary); color: #fff; border-color: var(--admin-primary);' : '' %>">
+        সকল লেখা (<%= toBengaliNumber(counts.all) %>)
+      </a>
+      <a href="/admin/posts?status=publish&category=<%= categoryFilter %>&q=<%= searchQuery %>" 
+         class="btn-view-site" 
+         style="<%= statusFilter === 'publish' ? 'background: var(--admin-primary); color: #fff; border-color: var(--admin-primary);' : '' %>">
+        প্রকাশিত (<%= toBengaliNumber(counts.publish) %>)
+      </a>
+      <a href="/admin/posts?status=pending&category=<%= categoryFilter %>&q=<%= searchQuery %>" 
+         class="btn-view-site" 
+         style="<%= statusFilter === 'pending' ? 'background: #f59e0b; color: #fff; border-color: #f59e0b;' : '' %>">
+        পেন্ডিং (<%= toBengaliNumber(counts.pending) %>)
+      </a>
+      <a href="/admin/posts?status=draft&category=<%= categoryFilter %>&q=<%= searchQuery %>" 
+         class="btn-view-site" 
+         style="<%= statusFilter === 'draft' ? 'background: #64748b; color: #fff; border-color: #64748b;' : '' %>">
+        ড্রাফট (<%= toBengaliNumber(counts.draft) %>)
+      </a>
+    </div>
+
+    <!-- Category Filter & Search Form -->
+    <form action="/admin/posts" method="GET" style="display: flex; gap: 10px; flex-wrap: wrap;">
+      <input type="hidden" name="status" value="<%= statusFilter %>">
+
+      <select name="category" class="admin-form-select" style="width: auto; padding: 8px 14px; font-size: 16px;" onchange="this.form.submit()">
+        <option value="all">সকল বিভাগ</option>
+        <% if (categories && categories.length) { %>
+          <% categories.forEach(c => { %>
+            <option value="<%= c.id %>" <%= categoryFilter == c.id ? 'selected' : '' %>><%= c.name %></option>
+          <% }) %>
+        <% } %>
+      </select>
+
+      <div style="display: flex; gap: 6px;">
+        <input 
+          type="text" 
+          name="q" 
+          value="<%= searchQuery %>" 
+          class="admin-form-input" 
+          placeholder="শিরোনাম বা লেখক খুঁজুন..." 
+          style="width: 220px; padding: 8px 14px; font-size: 16px;"
+        >
+        <button type="submit" class="btn-view-site" style="padding: 8px 16px; font-size: 16px;">অনুসন্ধান</button>
+        <% if (searchQuery || categoryFilter !== 'all' || statusFilter !== 'all') { %>
+          <a href="/admin/posts" class="btn-view-site" style="padding: 8px 14px; color: #dc2626; font-size: 16px;" title="ফিল্টার রিসেট">✕</a>
+        <% } %>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Posts Table Card -->
+<div class="admin-card">
+  <div class="admin-card-header">
+    <div class="admin-card-title">
+      <span>লেখার তালিকা</span>
+      <span class="admin-card-badge">মোট <%= toBengaliNumber(totalFiltered) %> টি</span>
+    </div>
+  </div>
+
+  <div class="admin-table-wrap">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th style="width: 50px;">ছবি</th>
+          <th>শিরোনাম ও সারসংক্ষেপ</th>
+          <th>লেখক</th>
+          <th>বিভাগ</th>
+          <th>পাঠক</th>
+          <th>স্ট্যাটাস</th>
+          <th>তারিখ</th>
+          <th style="text-align: right; min-width: 140px;">অ্যাকশন</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (posts && posts.length > 0) { %>
+          <% posts.forEach(p => { %>
+            <tr>
+              <td>
+                <% if (p.featured_image) { %>
+                  <img src="<%= p.featured_image %>" alt="" style="width: 44px; height: 44px; object-fit: cover; border-radius: 8px; border: 1px solid #e2e8f0;">
+                <% } else { %>
+                  <div style="width: 44px; height: 44px; border-radius: 8px; background: #f1f5f9; display: flex; align-items: center; justify-content: center; color: #94a3b8; font-size: 18px;">
+                    📝
+                  </div>
+                <% } %>
+              </td>
+              <td>
+                <div class="post-title-cell">
+                  <a href="/admin/posts/<%= p.id %>/edit">
+                    <%= p.title %>
+                  </a>
+                </div>
+                <% if (p.excerpt) { %>
+                  <div style="font-size: 15px; color: var(--admin-text-sub); margin-top: 4px; max-width: 320px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                    <%= p.excerpt %>
+                  </div>
+                <% } %>
+              </td>
+              <td>
+                <div class="author-cell">
+                  <div class="author-mini-avatar">
+                    <%= p.author_name ? p.author_name.charAt(0) : 'ল' %>
+                  </div>
+                  <div class="author-cell-info">
+                    <span class="author-name"><%= p.author_name || 'লেখক' %></span>
+                    <span class="author-email">@<%= p.author_username || 'user' %></span>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <span class="category-pill"><%= p.category_name || 'অন্যান্য' %></span>
+              </td>
+              <td style="font-weight: 600; color: var(--admin-text-muted);">
+                <%= toBengaliNumber(p.views || 0) %>
+              </td>
+              <td>
+                <% if (p.status === 'publish') { %>
+                  <span class="status-badge published">প্রকাশিত</span>
+                <% } else if (p.status === 'pending') { %>
+                  <span class="status-badge pending">পেন্ডিং</span>
+                <% } else { %>
+                  <span class="status-badge" style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1;">ড্রাফট</span>
+                <% } %>
+              </td>
+              <td style="white-space: nowrap; color: var(--admin-text-muted); font-size: 16px;">
+                <%= formatBengaliDate(p.published_at || p.created_at) %>
+              </td>
+              <td>
+                <div class="actions-group" style="justify-content: flex-end;">
+                  <!-- Live Preview Link (if published) -->
+                  <% if (p.status === 'publish') { %>
+                    <a href="/<%= p.category_slug || 'literature' %>/<%= p.slug %>" target="_blank" class="btn-table-action" style="background: #f1f5f9; color: #334155;" title="সাইটে দেখুন">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                        <polyline points="15 3 21 3 21 9"></polyline>
+                        <line x1="10" y1="14" x2="21" y2="3"></line>
+                      </svg>
+                    </a>
+                  <% } %>
+
+                  <!-- Edit Action -->
+                  <a href="/admin/posts/<%= p.id %>/edit" class="btn-table-action" style="background: #e0f2fe; color: #0284c7;" title="এডিট করুন">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                    </svg>
+                    এডিট
+                  </a>
+
+                  <!-- Delete Action -->
+                  <form action="/admin/posts/<%= p.id %>/delete" method="POST" style="display: inline;" onsubmit="return confirm('আপনি কি নিশ্চিত যে এই লেখাটি চিরতরে মুছে ফেলতে চান?');">
+                    <button type="submit" class="btn-table-action btn-reject" title="ডিলিট করুন">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                      </svg>
+                    </button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          <% }) %>
+        <% } else { %>
+          <tr>
+            <td colspan="8">
+              <div class="admin-empty-state">
+                <div class="empty-icon">📝</div>
+                <div class="empty-title">কোনো লেখা পাওয়া যায়নি</div>
+                <div class="empty-desc">অনুসন্ধান বা ফিল্টারের সাথে মিলে এমন কোনো পোস্ট ডাটাবেসে নেই।</div>
+              </div>
+            </td>
+          </tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  <% if (totalPages > 1) { %>
+    <div style="padding: 16px 24px; border-top: 1px solid var(--admin-border); display: flex; align-items: center; justify-content: space-between;">
+      <span style="font-size: 16px; color: var(--admin-text-muted);">
+        পৃষ্ঠা <%= toBengaliNumber(page) %> / <%= toBengaliNumber(totalPages) %>
+      </span>
+      <div style="display: flex; gap: 6px;">
+        <% if (page > 1) { %>
+          <a href="/admin/posts?status=<%= statusFilter %>&category=<%= categoryFilter %>&q=<%= searchQuery %>&page=<%= page - 1 %>" class="btn-view-site" style="padding: 8px 14px; font-size: 16px;">
+            &larr; পূর্ববর্তী
+          </a>
+        <% } %>
+        <% if (page < totalPages) { %>
+          <a href="/admin/posts?status=<%= statusFilter %>&category=<%= categoryFilter %>&q=<%= searchQuery %>&page=<%= page + 1 %>" class="btn-view-site" style="padding: 8px 14px; font-size: 16px;">
+            পরবর্তী &rarr;
+          </a>
+        <% } %>
+      </div>
+    </div>
+  <% } %>
+</div>
+
+<%- include('partials/admin_layout_end') %>

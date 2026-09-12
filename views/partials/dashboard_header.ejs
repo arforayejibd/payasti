@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#075603">
+
+  <!-- Favicons -->
+  <link rel="icon" href="/images/favicon-32x32.png" sizes="32x32">
+  <link rel="icon" href="/images/favicon-192x192.png" sizes="192x192">
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+
+  <title><%= typeof seo !== 'undefined' && seo.title ? seo.title : 'পয়স্তি লেখক প্যানেল' %></title>
+  <meta name="robots" content="noindex, nofollow">
+
+  <!-- Core & Dashboard Stylesheets -->
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+</head>
+<body class="dashboard-body">
+
+<!-- Simple, Elegant Dashboard Topbar -->
+<header class="dashboard-topbar">
+  <div class="topbar-left">
+    <a href="/author/dashboard" class="topbar-brand">
+      <img src="/images/Payasti-logo.png" alt="পয়স্তি" class="topbar-logo-img">
+      <span class="topbar-divider">|</span>
+      <span class="topbar-panel-title">লেখক প্যানেল</span>
+    </a>
+  </div>
+
+  <div class="topbar-right">
+    <a href="/" class="topbar-site-link" target="_blank" title="মূল ওয়েবসাইট দেখুন">
+      মূল ওয়েবসাইট &raquo;
+    </a>
+
+    <a href="/author/new-post" class="topbar-btn-write">
+      <span>+</span> নতুন লেখা
+    </a>
+
+    <a href="/author/profile" class="topbar-profile-link" title="প্রোফাইল সম্পাদন">
+      <% if (user && user.avatar) { %>
+        <img src="<%= user.avatar %>" alt="<%= user.display_name %>" class="topbar-avatar-img">
+      <% } else { %>
+        <div class="topbar-avatar-circle">
+          <%= (user && user.display_name) ? user.display_name.charAt(0) : 'প' %>
+        </div>
+      <% } %>
+    </a>
+  </div>
+</header>
+
+<div class="dashboard-wrapper">

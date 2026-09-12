@@ -1,0 +1,95 @@
+<%- include('partials/admin_layout_start', { 
+  pageTitle: 'পাঠকদের মন্তব্য পরিচালনা (Comments)', 
+  pageBreadcrumb: 'Comments'
+}) %>
+
+<div class="admin-card">
+  <div class="admin-card-header">
+    <div class="admin-card-title">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--admin-info);">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+      </svg>
+      <span>সকল মন্তব্য</span>
+      <span class="admin-card-badge"><%= toBengaliNumber(comments.length) %> টি</span>
+    </div>
+  </div>
+
+  <div class="admin-table-wrap">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>মন্তব্যকারী</th>
+          <th>মন্তব্য</th>
+          <th>লেখার শিরোনাম</th>
+          <th>তারিখ</th>
+          <th>স্ট্যাটাস</th>
+          <th style="text-align: right;">অ্যাকশন</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (comments && comments.length) { %>
+          <% comments.forEach(c => { %>
+            <tr>
+              <td>
+                <strong style="color: var(--admin-text-main); font-size: 18px;"><%= c.author_name %></strong>
+                <% if (c.author_email) { %>
+                  <div style="font-size: 14px; color: var(--admin-text-sub);"><%= c.author_email %></div>
+                <% } %>
+              </td>
+              <td style="max-width: 320px; font-size: 17px; color: #374151; line-height: 1.6;">
+                <%= c.content %>
+              </td>
+              <td>
+                <% if (c.post_title) { %>
+                  <a href="/post/<%= c.post_slug %>" target="_blank" style="color: var(--admin-primary); font-size: 16px; text-decoration: underline;">
+                    <%= c.post_title %>
+                  </a>
+                <% } else { %>
+                  <span style="color: #94a3b8;">-</span>
+                <% } %>
+              </td>
+              <td style="white-space: nowrap; font-size: 16px; color: var(--admin-text-muted);">
+                <%= formatBengaliDate(c.created_at) %>
+              </td>
+              <td>
+                <% if (c.status === 'approved') { %>
+                  <span class="status-badge published">অনুমোদিত</span>
+                <% } else { %>
+                  <span class="status-badge pending">পেন্ডিং</span>
+                <% } %>
+              </td>
+              <td>
+                <div class="actions-group" style="justify-content: flex-end;">
+                  <% if (c.status !== 'approved') { %>
+                    <form action="/admin/comments/<%= c.id %>/approve" method="POST" style="display: inline;">
+                      <button type="submit" class="btn-table-action btn-approve" title="অনুমোদন করুন">
+                        ✓
+                      </button>
+                    </form>
+                  <% } %>
+                  <form action="/admin/comments/<%= c.id %>/delete" method="POST" style="display: inline;" onsubmit="return confirm('মন্তব্যটি মুছে ফেলতে চান?');">
+                    <button type="submit" class="btn-table-action btn-reject" title="মুছে ফেলুন">
+                      ✕
+                    </button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          <% }) %>
+        <% } else { %>
+          <tr>
+            <td colspan="6">
+              <div class="admin-empty-state">
+                <div class="empty-icon">💬</div>
+                <div class="empty-title">বর্তমানে কোনো মন্তব্য নেই</div>
+                <div class="empty-desc">পাঠকেরা সাহিত্যকর্মের নিচে মন্তব্য করলে তা এখানে প্রদর্শিত হবে।</div>
+              </div>
+            </td>
+          </tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<%- include('partials/admin_layout_end') %>

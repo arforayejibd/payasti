@@ -1,0 +1,155 @@
+<%- include('partials/admin_layout_start', { 
+  pageTitle: 'পয়স্তি বই সম্ভার ব্যবস্থাপনা', 
+  pageBreadcrumb: 'বই সম্ভার'
+}) %>
+
+<!-- Add Book Form Card -->
+<div class="admin-card" style="margin-bottom: 28px;">
+  <div class="admin-card-header">
+    <div class="admin-card-title">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--admin-purple);">
+        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+      </svg>
+      <span>নতুন বই প্রকাশ ও যুক্ত করুন</span>
+    </div>
+  </div>
+
+  <div class="admin-card-body">
+    <form action="/admin/books/add" method="POST" enctype="multipart/form-data">
+      <div class="admin-form-grid">
+        <div class="admin-form-group">
+          <label class="admin-form-label">বইয়ের শিরোনাম *</label>
+          <input type="text" name="title" class="admin-form-input" required placeholder="বইয়ের নাম লিখুন">
+        </div>
+        <div class="admin-form-group">
+          <label class="admin-form-label">লেখকের নাম *</label>
+          <input type="text" name="author_name" class="admin-form-input" required placeholder="লেখকের নাম লিখুন">
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
+        <div class="admin-form-group">
+          <label class="admin-form-label">গায়ের মূল্য (যেমন: ৩২০ টাকা)</label>
+          <input type="text" name="regular_price" class="admin-form-input" placeholder="৩২০ টাকা">
+        </div>
+        <div class="admin-form-group">
+          <label class="admin-form-label">ছাড়ের বিক্রয় মূল্য *</label>
+          <input type="text" name="discounted_price" class="admin-form-input" required placeholder="২২০ টাকা">
+        </div>
+        <div class="admin-form-group">
+          <label class="admin-form-label">প্রচ্ছদ ছবি</label>
+          <div class="payasti-image-dropzone" data-name="cover_image" data-prompt="বইয়ের কভার ছবি ড্র্যাগ করে ছাড়ুন" data-hint="ক্লিক করে মিডিয়া লাইব্রেরি থেকে ছবি বাছুন"></div>
+        </div>
+      </div>
+
+      <div class="admin-form-group">
+        <label class="admin-form-label">রকমারি / অনলাইন অর্ডার লিংক</label>
+        <input type="url" name="order_url" class="admin-form-input" placeholder="https://www.rokomari.com/book/...">
+      </div>
+
+      <div class="admin-form-group">
+        <label class="admin-form-label">বইয়ের সংক্ষিপ্ত পরিচিতি / বিবরণ</label>
+        <textarea name="description" class="admin-form-textarea" rows="3" placeholder="বই সম্পর্কিত সংক্ষিপ্ত তথ্য..."></textarea>
+      </div>
+
+      <div style="text-align: right;">
+        <button type="submit" class="btn-new-action" style="padding: 10px 24px;">
+          + বইটি যুক্ত করুন
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Published Books List -->
+<div class="admin-card">
+  <div class="admin-card-header">
+    <div class="admin-card-title">
+      <span>বর্তমান প্রকাশিত বইসমূহ</span>
+      <span class="admin-card-badge"><%= toBengaliNumber(books.length) %> টি বই</span>
+    </div>
+  </div>
+
+  <div class="admin-table-wrap">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th style="width: 60px;">প্রচ্ছদ</th>
+          <th>বইয়ের শিরোনাম</th>
+          <th>লেখক</th>
+          <th>মূল্য</th>
+          <th>অর্ডার লিংক</th>
+          <th style="text-align: right;">অ্যাকশন</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (books && books.length > 0) { %>
+          <% books.forEach(b => { %>
+            <tr>
+              <td>
+                <% if (b.cover_image) { %>
+                  <img src="<%= b.cover_image %>" alt="<%= b.title %>" style="width: 44px; height: 60px; object-fit: cover; border-radius: 4px; border: 1px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0,0,0,0.08);">
+                <% } else { %>
+                  <div style="width: 44px; height: 60px; background: #f1f5f9; display: flex; align-items: center; justify-content: center; font-size: 20px; border-radius: 4px;">📖</div>
+                <% } %>
+              </td>
+              <td>
+                <div class="post-title-cell">
+                  <%= b.title %>
+                </div>
+                <% if (b.description) { %>
+                  <div style="font-size: 15px; color: var(--admin-text-sub); margin-top: 4px; max-width: 320px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                    <%= b.description %>
+                  </div>
+                <% } %>
+              </td>
+              <td>
+                <span style="font-weight: 600; color: var(--admin-text-main); font-size: 18px;"><%= b.author_name %></span>
+              </td>
+              <td>
+                <% if (b.regular_price) { %>
+                  <span style="color: #dc2626; text-decoration: line-through; font-size: 15px; margin-right: 6px;"><%= b.regular_price %></span>
+                <% } %>
+                <strong style="color: #15803d; font-size: 18px;"><%= b.discounted_price %></strong>
+              </td>
+              <td>
+                <% if (b.order_url) { %>
+                  <a href="<%= b.order_url %>" target="_blank" class="btn-view-site" style="padding: 6px 12px; font-size: 14px;">
+                    অর্ডার লিংক &nearr;
+                  </a>
+                <% } else { %>
+                  <span style="color: #94a3b8;">-</span>
+                <% } %>
+              </td>
+              <td>
+                <div class="actions-group" style="justify-content: flex-end;">
+                  <form action="/admin/books/<%= b.id %>/delete" method="POST" style="display: inline;" onsubmit="return confirm('বইটি কি ডিলিট করতে চান?');">
+                    <button type="submit" class="btn-table-action btn-reject" title="বইটি ডিলিট করুন">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                      </svg>
+                    </button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          <% }) %>
+        <% } else { %>
+          <tr>
+            <td colspan="6">
+              <div class="admin-empty-state">
+                <div class="empty-icon">📚</div>
+                <div class="empty-title">বর্তমানে কোনো বই যুক্ত নেই</div>
+                <div class="empty-desc">উপরের ফর্ম ব্যবহার করে নতুন বই প্রকাশ করুন।</div>
+              </div>
+            </td>
+          </tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<%- include('partials/admin_layout_end') %>

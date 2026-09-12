@@ -1,0 +1,72 @@
+<%- include('partials/header') %>
+
+<main id='inner_content-37-6' class='ct-inner-content page-main-content'>
+  <section id="section-11-3640" class=" ct-section" >
+    <div class="ct-section-inner-wrap">
+      <div id="div_block-14-3640" class="ct-div-block" >
+        <div id="text_block-9-3640" class="ct-text-block" >পয়স্তিতে যারা লিখেছেন<br></div>
+        <div id="text_block-13-3640" class="ct-text-block" >পয়স্তি গর্বের সাথে উপস্থাপন করছে প্রতিভাবান লেখকের একটি বিশাল দল, যারা তাঁদের জ্ঞান এবং অভিজ্ঞতার মাধ্যমে পয়স্তিকে সমৃদ্ধ করছেন। আমাদের লেখকগণ সাহিত্যে অত্যন্ত দক্ষ এবং মানসম্পন্ন লেখালেখি করেন। প্রতিটি লেখকের উচ্চমানের কবিতা, গল্প, প্রবন্ধসহ বিভিন্ন ধরনের সাহিত্য পয়স্তিতে প্রকাশ করা হয়। আমাদের লেখক পেজের মাধ্যমে আপনি সহজেই আপনার পছন্দের লেখকদের সর্বশেষ কবিতা, গল্প, প্রবন্ধ এবং প্রোফাইলে ভিজিট করতে পারবেন। প্রতিটি লেখকের প্রোফাইলের সাথে যুক্ত রয়েছে তাদের শ্রেষ্ঠ সাহিত্যগুলি।<br></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="section-2-3877" class=" ct-section" >
+    <div class="ct-section-inner-wrap">
+      <div id="code_block-4-3880" class="ct-code-block" >
+        <form class="author-search-form" action="/লেখক-তালিকা/" method="get">
+          <input class="author-search" type="text" name="author_search" id="author_search" placeholder="লেখকের নাম লিখুন" value="<%= searchQuery || '' %>">
+          <input class="author-search search-action" type="submit" value="অনুসন্ধান করুন">
+          <span class="total-authors">মোট লেখক: <%= toBengaliNumber(totalAuthorsOverall) %></span>
+        </form>
+
+        <% if (authors && authors.length) { %>
+          <ul class="author-list">
+            <% authors.forEach(author => { %>
+              <li class="single-author-repeat">
+                <img class="author-repeated-img" src="<%= author.avatar %>" alt="<%= author.display_name %>">
+                <div class="authors-meta">
+                  <span class="author-repeated-name"><a href="/author/<%= encodeURIComponent(author.nicename || author.username) %>/"><%= author.display_name %></a></span>
+                  <ul class="author-posts-list">
+                    <% if (author.recentPosts && author.recentPosts.length) { %>
+                      <% author.recentPosts.forEach(post => { %>
+                        <li><a href="/post/<%= encodeURIComponent(post.slug) %>"><%= post.title %></a></li>
+                      <% }) %>
+                    <% } %>
+                  </ul>
+                </div>
+              </li>
+            <% }) %>
+          </ul>
+        <% } else { %>
+          <div class="no-authors-found">
+            <p>"<%= searchQuery %>" নামের কোনো লেখক খুঁজে পাওয়া যায়নি।</p>
+          </div>
+        <% } %>
+
+        <% if (pagination && pagination.totalPages > 1) { %>
+          <div class="pagination">
+            <% if (pagination.currentPage > 1) { %>
+              <a class="prev page-numbers" href="<%= pagination.pageUrl(pagination.currentPage - 1) %>">পূর্ববর্তী</a>
+            <% } %>
+
+            <% for (let i = 1; i <= pagination.totalPages; i++) { %>
+              <% if (i === pagination.currentPage) { %>
+                <span aria-current="page" class="page-numbers current"><%= toBengaliNumber(i) %></span>
+              <% } else if (i === 1 || i === pagination.totalPages || (i >= pagination.currentPage - 2 && i <= pagination.currentPage + 2)) { %>
+                <a class="page-numbers" href="<%= pagination.pageUrl(i) %>"><%= toBengaliNumber(i) %></a>
+              <% } else if (i === pagination.currentPage - 3 || i === pagination.currentPage + 3) { %>
+                <span class="page-numbers dots">&hellip;</span>
+              <% } %>
+            <% } %>
+
+            <% if (pagination.currentPage < pagination.totalPages) { %>
+              <a class="next page-numbers" href="<%= pagination.pageUrl(pagination.currentPage + 1) %>">পরবর্তী</a>
+            <% } %>
+          </div>
+        <% } %>
+      </div>
+    </div>
+  </section>
+</main>
+
+<%- include('partials/footer') %>
