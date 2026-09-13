@@ -1,70 +1,70 @@
 <%- include('partials/header') %>
 
-<main id='inner_content-37-6' class='ct-inner-content page-main-content'>
-  <section id="section-11-3640" class=" ct-section" >
-    <div class="ct-section-inner-wrap">
-      <div id="div_block-14-3640" class="ct-div-block" >
-        <div id="text_block-9-3640" class="ct-text-block" >পয়স্তিতে যারা লিখেছেন<br></div>
-        <div id="text_block-13-3640" class="ct-text-block" >পয়স্তি গর্বের সাথে উপস্থাপন করছে প্রতিভাবান লেখকের একটি বিশাল দল, যারা তাঁদের জ্ঞান এবং অভিজ্ঞতার মাধ্যমে পয়স্তিকে সমৃদ্ধ করছেন। আমাদের লেখকগণ সাহিত্যে অত্যন্ত দক্ষ এবং মানসম্পন্ন লেখালেখি করেন। প্রতিটি লেখকের উচ্চমানের কবিতা, গল্প, প্রবন্ধসহ বিভিন্ন ধরনের সাহিত্য পয়স্তিতে প্রকাশ করা হয়। আমাদের লেখক পেজের মাধ্যমে আপনি সহজেই আপনার পছন্দের লেখকদের সর্বশেষ কবিতা, গল্প, প্রবন্ধ এবং প্রোফাইলে ভিজিট করতে পারবেন। প্রতিটি লেখকের প্রোফাইলের সাথে যুক্ত রয়েছে তাদের শ্রেষ্ঠ সাহিত্যগুলি।<br></div>
+<main class="page-main-content">
+  <section class="site-section authors-hero-section" style="padding: 40px 0 20px 0;">
+    <div class="site-container">
+      <div class="authors-intro-card" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 32px 28px; box-shadow: 0 4px 16px rgba(0,0,0,0.03);">
+        <h1 class="page-title" style="margin: 0 0 12px 0; font-size: 32px; font-weight: 800; color: var(--text-primary);">পয়স্তিতে যারা লিখেছেন</h1>
+        <p style="font-size: 18px; font-weight: 500; color: var(--text-secondary); line-height: 1.85; margin: 0;">
+          পয়স্তি গর্বের সাথে উপস্থাপন করছে প্রতিভাবান লেখকের একটি বিশাল দল, যারা তাঁদের জ্ঞান এবং অভিজ্ঞতার মাধ্যমে পয়স্তিকে সমৃদ্ধ করছেন। আমাদের লেখকগণ সাহিত্যে অত্যন্ত দক্ষ এবং মানসম্পন্ন লেখালেখি করেন। প্রতিটি লেখকের উচ্চমানের কবিতা, গল্প, প্রবন্ধসহ বিভিন্ন ধরনের সাহিত্য পয়স্তিতে প্রকাশ করা হয়।
+        </p>
       </div>
     </div>
   </section>
 
-  <section id="section-2-3877" class=" ct-section" >
-    <div class="ct-section-inner-wrap">
-      <div id="code_block-4-3880" class="ct-code-block" >
-        <form class="author-search-form" action="/লেখক-তালিকা/" method="get">
-          <input class="author-search" type="text" name="author_search" id="author_search" placeholder="লেখকের নাম লিখুন" value="<%= searchQuery || '' %>">
-          <input class="author-search search-action" type="submit" value="অনুসন্ধান করুন">
-          <span class="total-authors">মোট লেখক: <%= toBengaliNumber(totalAuthorsOverall) %></span>
+  <section class="site-section authors-list-section" style="padding: 20px 0 60px 0;">
+    <div class="site-container">
+      <div class="author-search-bar" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; margin-bottom: 30px;">
+        <form class="author-search-form" action="/লেখক-তালিকা/" method="get" style="display: flex; gap: 10px; flex: 1; max-width: 500px;">
+          <input class="form-input author-search-input" type="text" name="author_search" id="author_search" placeholder="লেখকের নাম লিখুন..." value="<%= searchQuery || '' %>" style="flex: 1; padding: 10px 16px; border: 1px solid var(--border-color); border-radius: 8px; font-family: inherit; font-size: 15px; background: var(--bg-card); color: var(--text-primary);">
+          <button type="submit" class="btn-primary" style="padding: 10px 20px; background: var(--accent-primary); color: #fff; border: none; border-radius: 8px; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer;">অনুসন্ধান</button>
         </form>
-
-        <% if (authors && authors.length) { %>
-          <ul class="author-list">
-            <% authors.forEach(author => { %>
-              <li class="single-author-repeat">
-                <img class="author-repeated-img" src="<%= author.avatar %>" alt="<%= author.display_name %>">
-                <div class="authors-meta">
-                  <span class="author-repeated-name"><a href="/author/<%= encodeURIComponent(author.nicename || author.username) %>/"><%= author.display_name %></a></span>
-                  <ul class="author-posts-list">
-                    <% if (author.recentPosts && author.recentPosts.length) { %>
-                      <% author.recentPosts.forEach(post => { %>
-                        <li><a href="/post/<%= encodeURIComponent(post.slug) %>"><%= post.title %></a></li>
-                      <% }) %>
-                    <% } %>
-                  </ul>
-                </div>
-              </li>
-            <% }) %>
-          </ul>
-        <% } else { %>
-          <div class="no-authors-found">
-            <p>"<%= searchQuery %>" নামের কোনো লেখক খুঁজে পাওয়া যায়নি।</p>
-          </div>
-        <% } %>
-
-        <% if (pagination && pagination.totalPages > 1) { %>
-          <div class="pagination">
-            <% if (pagination.currentPage > 1) { %>
-              <a class="prev page-numbers" href="<%= pagination.pageUrl(pagination.currentPage - 1) %>">পূর্ববর্তী</a>
-            <% } %>
-
-            <% for (let i = 1; i <= pagination.totalPages; i++) { %>
-              <% if (i === pagination.currentPage) { %>
-                <span aria-current="page" class="page-numbers current"><%= toBengaliNumber(i) %></span>
-              <% } else if (i === 1 || i === pagination.totalPages || (i >= pagination.currentPage - 2 && i <= pagination.currentPage + 2)) { %>
-                <a class="page-numbers" href="<%= pagination.pageUrl(i) %>"><%= toBengaliNumber(i) %></a>
-              <% } else if (i === pagination.currentPage - 3 || i === pagination.currentPage + 3) { %>
-                <span class="page-numbers dots">&hellip;</span>
-              <% } %>
-            <% } %>
-
-            <% if (pagination.currentPage < pagination.totalPages) { %>
-              <a class="next page-numbers" href="<%= pagination.pageUrl(pagination.currentPage + 1) %>">পরবর্তী</a>
-            <% } %>
-          </div>
-        <% } %>
+        <span class="badge-pill" style="font-size: 15px; color: var(--accent-primary); font-weight: 700; background: rgba(6, 130, 0, 0.08); border: 1px solid rgba(6, 130, 0, 0.18); padding: 8px 18px; border-radius: 20px;">
+          মোট লেখক: <%= toBengaliNumber(totalAuthorsOverall) %> জন
+        </span>
       </div>
+
+      <% if (authors && authors.length) { %>
+        <div class="authors-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px;">
+          <% authors.forEach(author => { %>
+            <div class="author-card" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); display: flex; gap: 18px; align-items: flex-start;">
+              <a href="/author/<%= encodeURIComponent(author.nicename || author.username) %>/" style="flex-shrink: 0;">
+                <img src="<%= author.avatar %>" alt="<%= author.display_name %>" style="width: 64px; height: 64px; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent-primary);">
+              </a>
+              <div class="author-meta" style="flex: 1; min-width: 0;">
+                <h3 style="margin: 0 0 6px 0; font-size: 18px;">
+                  <a href="/author/<%= encodeURIComponent(author.nicename || author.username) %>/" style="color: var(--text-primary); text-decoration: none; font-weight: 700;">
+                    <%= author.display_name %>
+                  </a>
+                </h3>
+                <% if (author.recentPosts && author.recentPosts.length) { %>
+                  <ul class="author-recent-posts" style="margin: 8px 0 0 0; padding-left: 18px; font-size: 13.5px; color: var(--text-secondary); line-height: 1.6;">
+                    <% author.recentPosts.forEach(post => { %>
+                      <li style="margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                        <a href="/post/<%= encodeURIComponent(post.slug) %>" style="color: var(--text-secondary); text-decoration: none;">
+                          <%= post.title %>
+                        </a>
+                      </li>
+                    <% }) %>
+                  </ul>
+                <% } else { %>
+                  <p style="margin: 4px 0 0 0; font-size: 13px; color: var(--text-muted);">কোনো সাম্প্রতিক লেখা নেই</p>
+                <% } %>
+              </div>
+            </div>
+          <% }) %>
+        </div>
+      <% } else { %>
+        <div class="no-authors-found" style="text-align: center; padding: 60px 0; color: var(--text-muted);">
+          <p style="font-size: 17px;">"<%= searchQuery %>" নামের কোনো লেখক খুঁজে পাওয়া যায়নি।</p>
+        </div>
+      <% } %>
+
+      <% if (pagination && pagination.totalPages > 1) { %>
+        <div style="margin-top: 40px;">
+          <%- include('partials/pagination', { pagination: pagination }) %>
+        </div>
+      <% } %>
     </div>
   </section>
 </main>

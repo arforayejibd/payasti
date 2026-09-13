@@ -2,7 +2,7 @@ const slugify = require('slugify');
 const bcrypt = require('bcryptjs');
 const db = require('../config/database');
 const { generateSeoMeta } = require('../middleware/seo');
-const { toBengaliNumber, formatBengaliDate, formatDuration } = require('../middleware/banglaDate');
+const { toBengaliNumber, formatBengaliDate, formatDuration, generateCleanExcerpt } = require('../middleware/banglaDate');
 const { SITE_NAME, TAGLINE, NAV_MENU, EDITORIAL_BOARD, CONTACT } = require('../config/constants');
 
 // Author Dashboard Overview (/author/dashboard)
@@ -124,7 +124,7 @@ exports.postNewPost = (req, res) => {
   // Auto-generate clean excerpt if blank
   let cleanExcerpt = (excerpt || '').trim();
   if (!cleanExcerpt) {
-    cleanExcerpt = content.replace(/<[^>]+>/g, '').trim().substring(0, 160) + '...';
+    cleanExcerpt = generateCleanExcerpt(content, 160);
   }
 
   // Insert post as 'pending' for admin review

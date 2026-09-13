@@ -1,6 +1,6 @@
 const db = require('../config/database');
 const { generateSeoMeta, getArticleSchema, getBreadcrumbSchema } = require('../middleware/seo');
-const { toBengaliNumber, formatBengaliDate } = require('../middleware/banglaDate');
+const { toBengaliNumber, formatBengaliDate, calculateReadingTime } = require('../middleware/banglaDate');
 const { SITE_NAME, TAGLINE, NAV_MENU, EDITORIAL_BOARD, CONTACT, CATEGORY_SLUG_MAP } = require('../config/constants');
 
 // Single Post Page
@@ -46,7 +46,7 @@ exports.getSinglePost = (req, res) => {
 
   // Fetch Related Posts (same category)
   const relatedPosts = db.prepare(`
-    SELECT p.id, p.title, p.slug, p.excerpt, p.published_at, p.views, p.category_id, p.subcategory_id,
+    SELECT p.id, p.title, p.slug, p.excerpt, p.content, p.published_at, p.views, p.category_id, p.subcategory_id,
            u.display_name AS author_name, u.nicename AS author_slug, u.avatar AS author_avatar,
            c.name AS category_name, c.slug AS category_slug
     FROM posts p
@@ -119,6 +119,8 @@ exports.getSinglePost = (req, res) => {
     tags,
     comments,
     relatedPosts,
+    readingTime: calculateReadingTime(post.content),
+    calculateReadingTime,
     seo,
     toBengaliNumber,
     formatBengaliDate,
@@ -218,7 +220,7 @@ exports.getCategoryPage = (req, res) => {
     WHERE p.status = 'publish'
   `;
   let postsQuery = `
-    SELECT DISTINCT p.id, p.title, p.slug, p.excerpt, p.published_at, p.views, p.category_id, p.subcategory_id,
+    SELECT DISTINCT p.id, p.title, p.slug, p.excerpt, p.content, p.published_at, p.views, p.category_id, p.subcategory_id,
            u.display_name AS author_name, u.nicename AS author_slug, u.avatar AS author_avatar,
            c.name AS category_name, c.slug AS category_slug,
            sc.name AS subcategory_name, sc.slug AS subcategory_slug
@@ -335,7 +337,7 @@ exports.searchPosts = (req, res) => {
   const totalPages = Math.ceil(totalPosts / limit);
 
   const posts = db.prepare(`
-    SELECT p.id, p.title, p.slug, p.excerpt, p.published_at, p.views, p.category_id, p.subcategory_id,
+    SELECT p.id, p.title, p.slug, p.excerpt, p.content, p.published_at, p.views, p.category_id, p.subcategory_id,
            u.display_name AS author_name, u.nicename AS author_slug, u.avatar AS author_avatar,
            c.name AS category_name, c.slug AS category_slug
     FROM posts p

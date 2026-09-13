@@ -21,7 +21,7 @@ exports.getHomePage = (req, res) => {
 
   // 2. Fetch Featured Posts (4 posts for the 4-column grid)
   const cardFields = `
-    p.id, p.title, p.slug, p.excerpt, p.published_at, p.views, p.category_id, p.subcategory_id,
+    p.id, p.title, p.slug, p.excerpt, p.content, p.published_at, p.views, p.category_id, p.subcategory_id,
     u.display_name AS author_name, u.nicename AS author_slug, u.avatar AS author_avatar,
     c.name AS category_name, c.slug AS category_slug
   `;

@@ -14,6 +14,14 @@ const adminRoutes = require('./routes/admin');
 const apiRoutes = require('./routes/api');
 const { NAV_MENU, EDITORIAL_BOARD, CONTACT } = require('./config/constants');
 const { generateSeoMeta } = require('./middleware/seo');
+const { 
+  toBengaliNumber, 
+  formatBengaliDate, 
+  formatDuration, 
+  formatCardExcerpt, 
+  renderArticleContent, 
+  calculateReadingTime 
+} = require('./middleware/banglaDate');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -64,14 +72,13 @@ app.use((req, res, next) => {
 // Global User / Auth state
 app.use(checkUser);
 
-const { toBengaliNumber, formatBengaliDate, formatDuration, formatCardExcerpt, renderArticleContent } = require('./middleware/banglaDate');
-
 // Attach helpers to app.locals for universal access in all views and sub-partials
 app.locals.toBengaliNumber = toBengaliNumber;
 app.locals.formatBengaliDate = formatBengaliDate;
 app.locals.formatDuration = formatDuration;
 app.locals.formatCardExcerpt = formatCardExcerpt;
 app.locals.renderArticleContent = renderArticleContent;
+app.locals.calculateReadingTime = calculateReadingTime;
 
 // Global view variables
 app.use((req, res, next) => {
@@ -84,6 +91,7 @@ app.use((req, res, next) => {
   res.locals.formatDuration = formatDuration;
   res.locals.formatCardExcerpt = formatCardExcerpt;
   res.locals.renderArticleContent = renderArticleContent;
+  res.locals.calculateReadingTime = calculateReadingTime;
   next();
 });
 

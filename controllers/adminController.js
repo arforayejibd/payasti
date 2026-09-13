@@ -4,7 +4,7 @@ const slugify = require('slugify');
 const bcrypt = require('bcryptjs');
 const db = require('../config/database');
 const { generateSeoMeta } = require('../middleware/seo');
-const { toBengaliNumber, formatBengaliDate } = require('../middleware/banglaDate');
+const { toBengaliNumber, formatBengaliDate, generateCleanExcerpt } = require('../middleware/banglaDate');
 
 // ==========================================
 // 1. DASHBOARD OVERVIEW
@@ -197,7 +197,7 @@ exports.postNewPost = (req, res) => {
 
   let cleanExcerpt = (excerpt || '').trim();
   if (!cleanExcerpt) {
-    cleanExcerpt = content.replace(/<[^>]+>/g, '').trim().substring(0, 160) + '...';
+    cleanExcerpt = generateCleanExcerpt(content, 160);
   }
 
   const postAuthorId = author_id ? parseInt(author_id) : req.user.id;
@@ -265,7 +265,7 @@ exports.postEditPost = (req, res) => {
 
   let cleanExcerpt = (excerpt || '').trim();
   if (!cleanExcerpt) {
-    cleanExcerpt = content.replace(/<[^>]+>/g, '').trim().substring(0, 160) + '...';
+    cleanExcerpt = generateCleanExcerpt(content, 160);
   }
 
   const postAuthorId = author_id ? parseInt(author_id) : existingPost.author_id;

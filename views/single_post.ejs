@@ -1,126 +1,147 @@
 <%- include('partials/header') %>
 
-<main class="page-main-content single-post-page-bg">
-  <div class="ct-section-inner-wrap single-post-layout-container" id="section-2-36">
+<main class="page-main-content single-post-page">
+  <div class="site-container article-layout-grid">
     <!-- Main Article Column (70%) -->
-    <article class="single-article-main-col" id="div_block-3-36">
-      <div id="div_block-286-36">
-        <div id="div_block-272-36">
-          <!-- Article Header -->
-          <div class="single-article-header" id="div_block-18-36">
-            <div class="single-article-author-top">
-              <a href="/author/<%= encodeURIComponent(post.author_slug || '') %>" class="single-article-author-name" id="text_block-417-36">
-                <%= author ? author.display_name : (post.author_name || 'পয়স্তি লেখক') %>
-              </a>
-            </div>
-            <h1 class="single-article-title" id="headline-5-36"><%= post.title %></h1>
+    <article class="article-main">
+      <div class="article-card-box">
+        <!-- Article Header -->
+        <header class="article-header">
+          <div class="article-meta-top">
+            <a href="/author/<%= encodeURIComponent(post.author_slug || '') %>" class="article-author-name">
+              <%= author ? author.display_name : (post.author_name || 'পয়স্তি লেখক') %>
+            </a>
+            <span class="header-meta-sep">•</span>
+            <span class="article-reading-time" title="আনুমানিক পাঠের সময়">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+              <%= typeof readingTime !== 'undefined' ? readingTime : calculateReadingTime(post.content) %>
+            </span>
           </div>
+          <h1 class="article-title"><%= post.title %></h1>
+        </header>
 
-          <!-- Featured Image (if available) -->
-          <% if (post.featured_image) { %>
-            <div class="single-article-featured-image-wrap">
-              <img src="<%= post.featured_image %>" alt="<%= post.title %>" class="single-article-featured-img">
+        <!-- Reader Controls Toolbar -->
+        <div class="reader-toolbar" id="readerToolbar" aria-label="পড়ার সুবিধা ও কন্ট্রোল">
+          <div class="reader-toolbar-left">
+            <span class="reader-toolbar-label">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
+              পড়ার সুবিধা
+            </span>
+          </div>
+          <div class="reader-toolbar-right">
+            <span class="reader-toolbar-label">হরফের আকার:</span>
+            <div class="reader-font-controls">
+              <button type="button" class="reader-font-btn" id="btnFontDec" title="ফন্ট ছোট করুন" aria-label="Decrease font size">A-</button>
+              <button type="button" class="reader-font-btn" id="btnFontReset" title="স্বাভাবিক আকার" aria-label="Reset font size">A</button>
+              <button type="button" class="reader-font-btn" id="btnFontInc" title="ফন্ট বড় করুন" aria-label="Increase font size">A+</button>
             </div>
+          </div>
+        </div>
+
+        <!-- Featured Image -->
+        <% if (post.featured_image) { %>
+          <div class="article-featured-image-wrap">
+            <img src="<%= post.featured_image %>" alt="<%= post.title %>" class="article-featured-img">
+          </div>
+        <% } %>
+
+        <!-- Article Body Text -->
+        <div class="article-content-body single-article-content-body">
+          <%- renderArticleContent(post.content) %>
+        </div>
+
+        <!-- Comments Area -->
+        <section class="article-comments-area" id="comments">
+          <h3 class="comments-title">মন্তব্য (<%= toBengaliNumber(comments.length) %>)</h3>
+          
+          <% if (comments && comments.length) { %>
+            <div class="comments-stream">
+              <% comments.forEach(comment => { %>
+                <div class="comment-item-box">
+                  <div class="comment-item-header">
+                    <strong class="comment-item-author"><%= comment.author_name %></strong>
+                    <span class="comment-item-date"><%= formatBengaliDate(comment.created_at) %></span>
+                  </div>
+                  <div class="comment-item-body"><%= comment.content %></div>
+                </div>
+              <% }) %>
+            </div>
+          <% } else { %>
+            <p class="no-comments-yet">এখনও কোনো মন্তব্য করা হয়নি। আপনার মূল্যবান মতামত জানান।</p>
           <% } %>
 
-          <!-- Article Body Text -->
-          <div class="single-article-content-body oxy-stock-content-styles" id="text_block-66-36">
-            <%- renderArticleContent(post.content) %>
-          </div>
-
-          <!-- Comments Area -->
-          <section class="single-post-comments-area" id="comments">
-            <h3 class="comments-title">মন্তব্য (<%= toBengaliNumber(comments.length) %>)</h3>
-            
-            <% if (comments && comments.length) { %>
-              <div class="comments-list-stream">
-                <% comments.forEach(comment => { %>
-                  <div class="comment-item-box">
-                    <div class="comment-item-header">
-                      <strong class="comment-item-author"><%= comment.author_name %></strong>
-                      <span class="comment-item-date"><%= formatBengaliDate(comment.created_at) %></span>
-                    </div>
-                    <div class="comment-item-body"><%= comment.content %></div>
-                  </div>
-                <% }) %>
+          <form action="/post/<%= encodeURIComponent(post.slug) %>/comment" method="POST" class="comment-submit-form">
+            <h4 class="comment-form-heading">একটি মন্তব্য লিখুন</h4>
+            <div class="comment-fields-grid">
+              <div class="comment-field-group">
+                <input type="text" name="author_name" placeholder="আপনার নাম *" required class="comment-text-input">
               </div>
-            <% } else { %>
-              <p class="no-comments-yet">এখনও কোনো মন্তব্য করা হয়নি। আপনার মূল্যবান মতামত জানান।</p>
-            <% } %>
-
-            <form action="/post/<%= encodeURIComponent(post.slug) %>/comment" method="POST" class="comment-submit-form" id="_comment_form-773-3859">
-              <h4 class="comment-form-heading">একটি মন্তব্য লিখুন</h4>
-              <div class="comment-fields-grid">
-                <div class="comment-field-group">
-                  <input type="text" name="author_name" placeholder="আপনার নাম *" required class="comment-text-input">
-                </div>
-                <div class="comment-field-group">
-                  <input type="email" name="author_email" placeholder="আপনার ইমেইল *" required class="comment-text-input">
-                </div>
+              <div class="comment-field-group">
+                <input type="email" name="author_email" placeholder="আপনার ইমেইল *" required class="comment-text-input">
               </div>
-              <div class="comment-field-group" style="margin-top: 14px;">
-                <textarea name="content" rows="4" placeholder="আপনার মূল্যবান মন্তব্য লিখুন..." required class="comment-textarea-input"></textarea>
-              </div>
-              <button type="submit" class="comment-btn-submit">মন্তব্য প্রকাশ করুন</button>
-            </form>
-          </section>
-        </div>
+            </div>
+            <div class="comment-field-group" style="margin-top: 14px;">
+              <textarea name="content" rows="4" placeholder="আপনার মূল্যবান মন্তব্য লিখুন..." required class="comment-textarea-input"></textarea>
+            </div>
+            <button type="submit" class="comment-btn-submit">মন্তব্য প্রকাশ করুন</button>
+          </form>
+        </section>
       </div>
     </article>
 
     <!-- Sidebar Column (30%) -->
-    <aside class="single-article-sidebar-col" id="div_block-4-36">
-      <div class="single-sidebar-widget" id="div_block-739-3859">
-        <!-- Author Box -->
-        <div class="sidebar-author-profile" id="div_block-762-3859">
-          <div class="sidebar-author-avatar-wrap" id="div_block-766-3859">
+    <aside class="article-sidebar">
+      <div class="sidebar-card-widget">
+        <!-- Author Profile -->
+        <div class="sidebar-author-profile">
+          <div class="sidebar-author-avatar-wrap">
             <% if (author && author.avatar) { %>
-              <img src="<%= author.avatar %>" alt="<%= author.display_name %>" class="sidebar-author-avatar-img" id="image-290-36">
+              <img src="<%= author.avatar %>" alt="<%= author.display_name %>" class="sidebar-author-avatar-img">
             <% } else { %>
-              <div class="sidebar-author-avatar-placeholder" id="image-290-36">
+              <div class="sidebar-author-avatar-placeholder">
                 <%= author && author.display_name ? author.display_name.charAt(0) : 'প' %>
               </div>
             <% } %>
           </div>
-          <div class="sidebar-author-info-wrap" id="div_block-767-3859">
-            <a href="/author/<%= encodeURIComponent(author.slug || author.username || '') %>" class="sidebar-author-name-link" id="text_block-387-36">
+          <div class="sidebar-author-info-wrap">
+            <a href="/author/<%= encodeURIComponent(author.slug || author.username || '') %>" class="sidebar-author-name-link">
               <%= author.display_name %>
             </a>
             <% if (author.bio) { %>
-              <div class="sidebar-author-bio-text" id="text_block-771-3859">
+              <div class="sidebar-author-bio-text">
                 <%= author.bio %>
               </div>
             <% } %>
           </div>
         </div>
 
-        <div class="devider" id="div_block-394-36"></div>
+        <div class="sidebar-divider"></div>
 
         <!-- Category -->
-        <div class="sidebar-meta-item sidebar-category-row">
-          <a href="/category/<%= encodeURIComponent(post.category_slug || '') %>" class="sidebar-category-link" id="text_block-8-36">
+        <div class="sidebar-meta-item">
+          <a href="/category/<%= encodeURIComponent(post.category_slug || '') %>" class="sidebar-category-link">
             <%= post.category_name || 'অন্য সাহিত্য' %>
           </a>
         </div>
 
         <!-- Views Count -->
-        <div class="sidebar-meta-item sidebar-views-row" id="div_block-69-36">
+        <div class="sidebar-meta-item sidebar-views-row">
           <svg class="sidebar-meta-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512" width="16" height="16" fill="currentColor">
             <path d="M288 32c-80.8 0-145.5 36.8-192.6 80.6C48.6 156 17.3 208 2.5 243.7c-3.3 7.9-3.3 16.7 0 24.6C17.3 304 48.6 356 95.4 399.4C142.5 443.2 207.2 480 288 480s145.5-36.8 192.6-80.6c46.9-43.5 78.1-95.4 93-131.1 3.3-7.9 3.3-16.7 0-24.6-14.8-35.7-46.1-87.7-93-131.1C433.5 68.8 368.8 32 288 32zM144 256a144 144 0 1 1 288 0 144 144 0 1 1 -288 0zm144-64c0 35.3-28.7 64-64 64c-7.1 0-13.9-1.2-20.3-3.3c-5.5-1.8-11.9 1.6-11.7 7.4c.3 6.9 1.3 13.8 3.2 20.7c13.7 48.4 63.6 77.2 112 63.5s77.2-63.6 63.5-112c-1.9-6.9-4.8-13.5-8.5-19.6c-3.2-5.1-9.9-6.6-14.6-3.1c-6.1 4.5-13.5 7.4-21.6 7.4c-21 0-38-17-38-38z"/>
           </svg>
-          <span class="sidebar-views-count" id="shortcode-74-36"><%= toBengaliNumber(post.views || 1) %></span>
-          <span class="sidebar-views-label" id="text_block-96-36">বার পড়া হয়েছে</span>
+          <span class="sidebar-views-count"><%= toBengaliNumber(post.views || 1) %></span>
+          <span class="sidebar-views-label">বার পড়া হয়েছে</span>
         </div>
 
         <!-- Published Date -->
-        <div class="sidebar-meta-item sidebar-date-row" id="div_block-28-36">
-          <span class="sidebar-date-label" id="text_block-33-36">প্রকাশিত :</span>
-          <time class="sidebar-date-val" id="text_block-35-36"><%= formatBengaliDate(post.published_at || post.created_at) %></time>
+        <div class="sidebar-meta-item sidebar-date-row">
+          <span class="sidebar-date-label">প্রকাশিত :</span>
+          <time class="sidebar-date-val"><%= formatBengaliDate(post.published_at || post.created_at) %></time>
         </div>
 
         <!-- Social Share Row -->
-        <div class="sidebar-meta-item sidebar-share-row" id="div_block-91-36">
-          <span class="sidebar-share-label" id="text_block-86-36">শেয়ার :</span>
+        <div class="sidebar-meta-item sidebar-share-row">
+          <span class="sidebar-share-label">শেয়ার :</span>
           <div class="social-share-wrapper">
             <a href="https://www.facebook.com/sharer/sharer.php?u=<%= encodeURIComponent(seo.canonical) %>" class="social-share-button social-share-button-fb" title="ফেসবুকে শেয়ার করুন" target="_blank" rel="nofollow noopener noreferrer" aria-label="Share on Facebook">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512" width="16" height="16"><path d="M279.14 288l14.22-92.66h-88.91v-60.13c0-25.35 12.42-50.06 52.24-50.06h40.42V6.26S260.43 0 225.36 0c-73.22 0-121.08 44.38-121.08 124.72v70.62H22.89V288h81.39v224h100.17V288z"/></svg>
@@ -134,65 +155,84 @@
           </div>
         </div>
 
-        <div class="devider" id="div_block-395-36"></div>
+        <div class="sidebar-divider"></div>
 
         <!-- Quick Links -->
         <div class="sidebar-quick-links">
-          <a href="/লেখক-তালিকা" class="others-link" id="text_block-401-36">পয়স্তিতে যারা লিখেছেন</a>
-          <a href="/bangla-spell" class="others-link" id="text_block-402-36">নির্দেশিকা</a>
-          <a href="/terms-and-condition" class="others-link" id="text_block-403-36">শর্তাবলী</a>
+          <a href="/লেখক-তালিকা" class="sidebar-link-pill">পয়স্তিতে যারা লিখেছেন</a>
+          <a href="/bangla-spell" class="sidebar-link-pill">নির্দেশিকা</a>
+          <a href="/terms-and-condition" class="sidebar-link-pill">শর্তাবলী</a>
         </div>
 
-        <div class="devider" id="div_block-759-3859"></div>
+        <div class="sidebar-divider"></div>
 
         <!-- Magazine Ad Banner -->
         <div class="sidebar-ad-wrap">
-          <img src="/images/Payasti-ads.png" alt="পয়স্তি সাহিত্য স্মারক" class="sidebar-ad-banner" id="image-683-3859">
+          <img src="/images/Payasti-ads.png" alt="পয়স্তি সাহিত্য স্মারক" class="sidebar-ad-banner">
         </div>
       </div>
     </aside>
   </div>
 
-  <!-- Related Posts Section (Matching Homepage 4-Card Grid) -->
+  <!-- Related Posts Section -->
   <% if (relatedPosts && relatedPosts.length) { %>
-    <section class="single-post-related-section" id="section-834-3860">
-      <div class="ct-section-inner-wrap related-posts-inner">
-        <div class="related-posts-header-wrap" id="div_block-366-53">
-          <h2 class="related-posts-heading" id="headline-4-91">একই বিভাগের আরও লেখা</h2>
+    <section class="related-posts-section">
+      <div class="site-container">
+        <div class="section-header">
+          <h2 class="section-title">একই বিভাগের আরও লেখা</h2>
         </div>
-        <div class="posts-grid-4 related-posts-grid" id="_dynamic_list-778-3860">
+        <div class="posts-grid-4">
           <% relatedPosts.forEach(rPost => { %>
-            <article class="post-card" data-id="div_block-779-3860">
-              <div class="post-card-author-header" data-id="div_block-782-3860">
-                <div class="post-card-avatar" data-id="div_block-785-3860">
-                  <% if (rPost.author_avatar) { %>
-                    <img src="<%= rPost.author_avatar %>" alt="<%= rPost.author_name %>" data-id="image-794-3860">
-                  <% } else { %>
-                    <div class="avatar-placeholder"><%= rPost.author_name ? rPost.author_name.charAt(0) : 'প' %></div>
-                  <% } %>
-                </div>
-                <div class="post-card-author-info">
-                  <a href="/author/<%= encodeURIComponent(rPost.author_slug || '') %>" class="post-card-author-name" data-id="code_block-800-3860">
-                    <%= rPost.author_name %>
-                  </a>
-                  <time class="post-card-date"><%= formatBengaliDate(rPost.published_at || rPost.created_at) %></time>
-                </div>
-              </div>
-              <h3 class="post-card-title">
-                <a href="/post/<%= encodeURIComponent(rPost.slug) %>" data-id="code_block-811-3860"><%= rPost.title %></a>
-              </h3>
-              <div class="post-card-excerpt" data-id="code_block-814-3860">
-                <%= (rPost.excerpt || rPost.content || '').replace(/<[^>]*>/g, '').substring(0, 120) %>...
-              </div>
-              <div class="post-card-footer" data-id="div_block-797-3860">
-                <a href="/post/<%= encodeURIComponent(rPost.slug) %>" class="post-card-read-more">আরও পড়ুন »</a>
-              </div>
-            </article>
+            <%- include('partials/post_card', { post: rPost, isSelected: false }) %>
           <% }) %>
         </div>
       </div>
     </section>
   <% } %>
+
+  <!-- Floating Selection Quote Toolbar -->
+  <div id="quoteSelectionToolbar" class="quote-selection-toolbar" style="display: none;" role="toolbar">
+    <button type="button" id="btnCopyQuote" class="quote-tool-btn" title="উদ্ধৃতি কপি করুন">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+      কোট কপি
+    </button>
+    <button type="button" id="btnMakeQuoteCard" class="quote-tool-btn primary" title="সোশ্যাল কোট কার্ড বানান">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+      কোট কার্ড
+    </button>
+  </div>
+
+  <!-- Quote Card Modal -->
+  <div id="quoteCardModal" class="quote-card-modal" style="display: none;">
+    <div class="quote-modal-overlay"></div>
+    <div class="quote-modal-content">
+      <div class="quote-modal-header">
+        <h3 class="quote-modal-title">পয়স্তি সাহিত্য কোট কার্ড</h3>
+        <button type="button" id="btnCloseQuoteCard" class="quote-modal-close" aria-label="Close">&times;</button>
+      </div>
+      <div class="quote-modal-body">
+        <div id="quoteCardVisual" class="quote-card-preview-box">
+          <div class="quote-card-watermark">পয়স্তি</div>
+          <div class="quote-card-quote-mark">“</div>
+          <div class="quote-card-text" id="quoteCardText"></div>
+          <div class="quote-card-footer">
+            <div class="quote-card-author" id="quoteCardAuthor">— <%= author ? author.display_name : (post.author_name || 'পয়স্তি লেখক') %></div>
+            <div class="quote-card-source">লেখা: <%= post.title %> | payasti.com</div>
+          </div>
+        </div>
+      </div>
+      <div class="quote-modal-actions">
+        <button type="button" id="btnDownloadQuoteCard" class="quote-btn-action btn-download">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          কার্ড ডাউনলোড (PNG)
+        </button>
+        <button type="button" id="btnCopyQuoteTextModal" class="quote-btn-action btn-copy">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+          কোট কপি
+        </button>
+      </div>
+    </div>
+  </div>
 </main>
 
 <%- include('partials/footer') %>

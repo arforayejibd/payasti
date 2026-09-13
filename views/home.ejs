@@ -1,11 +1,11 @@
 <%- include('partials/header') %>
 
 <main class="page-main-content">
-  <!-- 1. Books Section (#section-1124-2678) -->
-  <section class="site-section books-section" id="section-1124-2678">
-    <div class="ct-section-inner-wrap section-inner-container">
-      <div class="books-section-heading" id="div_block-271-4047">
-        <div class="books-heading-title" id="text_block-274-4047">পয়স্তি প্রকাশন-এর প্রকাশিত বইসমূহ</div>
+  <!-- 1. Books Showcase Section -->
+  <section class="site-section section-books">
+    <div class="site-container">
+      <div class="section-header">
+        <h2 class="section-title">পয়স্তি প্রকাশন-এর প্রকাশিত বইসমূহ</h2>
         <div class="carousel-header-controls">
           <button type="button" class="carousel-btn" id="homeBookSlidePrev" aria-label="পূর্ববর্তী বই" title="পূর্ববর্তী বই">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
@@ -13,7 +13,7 @@
           <button type="button" class="carousel-btn" id="homeBookSlideNext" aria-label="পরবর্তী বই" title="পরবর্তী বই">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
           </button>
-          <a href="https://payastiprokashon.com.bd/books" target="_blank" rel="noopener noreferrer" class="books-heading-link" id="text_block-276-4047">সকল বই »</a>
+          <a href="/books" class="section-header-link">সকল বই »</a>
         </div>
       </div>
 
@@ -39,16 +39,16 @@
     </div>
   </section>
 
-  <!-- 2. Selected Literature (#section-2-3916) -->
+  <!-- 2. Selected Literature Section -->
   <% if (featuredPosts && featuredPosts.length) { %>
-    <section class="site-section selected-section" id="section-2-3916">
-      <div class="ct-section-inner-wrap section-inner-container">
-        <div class="selected-section-heading" id="div_block-274-3916">
-          <div class="selected-heading-title" id="text_block-4-3916">নির্বাচিত সাহিত্য</div>
-          <a href="/topic/selected" class="selected-heading-link" id="text_block-277-3916">নির্বাচিত সকল লেখা »</a>
+    <section class="site-section section-featured">
+      <div class="site-container">
+        <div class="section-header">
+          <h2 class="section-title">নির্বাচিত সাহিত্য</h2>
+          <a href="/topic/selected" class="section-header-link">নির্বাচিত সকল লেখা »</a>
         </div>
 
-        <div class="posts-grid-4 selected-posts-grid" id="_dynamic_list-6-3916">
+        <div class="posts-grid-4">
           <% featuredPosts.forEach(post => { %>
             <%- include('partials/post_card', { post: post, isSelected: true }) %>
           <% }) %>
@@ -57,14 +57,14 @@
     </section>
   <% } %>
 
-  <!-- 3. Latest Literature (#section-279-3916) -->
-  <section class="site-section latest-section" id="section-279-3916">
-    <div class="ct-section-inner-wrap section-inner-container">
-      <div class="latest-section-heading" id="div_block-280-3916">
-        <div class="latest-heading-title" id="text_block-281-3916">সর্বশেষ সাহিত্য</div>
+  <!-- 3. Latest Literature Section -->
+  <section class="site-section section-latest">
+    <div class="site-container">
+      <div class="section-header">
+        <h2 class="section-title">সর্বশেষ সাহিত্য</h2>
       </div>
 
-      <div class="posts-grid-4 latest-posts-grid" id="_dynamic_list-284-3916">
+      <div class="posts-grid-4">
         <% if (latestPosts && latestPosts.length) { %>
           <% latestPosts.forEach(post => { %>
             <%- include('partials/post_card', { post: post, isSelected: false }) %>
@@ -73,6 +73,10 @@
           <p class="no-posts-msg" style="grid-column: 1 / -1; text-align: center; color: #888; padding: 40px 0;">কোনো লেখা পাওয়া যায়নি।</p>
         <% } %>
       </div>
+
+      <% if (typeof pagination !== 'undefined') { %>
+        <%- include('partials/pagination', { pagination: pagination }) %>
+      <% } %>
     </div>
   </section>
 </main>
@@ -85,7 +89,6 @@
     const prevBtns = [document.getElementById('homeBookSlidePrev'), document.getElementById('homeBookFloatPrev')].filter(Boolean);
     const nextBtns = [document.getElementById('homeBookSlideNext'), document.getElementById('homeBookFloatNext')].filter(Boolean);
 
-    // Return the exact width of a single card plus gap (20px)
     function getSingleCardStep() {
       const firstItem = track.querySelector('.carousel-book-card-item');
       if (!firstItem) return 250;
@@ -109,13 +112,11 @@
         const maxScroll = track.scrollWidth - track.clientWidth;
         const step = getSingleCardStep();
         if (track.scrollLeft >= maxScroll - 15) {
-          // Reached the end: loop back to beginning
           track.scrollTo({ left: 0, behavior: 'smooth' });
         } else {
-          // Advance strictly one card at a time
           track.scrollBy({ left: step, behavior: 'smooth' });
         }
-      }, 3000); // Auto-scroll every 3 seconds
+      }, 3000);
     }
 
     function stopAutoSlide() {
@@ -151,7 +152,7 @@
       });
     });
 
-    const booksSection = track.closest('.books-section');
+    const booksSection = track.closest('.section-books');
     if (booksSection) {
       booksSection.addEventListener('mouseenter', stopAutoSlide);
       booksSection.addEventListener('mouseleave', startAutoSlide);
@@ -169,7 +170,6 @@
       updateNavState();
     });
 
-    // Initialize
     setTimeout(() => {
       updateNavState();
       startAutoSlide();

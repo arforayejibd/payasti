@@ -1,21 +1,21 @@
-<div class="book-card-item" data-id="div_block-80-4047">
+<div class="book-card">
   <% const bookLink = book.order_url || `/book/${encodeURIComponent(book.slug)}`; %>
   <a href="<%= bookLink %>" <%= book.order_url ? 'target="_blank" rel="noopener noreferrer"' : '' %> class="book-card-link" title="<%= book.title %>">
-    <div class="book-cover-box" data-id="div_block-163-4047">
+    <div class="book-cover-wrap">
       <% if (book.cover_image) { %>
-        <img src="<%= book.cover_image %>" alt="<%= book.title %>" class="book-cover-img" loading="lazy" data-id="image-83-4047">
+        <img src="<%= book.cover_image %>" alt="<%= book.title %>" class="book-cover-img" loading="lazy">
       <% } else { %>
         <div class="book-cover-placeholder">📖</div>
       <% } %>
     </div>
-    <div class="book-info-box" data-id="div_block-151-4047">
-      <div class="book-author-text" data-id="text_block-109-4047"><%= book.author_name %></div>
-      <div class="book-title-text" data-id="text_block-87-4047"><%= book.title %></div>
-      <div class="book-price-row" data-id="div_block-172-4047">
+    <div class="book-card-details">
+      <div class="book-card-author"><%= book.author_name %></div>
+      <div class="book-card-title"><%= book.title %></div>
+      <div class="book-card-pricing">
         <% if (book.regular_price && book.discounted_price && book.regular_price !== book.discounted_price) { %>
-          <div class="book-price-regular" data-id="text_block-137-4047"><%= book.regular_price %></div>
+          <span class="book-price-regular"><%= book.regular_price %></span>
         <% } %>
-        <div class="book-price-discount" data-id="text_block-181-4047"><%= book.discounted_price || book.regular_price %></div>
+        <span class="book-price-final"><%= book.discounted_price || book.regular_price %></span>
       </div>
     </div>
   </a>

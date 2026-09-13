@@ -9,6 +9,12 @@ router.get('/register', authController.getRegisterPage);
 router.post('/register', authController.postRegister);
 router.get('/logout', authController.logout);
 
+// Forgot & Reset Password Routes
+router.get('/forgot-password', authController.getForgotPasswordPage);
+router.post('/forgot-password', authController.postForgotPassword);
+router.get('/reset-password', authController.getResetPasswordPage);
+router.post('/reset-password', authController.postResetPassword);
+
 // Static Rules & Terms
 router.get(['/spelling-rules', '/bangla-spell'], authController.getSpellingRules);
 router.get(['/terms', '/terms-and-condition'], authController.getTerms);

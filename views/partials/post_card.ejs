@@ -1,43 +1,43 @@
-<article class="post-card-item <%= typeof isSelected !== 'undefined' && isSelected ? 'post-card-selected' : 'post-card-latest' %>" data-id="<%= typeof isSelected !== 'undefined' && isSelected ? 'div_block-7-3916' : 'div_block-285-3916' %>">
-  <div class="post-card-content-wrap" data-id="<%= typeof isSelected !== 'undefined' && isSelected ? 'div_block-710-2678' : 'div_block-1123-2678' %>">
+<article class="post-card <%= typeof isSelected !== 'undefined' && isSelected ? 'post-card--featured' : 'post-card--latest' %>">
+  <div class="post-card-body">
     <!-- Author Row -->
-    <div class="post-card-author-row" data-id="<%= typeof isSelected !== 'undefined' && isSelected ? 'div_block-10-3916' : 'div_block-286-3916' %>">
-      <div class="post-author-avatar-box" data-id="<%= typeof isSelected !== 'undefined' && isSelected ? 'div_block-19-3916' : 'div_block-287-3916' %>">
-        <a href="/author/<%= encodeURIComponent(post.author_slug || '') %>" class="post-avatar-link">
+    <div class="post-card-author-row">
+      <div class="post-card-avatar-wrap">
+        <a href="/author/<%= encodeURIComponent(post.author_slug || '') %>" class="post-card-avatar-link">
           <% if (post.author_avatar) { %>
-            <img src="<%= post.author_avatar %>" alt="<%= post.author_name %>" class="post-author-avatar-img" loading="lazy">
+            <img src="<%= post.author_avatar %>" alt="<%= post.author_name %>" class="post-card-avatar-img" loading="lazy">
           <% } else { %>
-            <div class="post-author-avatar-placeholder">
+            <div class="post-card-avatar-placeholder">
               <%= post.author_name ? post.author_name.charAt(0) : 'প' %>
             </div>
           <% } %>
         </a>
       </div>
-      <div class="post-author-info-box" data-id="<%= typeof isSelected !== 'undefined' && isSelected ? 'div_block-152-3916' : 'div_block-290-3916' %>">
-        <a href="/author/<%= encodeURIComponent(post.author_slug || '') %>" class="post-author-name-link" data-id="<%= typeof isSelected !== 'undefined' && isSelected ? 'code_block-113-3916' : 'code_block-292-3916' %>">
+      <div class="post-card-titles-wrap">
+        <a href="/author/<%= encodeURIComponent(post.author_slug || '') %>" class="post-card-author-name">
           <%= post.author_name %>
         </a>
-        <a href="/post/<%= encodeURIComponent(post.slug || '') %>" class="post-title-link" title="<%= post.title %>" data-id="<%= typeof isSelected !== 'undefined' && isSelected ? 'code_block-127-3916' : 'code_block-294-3916' %>">
+        <a href="/post/<%= encodeURIComponent(post.slug || '') %>" class="post-card-title" title="<%= post.title %>">
           <%= post.title %>
         </a>
       </div>
     </div>
 
     <!-- Excerpt -->
-    <a href="/post/<%= encodeURIComponent(post.slug || '') %>" class="post-excerpt-link">
-      <div class="post-excerpt-text" data-id="<%= typeof isSelected !== 'undefined' && isSelected ? 'code_block-181-3916' : 'code_block-1128-2678' %>"><%- formatCardExcerpt(post.excerpt || post.content) %></div>
+    <a href="/post/<%= encodeURIComponent(post.slug || '') %>" class="post-card-excerpt-link">
+      <div class="post-card-excerpt"><%- formatCardExcerpt(post.content || post.excerpt) %></div>
     </a>
   </div>
 
   <!-- Meta Footer -->
-  <div class="post-card-meta-row" data-id="<%= typeof isSelected !== 'undefined' && isSelected ? 'div_block-244-3916' : 'div_block-297-3916' %>">
-    <div class="post-meta-category" data-id="<%= typeof isSelected !== 'undefined' && isSelected ? 'text_block-250-3916' : 'text_block-298-3916' %>">
-      <a href="/category/<%= encodeURIComponent(post.category_slug || '') %>" class="post-category-link">
+  <div class="post-card-footer">
+    <div class="post-card-category">
+      <a href="/category/<%= encodeURIComponent(post.category_slug || '') %>" class="post-card-category-link">
         <%= post.category_name || 'অন্য সাহিত্য' %>
       </a>
     </div>
-    <div class="post-meta-date" data-id="<%= typeof isSelected !== 'undefined' && isSelected ? 'text_block-262-3916' : 'text_block-300-3916' %>">
+    <time class="post-card-date">
       <%= formatBengaliDate(post.published_at || post.created_at) %>
-    </div>
+    </time>
   </div>
 </article>

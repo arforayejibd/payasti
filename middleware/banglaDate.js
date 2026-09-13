@@ -87,10 +87,8 @@ function formatCardExcerpt(rawContent, maxWords = 18) {
   // Convert break and block tags to newline
   text = text
     .replace(/<br\s*\/?>/gi, '\n')
-    .replace(/<\/p>/gi, '\n')
-    .replace(/<\/div>/gi, '\n')
-    .replace(/<p[^>]*>/gi, '')
-    .replace(/<div[^>]*>/gi, '')
+    .replace(/<\/(p|div|h[1-6]|li|blockquote|section|article|tr)>/gi, '\n')
+    .replace(/<(p|div|h[1-6]|li|blockquote|section|article|tr)[^>]*>/gi, '\n')
     // Strip all other HTML tags
     .replace(/<[^>]+>/g, '');
 
@@ -160,10 +158,58 @@ function renderArticleContent(content) {
   return clean.replace(/\r\n|\r|\n/g, '<br>');
 }
 
+/**
+ * Calculate estimated reading time for article content in Bengali
+ * Average reading speed for Bengali text: ~160-180 words per minute
+ */
+function calculateReadingTime(content) {
+  if (!content) return '১ মিনিটের পাঠ';
+  const plainText = String(content)
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  const words = plainText ? plainText.split(/\s+/).length : 0;
+  const minutes = Math.max(1, Math.ceil(words / 160));
+  return `${toBengaliNumber(minutes)} মিনিটের পাঠ`;
+}
+
+function generateCleanExcerpt(content, maxChars = 200) {
+  if (!content) return '';
+  let text = String(content)
+    .replace(/<!--[\s\S]*?-->/g, '')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&amp;nbsp;/gi, ' ')
+    .replace(/\bnbsp;?/gi, ' ')
+    .replace(/&#160;/g, ' ')
+    .replace(/&zwnj;/g, '')
+    .replace(/&zwj;/g, '')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/(p|div|h[1-6]|li|blockquote|section|article|tr)>/gi, '\n')
+    .replace(/<(p|div|h[1-6]|li|blockquote|section|article|tr)[^>]*>/gi, '\n')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#039;/g, "'")
+    .replace(/&rsquo;/g, "'")
+    .replace(/&lsquo;/g, "'");
+
+  const lines = text.split(/\r\n|\r|\n/)
+    .map(l => l.trim().replace(/[ \t]+/g, ' '))
+    .filter(l => l.length > 0);
+
+  const result = lines.join('\n');
+  if (result.length <= maxChars) return result;
+  return result.substring(0, maxChars) + '...';
+}
+
 module.exports = {
   toBengaliNumber,
   formatBengaliDate,
   formatDuration,
   formatCardExcerpt,
-  renderArticleContent
+  generateCleanExcerpt,
+  renderArticleContent,
+  calculateReadingTime
 };

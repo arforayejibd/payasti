@@ -1,26 +1,28 @@
 <%- include('partials/header') %>
 
-<main class="container">
-  <div class="category-page-header">
-    <h1 class="category-main-title">অনুসন্ধান ফলাফল: "<%= query %>"</h1>
-    <p style="font-size: 14px; color: #666;">মোট ফলাফল: <%= toBengaliNumber(pagination.totalItems) %> টি</p>
-  </div>
+<main class="page-main-content">
+  <div class="site-container" style="padding-top: 30px; padding-bottom: 40px;">
+    <div class="category-page-header" style="margin-bottom: 24px;">
+      <h1 class="category-main-title">অনুসন্ধান ফলাফল: "<%= query %>"</h1>
+      <p style="font-size: 16px; color: #64748b; margin-top: 6px;">মোট ফলাফল: <%= toBengaliNumber(pagination.totalItems) %> টি</p>
+    </div>
 
-  <div class="posts-grid">
-    <% if (posts && posts.length) { %>
-      <% posts.forEach(post => { %>
-        <%- include('partials/post_card', { post: post }) %>
-      <% }) %>
-    <% } else { %>
-      <div style="grid-column: 1 / -1; text-align: center; padding: 60px 0; background: #fff; border-radius: 8px; border: 1px solid #e5e7eb;">
-        <div style="font-size: 40px; margin-bottom: 10px;">🔍</div>
-        <h3 style="font-size: 18px; color: #333;">কোনো ফলাফল পাওয়া যায়নি</h3>
-        <p style="font-size: 14px; color: #888; margin-top: 4px;">ভিন্ন কোনো কিওয়ার্ড দিয়ে পুনরায় অনুসন্ধান করে দেখুন।</p>
-      </div>
-    <% } %>
-  </div>
+    <div class="posts-grid-4">
+      <% if (posts && posts.length) { %>
+        <% posts.forEach(post => { %>
+          <%- include('partials/post_card', { post: post }) %>
+        <% }) %>
+      <% } else { %>
+        <div style="grid-column: 1 / -1; text-align: center; padding: 60px 0; background: #fff; border-radius: 8px; border: 1px solid #e5e7eb;">
+          <div style="font-size: 40px; margin-bottom: 10px;">🔍</div>
+          <h3 style="font-size: 20px; color: #333;">কোনো ফলাফল পাওয়া যায়নি</h3>
+          <p style="font-size: 16px; color: #888; margin-top: 4px;">ভিন্ন কোনো কিওয়ার্ড দিয়ে পুনরায় অনুসন্ধান করে দেখুন।</p>
+        </div>
+      <% } %>
+    </div>
 
-  <%- include('partials/pagination', { pagination: pagination }) %>
+    <%- include('partials/pagination', { pagination: pagination }) %>
+  </div>
 </main>
 
 <%- include('partials/footer') %>

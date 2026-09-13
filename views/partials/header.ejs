@@ -4,16 +4,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <!-- Theme Color matching live site -->
+  <!-- Theme Color -->
   <meta name="theme-color" content="#068200">
 
-  <!-- Favicons matching live site -->
+  <!-- Favicons -->
   <link rel="icon" href="/images/favicon-32x32.png" sizes="32x32">
   <link rel="icon" href="/images/favicon-192x192.png" sizes="192x192">
   <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
   <meta name="msapplication-TileImage" content="/images/favicon-192x192.png">
 
-  <!-- Dynamic SEO Meta Tags (Rank Math PRO equivalent) -->
+  <!-- Dynamic SEO Meta Tags -->
   <title><%= seo.title %></title>
   <meta name="description" content="<%= seo.description %>">
   <link rel="canonical" href="<%= seo.canonical %>">
@@ -53,22 +53,71 @@
   <link rel="preload" href="/fonts/8029Payasti_uni.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap">
 
+  <link rel="stylesheet" href="/css/tailwind.css">
   <link rel="stylesheet" href="/css/style.css">
   <% if (typeof isDashboard !== 'undefined' && isDashboard) { %>
     <link rel="stylesheet" href="/css/dashboard.css">
   <% } %>
-</head>
-<body class="oxygen-body">
 
-<header id="section-116-3856" class="site-header">
-  <div class="ct-section-inner-wrap header-inner">
-    <div id="div_block-118-3856" class="header-nav-group">
-      <!-- Brand Logo (#link-122-3856 > #image-121-3856) -->
-      <a id="link-122-3856" href="/" class="header-logo-link" title="পয়স্তি - সাহিত্য স্মারক">
-        <img id="image-121-3856" src="/images/Payasti-logo.png" alt="পয়স্তি" class="header-logo-img">
+  <!-- Immediate Global Site Theme Engine (No FOUC, Instant Toggle) -->
+  <script>
+    function applyThemeToDOM(theme) {
+      document.documentElement.classList.remove('theme-sepia', 'theme-dark');
+      if (document.body) {
+        document.body.classList.remove('theme-sepia', 'theme-dark');
+      }
+      if (theme === 'sepia') {
+        document.documentElement.classList.add('theme-sepia');
+        if (document.body) document.body.classList.add('theme-sepia');
+      } else if (theme === 'dark') {
+        document.documentElement.classList.add('theme-dark');
+        if (document.body) document.body.classList.add('theme-dark');
+      }
+
+      var def = document.querySelector('.theme-icon-default');
+      var sep = document.querySelector('.theme-icon-sepia');
+      var dar = document.querySelector('.theme-icon-dark');
+      if (def) def.style.display = (theme === 'default') ? 'inline-flex' : 'none';
+      if (sep) sep.style.display = (theme === 'sepia') ? 'inline-flex' : 'none';
+      if (dar) dar.style.display = (theme === 'dark') ? 'inline-flex' : 'none';
+    }
+
+    (function() {
+      try {
+        var theme = localStorage.getItem('payasti_site_theme') || 'default';
+        if (theme === 'sepia') document.documentElement.classList.add('theme-sepia');
+        else if (theme === 'dark') document.documentElement.classList.add('theme-dark');
+      } catch (e) {}
+    })();
+
+    function toggleSiteTheme() {
+      var themes = ['default', 'sepia', 'dark'];
+      var current = 'default';
+      if (document.documentElement.classList.contains('theme-sepia')) current = 'sepia';
+      else if (document.documentElement.classList.contains('theme-dark')) current = 'dark';
+
+      var next = themes[(themes.indexOf(current) + 1) % themes.length];
+      applyThemeToDOM(next);
+      try { localStorage.setItem('payasti_site_theme', next); } catch (e) {}
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      var theme = localStorage.getItem('payasti_site_theme') || 'default';
+      applyThemeToDOM(theme);
+    });
+  </script>
+</head>
+<body class="site-body">
+
+<header class="site-header">
+  <div class="site-container header-inner">
+    <div class="header-nav-group">
+      <!-- Site Brand / Logo -->
+      <a class="header-logo-link" href="/" title="পয়স্তি">
+        <img alt="পয়স্তি" src="/images/Payasti-logo.png" class="header-logo-img">
       </a>
 
-      <!-- Navigation Menu (#-pro-menu-123-3856) -->
+      <!-- Navigation Menu -->
       <nav class="main-nav-menu" id="mainNav">
         <% if (navMenu && navMenu.length) { %>
           <% navMenu.forEach(item => { %>
@@ -97,25 +146,44 @@
           <% }) %>
         <% } %>
 
-        <!-- Author Panel Button (#text_block-130-3856) -->
-        <a id="text_block-130-3856" href="<%= (typeof user !== 'undefined' && user) ? '/author/dashboard' : '/login' %>" class="btn-author-panel">
+        <!-- Author Panel Button -->
+        <a href="<%= (typeof user !== 'undefined' && user) ? '/author/dashboard' : '/login' %>" class="btn-author-panel">
           লেখক প্যানেল
         </a>
       </nav>
     </div>
 
-    <!-- Search Button (#-header-search-124-3856) -->
-    <div id="-header-search-124-3856" class="header-search-box">
-      <button class="header-search-btn" id="searchToggleBtn" aria-label="অনুসন্ধান" title="অনুসন্ধান">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="11" cy="11" r="8"></circle>
-          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-        </svg>
+    <!-- Header Actions (Theme Toggle & Search) -->
+    <div class="header-action-group">
+      <!-- Theme Switcher Icon Button (Cycles: Default -> Sepia -> Dark) -->
+      <button class="header-theme-toggle-btn" id="globalThemeToggleBtn" type="button" onclick="toggleSiteTheme()" aria-label="মোড পরিবর্তন (সাধারণ / সেপিয়া / ডার্ক)" title="মোড পরিবর্তন (সাধারণ / সেপিয়া / ডার্ক)">
+        <!-- Default (Light / Sun) -->
+        <span class="theme-icon theme-icon-default" title="বর্তমান: সাধারণ মোড">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+        </span>
+        <!-- Sepia (Book / Scroll) -->
+        <span class="theme-icon theme-icon-sepia" style="display: none;" title="বর্তমান: সেপিয়া মোড">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+        </span>
+        <!-- Dark (Moon) -->
+        <span class="theme-icon theme-icon-dark" style="display: none;" title="বর্তমান: ডার্ক মোড">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+        </span>
       </button>
+
+      <!-- Search Button -->
+      <div class="header-search-box">
+        <button class="header-search-btn" id="searchToggleBtn" type="button" aria-label="অনুসন্ধান" title="অনুসন্ধান">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+        </button>
+      </div>
     </div>
 
     <!-- Mobile Hamburger Toggle -->
-    <button class="mobile-nav-toggle" id="mobileMenuToggle" aria-label="মেনু খুলুন">
+    <button class="mobile-nav-toggle" id="mobileMenuToggle" type="button" aria-label="মেনু খুলুন">
       <span></span>
       <span></span>
       <span></span>
@@ -128,7 +196,7 @@
   <div class="search-modal-content">
     <div class="search-modal-header">
       <span class="search-modal-title">অনুসন্ধান করুন</span>
-      <button class="search-modal-close" id="closeSearchBtn" aria-label="বন্ধ করুন">&times;</button>
+      <button class="search-modal-close" id="closeSearchBtn" type="button" aria-label="বন্ধ করুন">&times;</button>
     </div>
     <form action="/search" method="GET" class="search-form-wrap">
       <div class="search-input-group">
@@ -139,7 +207,6 @@
           class="search-input-field" 
           placeholder="কবিতা, গল্প, প্রবন্ধ কিংবা যে লেখা খুঁজতে চাচ্ছেন সে লেখার শিরোনাম লিখুন..." 
           autocomplete="off"
-          autofocus
         >
         <button type="submit" class="search-submit-btn">খুঁজুন</button>
       </div>

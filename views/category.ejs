@@ -1,17 +1,17 @@
 <%- include('partials/header') %>
 
 <main class="page-main-content">
-  <div class="ct-section-inner-wrap section-inner-container" style="padding-top: 30px; padding-bottom: 20px;">
-    <!-- Category Main Title (#headline-4-91) -->
-    <h1 class="category-main-title" id="headline-4-91">
+  <div class="site-container category-page-container" style="padding-top: 30px; padding-bottom: 40px;">
+    <!-- Category Main Title -->
+    <h1 class="category-main-title">
       <%= (typeof activeSubCategory !== 'undefined' && activeSubCategory) ? activeSubCategory.name : category.name %>
     </h1>
 
-    <!-- Subcategory Tabs Bar (#div_block-767-3860) -->
+    <!-- Subcategory Tabs Bar -->
     <% if (subcategories && subcategories.length) { 
          const currentParent = (typeof parentCategory !== 'undefined' && parentCategory) ? parentCategory : category;
     %>
-      <div class="subcategory-tabs-bar" id="div_block-767-3860">
+      <div class="subcategory-tabs-bar">
         <a href="/section/<%= encodeURIComponent(currentParent.slug) %>" class="subcat-tab-link <%= !activeSubSlug ? 'active' : '' %>">
           সকল <%= currentParent.name %>
         </a>
@@ -26,7 +26,7 @@
     <% } %>
 
     <!-- Posts 4-Column Grid -->
-    <div class="posts-grid-4 latest-posts-grid" id="_dynamic_list-778-3860" style="margin-top: 20px;">
+    <div class="posts-grid-4" style="margin-top: 24px;">
       <% if (posts && posts.length) { %>
         <% posts.forEach(post => { %>
           <%- include('partials/post_card', { post: post, isSelected: false }) %>
