@@ -1,62 +1,68 @@
 <%- include('partials/header') %>
 
 <main class="page-main-content">
-  <section class="site-section authors-hero-section" style="padding: 40px 0 20px 0;">
+  <section class="site-section authors-hero-section">
     <div class="site-container">
-      <div class="authors-intro-card" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 32px 28px; box-shadow: 0 4px 16px rgba(0,0,0,0.03);">
-        <h1 class="page-title" style="margin: 0 0 12px 0; font-size: 32px; font-weight: 800; color: var(--text-primary);">পয়স্তিতে যারা লিখেছেন</h1>
-        <p style="font-size: 18px; font-weight: 500; color: var(--text-secondary); line-height: 1.85; margin: 0;">
+      <div class="authors-intro-card">
+        <h1 class="page-title authors-page-title">পয়স্তিতে যারা লিখেছেন</h1>
+        <p class="authors-intro-desc">
           পয়স্তি গর্বের সাথে উপস্থাপন করছে প্রতিভাবান লেখকের একটি বিশাল দল, যারা তাঁদের জ্ঞান এবং অভিজ্ঞতার মাধ্যমে পয়স্তিকে সমৃদ্ধ করছেন। আমাদের লেখকগণ সাহিত্যে অত্যন্ত দক্ষ এবং মানসম্পন্ন লেখালেখি করেন। প্রতিটি লেখকের উচ্চমানের কবিতা, গল্প, প্রবন্ধসহ বিভিন্ন ধরনের সাহিত্য পয়স্তিতে প্রকাশ করা হয়।
         </p>
       </div>
     </div>
   </section>
 
-  <section class="site-section authors-list-section" style="padding: 20px 0 60px 0;">
+  <section class="site-section authors-list-section">
     <div class="site-container">
-      <div class="author-search-bar" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; margin-bottom: 30px;">
-        <form class="author-search-form" action="/লেখক-তালিকা/" method="get" style="display: flex; gap: 10px; flex: 1; max-width: 500px;">
-          <input class="form-input author-search-input" type="text" name="author_search" id="author_search" placeholder="লেখকের নাম লিখুন..." value="<%= searchQuery || '' %>" style="flex: 1; padding: 10px 16px; border: 1px solid var(--border-color); border-radius: 8px; font-family: inherit; font-size: 15px; background: var(--bg-card); color: var(--text-primary);">
-          <button type="submit" class="btn-primary" style="padding: 10px 20px; background: var(--accent-primary); color: #fff; border: none; border-radius: 8px; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer;">অনুসন্ধান</button>
+      <div class="author-search-bar">
+        <form class="author-search-form" action="/লেখক-তালিকা/" method="get">
+          <input class="author-search-input" type="text" name="author_search" id="author_search" placeholder="লেখকের নাম লিখুন..." value="<%= searchQuery || '' %>">
+          <button type="submit" class="author-search-btn">অনুসন্ধান</button>
         </form>
-        <span class="badge-pill" style="font-size: 15px; color: var(--accent-primary); font-weight: 700; background: rgba(6, 130, 0, 0.08); border: 1px solid rgba(6, 130, 0, 0.18); padding: 8px 18px; border-radius: 20px;">
+        <span class="author-count-badge">
           মোট লেখক: <%= toBengaliNumber(totalAuthorsOverall) %> জন
         </span>
       </div>
 
       <% if (authors && authors.length) { %>
-        <div class="authors-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px;">
+        <div class="authors-grid">
           <% authors.forEach(author => { %>
-            <div class="author-card" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); display: flex; gap: 18px; align-items: flex-start;">
-              <a href="/author/<%= encodeURIComponent(author.nicename || author.username) %>/" style="flex-shrink: 0;">
-                <img src="<%= author.avatar %>" alt="<%= author.display_name %>" style="width: 64px; height: 64px; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent-primary);">
+            <div class="author-card">
+              <a href="/author/<%= encodeURIComponent(author.nicename || author.username) %>/" class="author-card-avatar-wrap">
+                <% if (author.avatar) { %>
+                  <img src="<%= author.avatar %>" alt="<%= author.display_name %>" class="author-card-avatar-img">
+                <% } else { %>
+                  <div class="author-card-avatar-placeholder">
+                    <%= author.display_name ? author.display_name.charAt(0) : 'প' %>
+                  </div>
+                <% } %>
               </a>
-              <div class="author-meta" style="flex: 1; min-width: 0;">
-                <h3 style="margin: 0 0 6px 0; font-size: 18px;">
-                  <a href="/author/<%= encodeURIComponent(author.nicename || author.username) %>/" style="color: var(--text-primary); text-decoration: none; font-weight: 700;">
+              <div class="author-meta">
+                <h3 class="author-card-name">
+                  <a href="/author/<%= encodeURIComponent(author.nicename || author.username) %>/">
                     <%= author.display_name %>
                   </a>
                 </h3>
                 <% if (author.recentPosts && author.recentPosts.length) { %>
-                  <ul class="author-recent-posts" style="margin: 8px 0 0 0; padding-left: 18px; font-size: 13.5px; color: var(--text-secondary); line-height: 1.6;">
+                  <ul class="author-recent-posts">
                     <% author.recentPosts.forEach(post => { %>
-                      <li style="margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                        <a href="/post/<%= encodeURIComponent(post.slug) %>" style="color: var(--text-secondary); text-decoration: none;">
+                      <li>
+                        <a href="/post/<%= encodeURIComponent(post.slug) %>" title="<%= post.title %>">
                           <%= post.title %>
                         </a>
                       </li>
                     <% }) %>
                   </ul>
                 <% } else { %>
-                  <p style="margin: 4px 0 0 0; font-size: 13px; color: var(--text-muted);">কোনো সাম্প্রতিক লেখা নেই</p>
+                  <p class="author-no-posts">কোনো সাম্প্রতিক লেখা নেই</p>
                 <% } %>
               </div>
             </div>
           <% }) %>
         </div>
       <% } else { %>
-        <div class="no-authors-found" style="text-align: center; padding: 60px 0; color: var(--text-muted);">
-          <p style="font-size: 17px;">"<%= searchQuery %>" নামের কোনো লেখক খুঁজে পাওয়া যায়নি।</p>
+        <div class="no-authors-found">
+          <p>"<%= searchQuery %>" নামের কোনো লেখক খুঁজে পাওয়া যায়নি।</p>
         </div>
       <% } %>
 
