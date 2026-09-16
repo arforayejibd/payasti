@@ -70,21 +70,55 @@
             <p class="no-comments-yet">এখনও কোনো মন্তব্য করা হয়নি। আপনার মূল্যবান মতামত জানান।</p>
           <% } %>
 
-          <form action="/post/<%= encodeURIComponent(post.slug) %>/comment" method="POST" class="comment-submit-form">
-            <h4 class="comment-form-heading">একটি মন্তব্য লিখুন</h4>
-            <div class="comment-fields-grid">
-              <div class="comment-field-group">
-                <input type="text" name="author_name" placeholder="আপনার নাম *" required class="comment-text-input">
+          <% if (typeof user !== 'undefined' && user) { %>
+            <form action="/post/<%= encodeURIComponent(post.slug) %>/comment" method="POST" class="comment-submit-form" id="comment-form">
+              <h4 class="comment-form-heading">একটি মন্তব্য লিখুন</h4>
+              
+              <div class="comment-logged-in-user-badge">
+                <div class="comment-user-avatar">
+                  <% if (user.avatar) { %>
+                    <img src="<%= user.avatar %>" alt="<%= user.display_name %>">
+                  <% } else { %>
+                    <span><%= (user.display_name || user.username || 'প').charAt(0) %></span>
+                  <% } %>
+                </div>
+                <div class="comment-user-info">
+                  <span class="comment-user-label">মন্তব্য করছেন:</span>
+                  <strong class="comment-user-name"><%= user.display_name || user.username %></strong>
+                  <span class="comment-user-email">(<%= user.email %>)</span>
+                </div>
               </div>
+
+              <input type="hidden" name="author_name" value="<%= user.display_name || user.username %>">
+              <input type="hidden" name="author_email" value="<%= user.email %>">
+
               <div class="comment-field-group">
-                <input type="email" name="author_email" placeholder="আপনার ইমেইল *" required class="comment-text-input">
+                <textarea name="content" rows="4" placeholder="আপনার মূল্যবান মন্তব্য বা পর্যালোচনা লিখুন..." required class="comment-textarea-input"></textarea>
+              </div>
+              <button type="submit" class="comment-btn-submit">
+                <span>💬 মন্তব্য প্রকাশ করুন</span>
+              </button>
+            </form>
+          <% } else { %>
+            <div class="comment-login-required-card" id="comment-form">
+              <div class="comment-login-lock-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+              </div>
+              <h4 class="comment-login-title">মন্তব্য করতে লগইন করুন</h4>
+              <p class="comment-login-desc">এই লেখাটিতে মন্তব্য বা মতামত প্রকাশ করার জন্য আপনার অ্যাকাউন্টে লগইন থাকা আবশ্যক।</p>
+              <div class="comment-login-btn-group">
+                <a href="/login?redirect=<%= encodeURIComponent('/post/' + post.slug + '#comments') %>" class="comment-login-btn-primary">
+                  🔑 লগইন করুন
+                </a>
+                <a href="/register?redirect=<%= encodeURIComponent('/post/' + post.slug + '#comments') %>" class="comment-login-btn-secondary">
+                  📝 নতুন একাউন্ট খুলুন
+                </a>
               </div>
             </div>
-            <div class="comment-field-group" style="margin-top: 14px;">
-              <textarea name="content" rows="4" placeholder="আপনার মূল্যবান মন্তব্য লিখুন..." required class="comment-textarea-input"></textarea>
-            </div>
-            <button type="submit" class="comment-btn-submit">মন্তব্য প্রকাশ করুন</button>
-          </form>
+          <% } %>
         </section>
       </div>
     </article>

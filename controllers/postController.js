@@ -431,25 +431,32 @@ exports.apiSearch = async (req, res) => {
   }
 };
 
-// Comment submission
+// Comment submission (Requires logged-in user)
 exports.postComment = async (req, res) => {
   try {
     const { slug } = req.params;
-    const { author_name, author_email, content } = req.body;
+
+    if (!req.user) {
+      return res.redirect(`/login?redirect=${encodeURIComponent(`/post/${slug}#comments`)}`);
+    }
+
+    const { content } = req.body;
+    const author_name = req.body.author_name || req.user.display_name || req.user.username;
+    const author_email = req.body.author_email || req.user.email || '';
 
     const post = await db.prepare('SELECT id FROM posts WHERE slug = ?').get(slug);
     if (!post) {
       return res.status(404).send('Post not found');
     }
 
-    if (!author_name || !content) {
+    if (!content || !content.trim()) {
       return res.redirect(`/post/${slug}#comment-form`);
     }
 
     await db.prepare(`
       INSERT INTO comments (post_id, author_name, author_email, content, status)
       VALUES (?, ?, ?, ?, 'approved')
-    `).run(post.id, author_name.trim(), (author_email || '').trim(), content.trim());
+    `).run(post.id, author_name.trim(), author_email.trim(), content.trim());
 
     res.redirect(`/post/${slug}#comments`);
   } catch (err) {

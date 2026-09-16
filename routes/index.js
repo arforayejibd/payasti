@@ -5,6 +5,7 @@ const postController = require('../controllers/postController');
 const authorController = require('../controllers/authorController');
 const bookController = require('../controllers/bookController');
 const { generateSeoMeta, getSpellCheckerSchema } = require('../middleware/seo');
+const { requireAuth } = require('../middleware/auth');
 
 // Homepage
 router.get('/', homeController.getHomePage);
@@ -99,7 +100,7 @@ router.get(['/terms-and-condition', '/terms'], (req, res) => {
 
 // Single Article
 router.get('/post/:slug', postController.getSinglePost);
-router.post('/post/:slug/comment', postController.postComment);
+router.post('/post/:slug/comment', requireAuth, postController.postComment);
 
 // Search
 router.get('/search', postController.searchPosts);
