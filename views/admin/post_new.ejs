@@ -48,8 +48,8 @@
           <div class="payasti-editor-wrapper">
             <div id="quillEditor"></div>
           </div>
-          <!-- Hidden input holding the HTML content for form submission -->
-          <input type="hidden" name="content" id="postContentInput">
+          <!-- Hidden textarea holding the HTML content for form submission -->
+          <textarea name="content" id="postContentInput" style="display: none;"></textarea>
         </div>
       </div>
     </div>
@@ -158,27 +158,38 @@
     const quill = window.createPayastiEditor('#quillEditor', {
       placeholder: 'সম্পূর্ণ সাহিত্যকর্ম, কবিতা, প্রবন্ধ বা গল্প এখানে লিখুন...'
     });
+    const contentInput = document.getElementById('postContentInput');
+
+    function syncToInput() {
+      if (contentInput) {
+        let html = quill.root.innerHTML;
+        if (html) {
+          html = html.replace(/<span class="payasti-spell-error[^"]*"[^>]*>([\s\S]*?)<\/span>/gi, '$1');
+        }
+        contentInput.value = html;
+      }
+    }
+
+    quill.on('text-change', function() {
+      syncToInput();
+    });
 
     if (window.attachPayastiSpellChecker) {
       window.attachPayastiSpellChecker(quill, { autoScan: false });
     }
 
     const form = document.getElementById('postForm');
-    const contentInput = document.getElementById('postContentInput');
-
     form.addEventListener('submit', function(e) {
       if (window.activePayastiSpellChecker) {
         window.activePayastiSpellChecker.clearHighlights();
       }
-      let html = quill.root.innerHTML;
-      html = html.replace(/<span class="payasti-spell-error[^"]*"[^>]*>([\s\S]*?)<\/span>/gi, '$1');
+      syncToInput();
       const text = quill.getText().trim();
       if (!text || text.length === 0) {
         alert('অনুগ্রহ করে মূল সাহিত্য বা লেখার বিষয়বস্তু লিখুন।');
         e.preventDefault();
         return false;
       }
-      contentInput.value = html;
     });
   });
 </script>

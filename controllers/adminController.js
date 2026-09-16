@@ -316,7 +316,7 @@ exports.postEditPost = async (req, res) => {
       featuredImage = `/uploads/${req.file.filename}`;
     }
 
-    let cleanContent = (content || existingPost.content || '')
+    let cleanContent = (content !== undefined && content.trim() !== '' ? content : (existingPost.content || ''))
       .replace(/<span class="payasti-spell-error[^"]*"[^>]*>([\s\S]*?)<\/span>/gi, '$1');
 
     let cleanExcerpt = (excerpt || '').trim();
