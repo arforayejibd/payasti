@@ -1,11 +1,12 @@
 /**
- * Payasti Bengali Spell Checker & Grammar Assistant (v5.0 Ultra-Fast)
- * Performance Optimizations:
+ * Payasti Bengali Spell Checker & Grammar Assistant (v5.1 Smart Splitter)
+ * Performance & Intelligence:
  * - 0ms UI blocking: suggestions computed lazily on-demand when user clicks a word
+ * - Smart Conjoined Word Splitter with automatic subpart rule correction (e.g. 'প্রচারনায়কোনো' -> 'প্রচারণায় কোনো')
+ * - Rejects single-letter non-words (e.g. 'য়', 'র') from conjoined splitting
+ * - Comprehensive Natwa-Bidhan (ণ-ত্ব বিধান) & Bangla Academy Rules integration
  * - Lightweight 60KB Rules Dictionary loaded first (<20ms)
  * - 80k wordlist loaded in background via requestIdleCallback (Zero page freeze)
- * - Ultra-responsive: scans 10,000 words in under 5 milliseconds!
- * - Toggleable on/off with persistent button
  */
 (function () {
   'use strict';
@@ -103,8 +104,8 @@
     'জুড়ে', 'জুড়ে', 'পঙ্‌ক্তি', 'পঙ্ক্তি', 'পংক্তি', 'পঙক্তি', 'পঙ্‌ক্তিজুড়ে', 'পঙ্ক্তিজুড়ে',
     'হয়', 'হয়', 'হয়ে', 'হয়ে', 'হয়েছে', 'হয়েছে', 'হলো', 'হল', 'হবে', 'দেওয়া', 'দেওয়া', 'দেখা', 'বলা',
     'বলছেন', 'বলল', 'বললেন', 'গেলে', 'গেল', 'গেলেন', 'রেখে', 'লেখে', 'পড়ে', 'পড়া', 'পড়ার',
-    'আমিনা', 'শেলী', 'শেলীর', 'মহাবিশ্ব', 'জরায়ুর', 'জরায়ুর', 'কবিতাগ্রন্থে', 'জঠর', 'প্রচারণা',
-    'নজরে', 'দেখেছি', 'বার্তা', 'অত্যন্ত', 'স্পষ্ট', 'মস্তিষ্ক', 'অনুসন্ধানী', 'অনুভব', 'বাধ্য',
+    'আমিনা', 'শেলী', 'শেলীর', 'মহাবিশ্ব', 'জরায়ুর', 'জরায়ুর', 'কবিতাগ্রন্থে', 'জঠর', 'প্রচারণা', 'প্রচারণায়', 'প্রচারণার',
+    'কোনো', 'কোন', 'মেকিপনা', 'মেকি', 'নেই', 'নজরে', 'দেখেছি', 'বার্তা', 'অত্যন্ত', 'স্পষ্ট', 'মস্তিষ্ক', 'অনুসন্ধানী', 'অনুভব', 'বাধ্য',
     'নিয়ন্ত্রিত', 'নিয়ন্ত্রিত', 'বোধের', 'কবিতার', 'অসংখ্য', 'শরীর', 'সংগীতের', 'সঙ্গীতের', 'স্বরলিপি',
     'রাখা', 'সমাজ', 'ধর্ম', 'পুরুষতান্ত্রিকতার', 'খোলস', 'ভেঙে', 'ফেলার', 'দ্রোহের', 'কোরাসে', 'লিখিত',
     'পুরুষকে', 'পরাজিত', 'অবয়বে', 'অবয়বে', 'আঁকতে', 'চেয়েছেন', 'চেয়েছেন', 'পৃথিবীর', 'পবিত্র',
@@ -114,6 +115,9 @@
     'পাঠক', 'বুঝতে', 'পারেন', 'গোলাপটির', 'দেহবিন্যাস', 'প্রস্ফুটিত', 'হলে', 'থেকে', 'প্রথম',
     'সৌরভটি', 'বুকে', 'তার', 'নাম', 'প্রেম', 'আমাদের', 'তোমাদের', 'তাদের', 'নিজের', 'নিজেদের'
   ];
+
+  // Valid standalone 1-letter words in Bengali (ONLY 'এ', 'ও', 'ই')
+  const VALID_1_LETTER = new Set(['এ', 'ও', 'ই']);
 
   // Broken orphan leading kar fixes
   const ORPHAN_KAR_MAP = {
@@ -140,7 +144,7 @@
         wordlistUrl: '/data/bangla_wordlist_80k.json',
         debounceMs: 500,
         widgetContainer: null,
-        autoScan: false // Instant load by default
+        autoScan: false // Instant load by default for editors
       }, options);
 
       this.rulesDictionary = {};
@@ -180,7 +184,7 @@
 
     async loadRulesDictionary() {
       try {
-        const cacheBust = this.options.dictionaryUrl + '?v=5.0_' + Date.now();
+        const cacheBust = this.options.dictionaryUrl + '?v=5.1_' + Date.now();
         const res = await fetch(cacheBust);
         if (res.ok) {
           const json = await res.json();
@@ -263,8 +267,9 @@
       }, delay);
     }
 
-    isWordValid(word) {
-      if (!word || word.length === 0) return true;
+    isWordValidStrict(word) {
+      if (!word || word.length === 0) return false;
+      if (word.length === 1) return VALID_1_LETTER.has(word);
       const norm = normalizeBengaliUnicode(word);
       if (this.validWordsSet.has(norm)) return true;
 
@@ -283,6 +288,23 @@
       return false;
     }
 
+    isPartValidOrCorrectable(part) {
+      if (!part || part.length === 0) return false;
+      if (part.length === 1) return VALID_1_LETTER.has(part);
+      if (this.isWordValidStrict(part)) return true;
+      const norm = normalizeBengaliUnicode(part);
+      if (this.rulesDictionary[norm]) return true;
+      return false;
+    }
+
+    getRuleCorrectedPart(part) {
+      const norm = normalizeBengaliUnicode(part);
+      if (this.rulesDictionary[norm] && this.rulesDictionary[norm].correct && this.rulesDictionary[norm].correct.length > 0) {
+        return this.rulesDictionary[norm].correct[0];
+      }
+      return part;
+    }
+
     splitConjoinedWord(word) {
       const norm = normalizeBengaliUnicode(word);
       if (norm.length < 3) return null;
@@ -290,30 +312,32 @@
       const candidates = [];
 
       // 2-word split
-      for (let i = 1; i <= norm.length - 1; i++) {
+      for (let i = 2; i <= norm.length - 2; i++) {
         const p1 = norm.slice(0, i);
         const p2 = norm.slice(i);
-        if (this.isWordValid(p1) && this.isWordValid(p2)) {
-          const penalty = (p1.length === 1 && !['এ', 'ও', 'যে', 'সে', 'না', 'বা'].includes(p1) ? 5 : 0) +
-                          (p2.length === 1 && !['এ', 'ও', 'ই', 'বা'].includes(p2) ? 5 : 0);
-          candidates.push({ text: p1 + ' ' + p2, score: penalty });
+        if (this.isPartValidOrCorrectable(p1) && this.isPartValidOrCorrectable(p2)) {
+          const c1 = this.getRuleCorrectedPart(p1);
+          const c2 = this.getRuleCorrectedPart(p2);
+          const penalty = (p1.length === 1 ? 10 : 0) + (p2.length === 1 ? 10 : 0);
+          candidates.push({ text: c1 + ' ' + c2, score: penalty });
         }
       }
 
       // 3-word split
-      if (norm.length >= 5) {
-        for (let i = 1; i <= norm.length - 3; i++) {
+      if (norm.length >= 6) {
+        for (let i = 2; i <= norm.length - 4; i++) {
           const p1 = norm.slice(0, i);
-          if (this.isWordValid(p1)) {
+          if (this.isPartValidOrCorrectable(p1)) {
             const rem = norm.slice(i);
-            for (let j = 1; j <= rem.length - 1; j++) {
+            for (let j = 2; j <= rem.length - 2; j++) {
               const p2 = rem.slice(0, j);
               const p3 = rem.slice(j);
-              if (this.isWordValid(p2) && this.isWordValid(p3)) {
-                const penalty = (p1.length === 1 && !['এ', 'ও', 'যে', 'সে', 'না'].includes(p1) ? 5 : 0) +
-                                (p2.length === 1 && !['এ', 'ও', 'যে', 'সে', 'না'].includes(p2) ? 5 : 0) +
-                                (p3.length === 1 && !['এ', 'ও', 'ই', 'বা'].includes(p3) ? 5 : 0);
-                candidates.push({ text: p1 + ' ' + p2 + ' ' + p3, score: penalty + 2 });
+              if (this.isPartValidOrCorrectable(p2) && this.isPartValidOrCorrectable(p3)) {
+                const c1 = this.getRuleCorrectedPart(p1);
+                const c2 = this.getRuleCorrectedPart(p2);
+                const c3 = this.getRuleCorrectedPart(p3);
+                const penalty = (p1.length === 1 ? 10 : 0) + (p2.length === 1 ? 10 : 0) + (p3.length === 1 ? 10 : 0);
+                candidates.push({ text: c1 + ' ' + c2 + ' ' + c3, score: penalty + 3 });
               }
             }
           }
@@ -492,7 +516,7 @@
                   foundErrorsList.push(errObj);
                 }
                 // 3. Conjoined Word (Missing space) / Unknown Word
-                else if (!this.isWordValid(cleanWord)) {
+                else if (!this.isWordValidStrict(cleanWord)) {
                   const splitResult = this.splitConjoinedWord(cleanWord);
                   if (splitResult && splitResult !== cleanWord) {
                     const errObj = {
@@ -500,7 +524,7 @@
                       length: rawWord.length,
                       word: cleanWord,
                       correct: [splitResult],
-                      reason: 'শব্দ দুটি একসাথে লেগে গেছে, মাঝে স্পেস হবে।',
+                      reason: 'শব্দ দুটি একসাথে লেগে গেছে, মাঝে স্পেস ও ণ-ত্ব সংশোধন হবে।',
                       isBroken: true
                     };
                     matches.push(errObj);
