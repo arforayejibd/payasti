@@ -190,9 +190,9 @@
       quill.clipboard.dangerouslyPasteHTML(cleanHtml);
     }
 
-    // Attach Bangla Spell Checker Assistant
+    // Attach Bangla Spell Checker Assistant (On-Demand Mode for instant zero-lag editing)
     if (window.attachPayastiSpellChecker) {
-      window.attachPayastiSpellChecker(quill);
+      window.attachPayastiSpellChecker(quill, { autoScan: false });
     }
 
     const form = document.getElementById('postEditForm');

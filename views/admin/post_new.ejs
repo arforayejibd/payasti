@@ -160,7 +160,7 @@
     });
 
     if (window.attachPayastiSpellChecker) {
-      window.attachPayastiSpellChecker(quill);
+      window.attachPayastiSpellChecker(quill, { autoScan: false });
     }
 
     const form = document.getElementById('postForm');

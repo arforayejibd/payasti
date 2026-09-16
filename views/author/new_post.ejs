@@ -227,9 +227,9 @@
       placeholder: 'সম্পূর্ণ সাহিত্যকর্ম, কবিতা, প্রবন্ধ বা গল্প এখানে লিখুন...'
     });
 
-    // Initialize Bangla Spell Checker Assistant
+    // Initialize Bangla Spell Checker Assistant (On-Demand Mode)
     if (window.attachPayastiSpellChecker) {
-      window.attachPayastiSpellChecker(quill);
+      window.attachPayastiSpellChecker(quill, { autoScan: false });
     }
 
     const form = document.getElementById('postForm');
