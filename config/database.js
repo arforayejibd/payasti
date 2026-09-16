@@ -173,6 +173,38 @@ async function initDatabase() {
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
       `);
 
+      await connection.query(`
+        CREATE TABLE IF NOT EXISTS post_ratings (
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          post_id INT NOT NULL,
+          user_id INT DEFAULT NULL,
+          rating TINYINT NOT NULL,
+          ip_address VARCHAR(100) DEFAULT NULL,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+          INDEX idx_post_ratings_post (post_id),
+          INDEX idx_post_ratings_user (post_id, user_id),
+          INDEX idx_post_ratings_ip (post_id, ip_address)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+      `);
+
+      // Ensure rating columns exist on posts table
+      try {
+        const [postCols] = await connection.query(`
+          SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS 
+          WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'posts'
+        `);
+        const postColNames = postCols.map(c => c.COLUMN_NAME);
+        if (!postColNames.includes('rating_score')) {
+          await connection.query("ALTER TABLE posts ADD COLUMN rating_score DECIMAL(3,2) DEFAULT 0.00 AFTER views");
+        }
+        if (!postColNames.includes('rating_count')) {
+          await connection.query("ALTER TABLE posts ADD COLUMN rating_count INT DEFAULT 0 AFTER rating_score");
+        }
+      } catch (e) {
+        console.warn('Could not ensure posts rating columns:', e.message);
+      }
+
       // Ensure new columns exist on users table for status, email_verified, is_approved
       try {
         const [userCols] = await connection.query(`

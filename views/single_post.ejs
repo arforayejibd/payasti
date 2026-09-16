@@ -16,6 +16,11 @@
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
               <%= typeof readingTime !== 'undefined' ? readingTime : calculateReadingTime(post.content) %>
             </span>
+            <span class="header-meta-sep">•</span>
+            <span class="article-meta-rating" title="পাঠক রেটিং" id="topRatingMeta">
+              ⭐ <strong id="topRatingScore"><%= Number(post.rating_score || 0) > 0 ? toBengaliNumber(parseFloat(post.rating_score).toFixed(1)) : '০.০' %></strong>
+              <span class="top-rating-count" id="topRatingCount">(<%= toBengaliNumber(post.rating_count || 0) %>)</span>
+            </span>
           </div>
           <h1 class="article-title"><%= post.title %></h1>
         </header>
@@ -49,6 +54,42 @@
         <div class="article-content-body single-article-content-body">
           <%- renderArticleContent(post.content) %>
         </div>
+
+        <!-- Article Reader Rating Box -->
+        <section class="article-rating-section" id="ratingSection">
+          <div class="article-rating-card" id="articleRatingCard" 
+               data-post-slug="<%= post.slug %>" 
+               data-user-rating="<%= typeof userRating !== 'undefined' ? userRating : 0 %>" 
+               data-score="<%= parseFloat(post.rating_score || 0).toFixed(1) %>" 
+               data-count="<%= post.rating_count || 0 %>">
+            
+            <div class="rating-card-header">
+              <div class="rating-card-icon">⭐</div>
+              <div class="rating-card-info">
+                <h4 class="rating-card-title">লেখাটি আপনার কেমন লাগলো? রেটিং দিন</h4>
+                <p class="rating-card-subtitle">আপনার মূল্যবান রেটিং লেখকের অনুপ্রেরণা এবং লেখার মানোন্নয়নে সহায়তা করে।</p>
+              </div>
+            </div>
+
+            <div class="rating-interactive-row">
+              <div class="rating-stars-container" id="ratingStarsContainer" role="radiogroup" aria-label="রেটিং নির্বাচন করুন">
+                <button type="button" class="rating-star-btn" data-value="1" title="১ - সন্তোষজনক নয়" aria-label="1 star">★</button>
+                <button type="button" class="rating-star-btn" data-value="2" title="২ - সাধারণ" aria-label="2 stars">★</button>
+                <button type="button" class="rating-star-btn" data-value="3" title="৩ - ভালো" aria-label="3 stars">★</button>
+                <button type="button" class="rating-star-btn" data-value="4" title="৪ - চমৎকার" aria-label="4 stars">★</button>
+                <button type="button" class="rating-star-btn" data-value="5" title="৫ - অসাধারণ!" aria-label="5 stars">★</button>
+              </div>
+              
+              <div class="rating-stat-summary">
+                <span class="rating-avg-score" id="ratingAvgDisplay"><%= Number(post.rating_score || 0) > 0 ? toBengaliNumber(parseFloat(post.rating_score).toFixed(1)) : '০.০' %></span>
+                <span class="rating-scale-divider">/ ৫</span>
+                <span class="rating-total-votes" id="ratingCountDisplay">(<%= toBengaliNumber(post.rating_count || 0) %>টি রেটিং)</span>
+              </div>
+            </div>
+
+            <div class="rating-feedback-msg" id="ratingFeedbackMsg" style="display: none;"></div>
+          </div>
+        </section>
 
         <!-- Comments Area -->
         <section class="article-comments-area" id="comments">

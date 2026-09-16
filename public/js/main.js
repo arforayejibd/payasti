@@ -386,5 +386,127 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
   }
+
+  // -------------------------------------------------------------
+  // Post Rating Handler (5-Star Interactive Rating)
+  // -------------------------------------------------------------
+  const ratingCard = document.getElementById('articleRatingCard');
+  if (ratingCard) {
+    const slug = ratingCard.getAttribute('data-post-slug');
+    let currentUserRating = parseInt(ratingCard.getAttribute('data-user-rating') || '0', 10);
+    const starBtns = ratingCard.querySelectorAll('.rating-star-btn');
+    const feedbackMsg = document.getElementById('ratingFeedbackMsg');
+    const avgDisplay = document.getElementById('ratingAvgDisplay');
+    const countDisplay = document.getElementById('ratingCountDisplay');
+    const topScore = document.getElementById('topRatingScore');
+    const topCount = document.getElementById('topRatingCount');
+
+    // Bengali numbers helper
+    const toBengaliNumber = (num) => {
+      const bnDigits = ['০','১','২','৩','৪','৫','৬','৭','৮','৯'];
+      return String(num).replace(/[0-9]/g, (w) => bnDigits[+w]);
+    };
+
+    const updateStarVisuals = (ratingValue) => {
+      starBtns.forEach((btn) => {
+        const val = parseInt(btn.getAttribute('data-value'), 10);
+        if (val <= ratingValue) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+        btn.classList.remove('hovered');
+      });
+    };
+
+    const previewStars = (hoverValue) => {
+      starBtns.forEach((btn) => {
+        const val = parseInt(btn.getAttribute('data-value'), 10);
+        if (val <= hoverValue) {
+          btn.classList.add('hovered');
+        } else {
+          btn.classList.remove('hovered');
+        }
+      });
+    };
+
+    // Initialize with current rating if already rated
+    if (currentUserRating > 0) {
+      updateStarVisuals(currentUserRating);
+    }
+
+    starBtns.forEach((btn) => {
+      btn.addEventListener('mouseenter', () => {
+        const val = parseInt(btn.getAttribute('data-value'), 10);
+        previewStars(val);
+      });
+
+      btn.addEventListener('click', async () => {
+        const rating = parseInt(btn.getAttribute('data-value'), 10);
+        try {
+          btn.disabled = true;
+          const res = await fetch(`/post/${encodeURIComponent(slug)}/rate`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'
+            },
+            body: JSON.stringify({ rating })
+          });
+
+          const data = await res.json();
+          btn.disabled = false;
+
+          if (data.success) {
+            currentUserRating = rating;
+            ratingCard.setAttribute('data-user-rating', rating);
+            updateStarVisuals(rating);
+
+            if (avgDisplay) {
+              avgDisplay.textContent = toBengaliNumber(parseFloat(data.rating_score || 0).toFixed(1));
+            }
+            if (countDisplay) {
+              countDisplay.textContent = `(${toBengaliNumber(data.rating_count || 0)}টি রেটিং)`;
+            }
+            if (topScore) {
+              topScore.textContent = toBengaliNumber(parseFloat(data.rating_score || 0).toFixed(1));
+            }
+            if (topCount) {
+              topCount.textContent = `(${toBengaliNumber(data.rating_count || 0)})`;
+            }
+
+            if (feedbackMsg) {
+              feedbackMsg.className = 'rating-feedback-msg success';
+              feedbackMsg.textContent = data.message || 'আপনার রেটিং সফলভাবে গ্রহণ করা হয়েছে। ধন্যবাদ!';
+              feedbackMsg.style.display = 'block';
+            }
+          } else {
+            if (feedbackMsg) {
+              feedbackMsg.className = 'rating-feedback-msg error';
+              feedbackMsg.textContent = data.error || 'রেটিং সংরক্ষণ করতে সমস্যা হয়েছে।';
+              feedbackMsg.style.display = 'block';
+            }
+          }
+        } catch (err) {
+          btn.disabled = false;
+          console.error('Rating submission error:', err);
+          if (feedbackMsg) {
+            feedbackMsg.className = 'rating-feedback-msg error';
+            feedbackMsg.textContent = 'নেটওয়ার্ক সমস্যার কারণে রেটিং দেওয়া যায়নি। আবার চেষ্টা করুন।';
+            feedbackMsg.style.display = 'block';
+          }
+        }
+      });
+    });
+
+    const starsContainer = document.getElementById('ratingStarsContainer');
+    if (starsContainer) {
+      starsContainer.addEventListener('mouseleave', () => {
+        starBtns.forEach(b => b.classList.remove('hovered'));
+        updateStarVisuals(currentUserRating);
+      });
+    }
+  }
 });
+
 

@@ -59,7 +59,7 @@ function generateSeoMeta(options = {}) {
 
 // Generate Google Structured Data (JSON-LD)
 function getArticleSchema(post, author, category) {
-  return {
+  const schema = {
     '@context': 'https://schema.org',
     '@type': 'BlogPosting',
     'mainEntityOfPage': {
@@ -75,7 +75,7 @@ function getArticleSchema(post, author, category) {
     'author': {
       '@type': 'Person',
       'name': author ? (author.display_name || author.username) : 'পয়স্তি লেখক',
-      'url': author ? `${SITE_URL}/author/${author.nicename || author.username}` : SITE_URL
+      'url': author ? `${SITE_URL}/author/${encodeURIComponent(author.slug || author.nicename || author.username || '')}` : SITE_URL
     },
     'publisher': {
       '@type': 'Organization',
@@ -88,6 +88,18 @@ function getArticleSchema(post, author, category) {
     },
     'articleSection': category ? category.name : 'সাহিত্য'
   };
+
+  if (post && post.rating_count && Number(post.rating_count) > 0) {
+    schema.aggregateRating = {
+      '@type': 'AggregateRating',
+      'ratingValue': parseFloat(post.rating_score || 5).toFixed(1),
+      'bestRating': '5',
+      'worstRating': '1',
+      'ratingCount': parseInt(post.rating_count, 10)
+    };
+  }
+
+  return schema;
 }
 
 function getBookSchema(book) {

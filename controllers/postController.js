@@ -113,11 +113,29 @@ exports.getSinglePost = async (req, res) => {
       }
     });
 
+    // Fetch User's existing rating if any
+    let userRating = 0;
+    try {
+      if (req.user && req.user.id) {
+        const r = await db.prepare('SELECT rating FROM post_ratings WHERE post_id = ? AND user_id = ?').get(post.id, req.user.id);
+        if (r) userRating = r.rating;
+      } else {
+        const ip = (req.ip || req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
+        if (ip) {
+          const r = await db.prepare('SELECT rating FROM post_ratings WHERE post_id = ? AND ip_address = ? AND user_id IS NULL ORDER BY id DESC LIMIT 1').get(post.id, ip);
+          if (r) userRating = r.rating;
+        }
+      }
+    } catch (e) {
+      // ignore
+    }
+
     res.render('single_post', {
       post,
       author,
       tags,
       comments,
+      userRating,
       relatedPosts,
       readingTime: calculateReadingTime(post.content),
       calculateReadingTime,
@@ -462,5 +480,57 @@ exports.postComment = async (req, res) => {
   } catch (err) {
     console.error('Error in postComment:', err);
     res.redirect('back');
+  }
+};
+
+// Post Rating submission (AJAX)
+exports.postRate = async (req, res) => {
+  try {
+    const { slug } = req.params;
+    const rating = parseInt(req.body.rating, 10);
+
+    if (!rating || rating < 1 || rating > 5) {
+      return res.status(400).json({ success: false, message: 'রেটিং ১ থেকে ৫-এর মধ্যে হতে হবে।' });
+    }
+
+    const post = await db.prepare('SELECT id, slug, rating_score, rating_count FROM posts WHERE slug = ?').get(slug);
+    if (!post) {
+      return res.status(404).json({ success: false, message: 'লেখাটি পাওয়া যায়নি।' });
+    }
+
+    const userId = req.user ? req.user.id : null;
+    const ip = (req.ip || req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
+
+    // Check existing rating
+    let existing = null;
+    if (userId) {
+      existing = await db.prepare('SELECT id FROM post_ratings WHERE post_id = ? AND user_id = ?').get(post.id, userId);
+    } else if (ip) {
+      existing = await db.prepare('SELECT id FROM post_ratings WHERE post_id = ? AND ip_address = ? AND user_id IS NULL').get(post.id, ip);
+    }
+
+    if (existing) {
+      await db.prepare('UPDATE post_ratings SET rating = ?, updated_at = NOW() WHERE id = ?').run(rating, existing.id);
+    } else {
+      await db.prepare('INSERT INTO post_ratings (post_id, user_id, rating, ip_address) VALUES (?, ?, ?, ?)').run(post.id, userId, rating, ip);
+    }
+
+    // Recalculate stats
+    const stats = await db.prepare('SELECT AVG(rating) AS avg_score, COUNT(*) AS total_count FROM post_ratings WHERE post_id = ?').get(post.id);
+    const avgScore = stats && stats.avg_score ? parseFloat(stats.avg_score).toFixed(1) : parseFloat(rating).toFixed(1);
+    const totalCount = stats && stats.total_count ? parseInt(stats.total_count, 10) : 1;
+
+    await db.prepare('UPDATE posts SET rating_score = ?, rating_count = ? WHERE id = ?').run(avgScore, totalCount, post.id);
+
+    return res.json({
+      success: true,
+      rating_score: avgScore,
+      rating_count: totalCount,
+      user_rating: rating,
+      message: `ধন্যবাদ! আপনি ${toBengaliNumber(rating)} তারকা রেটিং দিয়েছেন।`
+    });
+  } catch (err) {
+    console.error('Error in postRate:', err);
+    return res.status(500).json({ success: false, message: 'রেটিং সংরক্ষণ করা সম্ভব হয়নি।' });
   }
 };

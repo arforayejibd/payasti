@@ -101,6 +101,7 @@ router.get(['/terms-and-condition', '/terms'], (req, res) => {
 // Single Article
 router.get('/post/:slug', postController.getSinglePost);
 router.post('/post/:slug/comment', requireAuth, postController.postComment);
+router.post(['/post/:slug/rate', '/api/post/:slug/rate', '/api/posts/:slug/rate'], postController.postRate);
 
 // Search
 router.get('/search', postController.searchPosts);
