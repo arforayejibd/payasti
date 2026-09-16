@@ -4,49 +4,80 @@
   topbarButton: { text: '+ নতুন লেখক যোগ করুন', url: '/admin/users/new' }
 }) %>
 
-<!-- Role Tabs & Search Filter -->
+<!-- Status & Role Tabs & Search Filter -->
 <div class="admin-card" style="margin-bottom: 20px;">
-  <div style="padding: 16px 20px; display: flex; flex-wrap: wrap; gap: 16px; align-items: center; justify-content: space-between;">
-    <!-- Role Filter Tabs -->
-    <div style="display: flex; gap: 6px; overflow-x: auto;">
-      <a href="/admin/users?role=all&q=<%= searchQuery %>" 
-         class="btn-view-site" 
-         style="<%= roleFilter === 'all' ? 'background: var(--admin-primary); color: #fff; border-color: var(--admin-primary);' : '' %>">
-        সকল ইউজার (<%= toBengaliNumber(userStats.total) %>)
-      </a>
-      <a href="/admin/users?role=admin&q=<%= searchQuery %>" 
-         class="btn-view-site" 
-         style="<%= roleFilter === 'admin' ? 'background: #dc2626; color: #fff; border-color: #dc2626;' : '' %>">
+  <div style="padding: 16px 20px; display: flex; flex-direction: column; gap: 14px;">
+    
+    <!-- Top Row: Status Tabs & Quick Approval Access -->
+    <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; border-bottom: 1px solid #edf2f7; padding-bottom: 14px;">
+      <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+        <!-- All Users -->
+        <a href="/admin/users?status=all&role=all&q=<%= searchQuery %>" 
+           class="btn-view-site" 
+           style="<%= (statusFilter === 'all' && roleFilter === 'all') ? 'background: var(--admin-primary); color: #fff; border-color: var(--admin-primary);' : '' %>">
+          সকল ইউজার (<%= toBengaliNumber(userStats.total) %>)
+        </a>
+
+        <!-- Pending Approval Tab (highlighted if any exists) -->
+        <a href="/admin/users?status=pending_approval&q=<%= searchQuery %>" 
+           class="btn-view-site" 
+           style="<%= statusFilter === 'pending_approval' ? 'background: #d97706; color: #fff; border-color: #d97706;' : (userStats.pendingApproval > 0 ? 'background: #fffbeb; color: #b45309; border-color: #fde68a; font-weight: 700;' : '') %>">
+          ⏳ অনুমোদনের অপেক্ষায় (<%= toBengaliNumber(userStats.pendingApproval) %>)
+        </a>
+
+        <!-- Pending Verification Tab -->
+        <a href="/admin/users?status=pending_verification&q=<%= searchQuery %>" 
+           class="btn-view-site" 
+           style="<%= statusFilter === 'pending_verification' ? 'background: #4b5563; color: #fff; border-color: #4b5563;' : '' %>">
+          ✉️ ভেরিফিকেশন বাকি (<%= toBengaliNumber(userStats.pendingVerification) %>)
+        </a>
+
+        <!-- Active Users -->
+        <a href="/admin/users?status=active&q=<%= searchQuery %>" 
+           class="btn-view-site" 
+           style="<%= statusFilter === 'active' ? 'background: #16a34a; color: #fff; border-color: #16a34a;' : '' %>">
+          ✓ সক্রিয় ইউজার
+        </a>
+      </div>
+
+      <!-- Search Form -->
+      <form action="/admin/users" method="GET" style="display: flex; gap: 8px;">
+        <input type="hidden" name="role" value="<%= roleFilter %>">
+        <input type="hidden" name="status" value="<%= statusFilter %>">
+        <input 
+          type="text" 
+          name="q" 
+          value="<%= searchQuery %>" 
+          class="admin-form-input" 
+          placeholder="নাম, ইউজারনেম বা ইমেইল..." 
+          style="width: 240px; padding: 7px 12px; font-size: 15px;"
+        >
+        <button type="submit" class="btn-view-site" style="padding: 7px 14px; font-size: 15px;">অনুসন্ধান</button>
+        <% if (searchQuery || roleFilter !== 'all' || statusFilter !== 'all') { %>
+          <a href="/admin/users" class="btn-view-site" style="padding: 7px 12px; color: #dc2626; font-size: 15px;" title="ফিল্টার রিসেট">✕ রিসেট</a>
+        <% } %>
+      </form>
+    </div>
+
+    <!-- Bottom Row: Role Sub-filters -->
+    <div style="display: flex; gap: 6px; align-items: center; font-size: 14px; color: var(--admin-text-muted);">
+      <span style="font-weight: 600;">রোল অনুযায়ী:</span>
+      <a href="/admin/users?role=admin&status=<%= statusFilter %>&q=<%= searchQuery %>" 
+         style="text-decoration: none; padding: 3px 10px; border-radius: 4px; font-size: 13px; <%= roleFilter === 'admin' ? 'background: #fef2f2; color: #dc2626; font-weight: 700;' : 'color: var(--admin-text-muted);' %>">
         এডমিন (<%= toBengaliNumber(userStats.admins) %>)
       </a>
-      <a href="/admin/users?role=editor&q=<%= searchQuery %>" 
-         class="btn-view-site" 
-         style="<%= roleFilter === 'editor' ? 'background: #2563eb; color: #fff; border-color: #2563eb;' : '' %>">
+      •
+      <a href="/admin/users?role=editor&status=<%= statusFilter %>&q=<%= searchQuery %>" 
+         style="text-decoration: none; padding: 3px 10px; border-radius: 4px; font-size: 13px; <%= roleFilter === 'editor' ? 'background: #eff6ff; color: #2563eb; font-weight: 700;' : 'color: var(--admin-text-muted);' %>">
         সম্পাদক (<%= toBengaliNumber(userStats.editors) %>)
       </a>
-      <a href="/admin/users?role=author&q=<%= searchQuery %>" 
-         class="btn-view-site" 
-         style="<%= roleFilter === 'author' ? 'background: var(--admin-accent); color: #fff; border-color: var(--admin-accent);' : '' %>">
+      •
+      <a href="/admin/users?role=author&status=<%= statusFilter %>&q=<%= searchQuery %>" 
+         style="text-decoration: none; padding: 3px 10px; border-radius: 4px; font-size: 13px; <%= roleFilter === 'author' ? 'background: #f0fdf4; color: #16a34a; font-weight: 700;' : 'color: var(--admin-text-muted);' %>">
         লেখক (<%= toBengaliNumber(userStats.authors) %>)
       </a>
     </div>
 
-    <!-- Search Form -->
-    <form action="/admin/users" method="GET" style="display: flex; gap: 8px;">
-      <input type="hidden" name="role" value="<%= roleFilter %>">
-      <input 
-        type="text" 
-        name="q" 
-        value="<%= searchQuery %>" 
-        class="admin-form-input" 
-        placeholder="নাম, ইউজারনেম বা ইমেইল..." 
-        style="width: 240px; padding: 8px 14px; font-size: 16px;"
-      >
-      <button type="submit" class="btn-view-site" style="padding: 8px 16px; font-size: 16px;">অনুসন্ধান</button>
-      <% if (searchQuery || roleFilter !== 'all') { %>
-        <a href="/admin/users" class="btn-view-site" style="padding: 8px 14px; color: #dc2626; font-size: 16px;" title="ফিল্টার রিসেট">✕</a>
-      <% } %>
-    </form>
   </div>
 </div>
 
@@ -54,8 +85,8 @@
 <div class="admin-card">
   <div class="admin-card-header">
     <div class="admin-card-title">
-      <span>নিবন্ধিত লেখক ও পরিচালনাকারী দল</span>
-      <span class="admin-card-badge"><%= toBengaliNumber(users.length) %> জন</span>
+      <span>নিবন্ধিত লেখক ও ইউজার তালিকা</span>
+      <span class="admin-card-badge"><%= toBengaliNumber(users.length) %> জন প্রদর্শিত</span>
     </div>
   </div>
 
@@ -66,16 +97,22 @@
           <th style="width: 44px;">ছবি</th>
           <th>পূর্ণ নাম ও ইউজারনেম</th>
           <th>ইমেইল</th>
-          <th>রোল / পদবী</th>
+          <th>পদবী / রোল</th>
+          <th>স্ট্যাটাস</th>
           <th>মোট পোস্ট</th>
-          <th>যোগদানের তারিখ</th>
-          <th style="text-align: right; min-width: 130px;">অ্যাকশন</th>
+          <th>নিবন্ধন তারিখ</th>
+          <th style="text-align: right; min-width: 170px;">অ্যাকশন</th>
         </tr>
       </thead>
       <tbody>
         <% if (users && users.length > 0) { %>
           <% users.forEach(u => { %>
-            <tr>
+            <% 
+              const isPendingApproval = (u.status === 'pending_approval') || (u.role === 'author' && (!u.is_approved || u.is_approved == 0) && (u.email_verified == 1));
+              const isPendingVerification = (u.status === 'pending_verification') || (u.role === 'author' && (!u.email_verified || u.email_verified == 0));
+              const isSuspended = (u.status === 'suspended');
+            %>
+            <tr style="<%= isPendingApproval ? 'background-color: #fffdf5;' : '' %>">
               <td>
                 <% if (u.avatar) { %>
                   <img src="<%= u.avatar %>" alt="" style="width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 1px solid #e2e8f0;">
@@ -87,13 +124,13 @@
               </td>
               <td>
                 <div class="author-name">
-                  <a href="/admin/users/<%= u.id %>/edit" style="color: var(--admin-text-main); text-decoration: none;">
+                  <a href="/admin/users/<%= u.id %>/edit" style="color: var(--admin-text-main); text-decoration: none; font-weight: 600;">
                     <%= u.display_name || 'নাম নেই' %>
                   </a>
                 </div>
                 <div class="author-email">@<%= u.username %></div>
               </td>
-              <td style="color: var(--admin-text-muted); font-size: 16px;">
+              <td style="color: var(--admin-text-muted); font-size: 15px;">
                 <%= u.email %>
               </td>
               <td>
@@ -102,25 +139,57 @@
                 <% } else if (u.role === 'editor') { %>
                   <span class="status-badge" style="background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe;">🖋️ সম্পাদক</span>
                 <% } else { %>
-                  <span class="status-badge" style="background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0;">সম্মানিত লেখক</span>
+                  <span class="status-badge" style="background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0;">লেখক</span>
                 <% } %>
               </td>
               <td>
-                <strong style="color: var(--admin-text-main); font-size: 17px;">
+                <% if (isPendingApproval) { %>
+                  <span class="status-badge" style="background: #fffbeb; color: #b45309; border: 1px solid #fde68a;">
+                    ⏳ অনুমোদনের অপেক্ষায়
+                  </span>
+                <% } else if (isPendingVerification) { %>
+                  <span class="status-badge" style="background: #f3f4f6; color: #4b5563; border: 1px solid #e5e7eb;">
+                    ✉️ ভেরিফিকেশন বাকি
+                  </span>
+                <% } else if (isSuspended) { %>
+                  <span class="status-badge" style="background: #fee2e2; color: #991b1b; border: 1px solid #fecaca;">
+                    🚫 স্থগিত
+                  </span>
+                <% } else { %>
+                  <span class="status-badge" style="background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0;">
+                    ✓ সক্রিয়
+                  </span>
+                <% } %>
+              </td>
+              <td>
+                <strong style="color: var(--admin-text-main); font-size: 16px;">
                   <%= toBengaliNumber(u.post_count || 0) %>
                 </strong>
-                <span style="font-size: 14px; color: var(--admin-text-sub);">
+                <span style="font-size: 13px; color: var(--admin-text-sub);">
                   (<%= toBengaliNumber(u.published_count || 0) %> টি প্রকাশিত)
                 </span>
               </td>
-              <td style="white-space: nowrap; color: var(--admin-text-muted); font-size: 16px;">
+              <td style="white-space: nowrap; color: var(--admin-text-muted); font-size: 15px;">
                 <%= formatBengaliDate(u.registered_at || u.created_at) %>
               </td>
               <td>
-                <div class="actions-group" style="justify-content: flex-end;">
+                <div class="actions-group" style="justify-content: flex-end; gap: 6px;">
+                  
+                  <!-- Quick Approve Button for Pending Users -->
+                  <% if (isPendingApproval || isPendingVerification) { %>
+                    <form action="/admin/users/<%= u.id %>/approve" method="POST" style="display: inline;" onsubmit="return confirm('এই লেখক অ্যাকাউন্টটি সক্রিয় ও অনুমোদন করতে চান?');">
+                      <button type="submit" class="btn-table-action" style="background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; font-weight: 600;" title="অ্যাকাউন্ট অনুমোদন করুন">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                          <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        অনুমোদন
+                      </button>
+                    </form>
+                  <% } %>
+
                   <!-- Edit User -->
                   <a href="/admin/users/<%= u.id %>/edit" class="btn-table-action" style="background: #e0f2fe; color: #0284c7;" title="ইউজার সম্পাদনা">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                       <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
                       <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
                     </svg>
@@ -129,26 +198,27 @@
 
                   <!-- Delete User (prevent deleting own account) -->
                   <% if (user.id !== u.id) { %>
-                    <form action="/admin/users/<%= u.id %>/delete" method="POST" style="display: inline;" onsubmit="return confirm('আপনি কি নিশ্চিত যে এই লেখককে ডিলিট করতে চান? (তার সকল লেখা মূল এডমিনের অধীনে স্থানান্তরিত হবে)');">
-                      <button type="submit" class="btn-table-action btn-reject" title="ডিলিট করুন">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <form action="/admin/users/<%= u.id %>/delete" method="POST" style="display: inline;" onsubmit="return confirm('আপনি কি নিশ্চিত যে এই ইউজারকে ডিলিট করতে চান? (এটি স্প্যাম অ্যাকাউন্ট হলে অবিলম্বে মুছে ফেলুন)');">
+                      <button type="submit" class="btn-table-action btn-reject" title="ডিলিট / বাতিল করুন">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                           <polyline points="3 6 5 6 21 6"></polyline>
                           <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
                         </svg>
                       </button>
                     </form>
                   <% } %>
+
                 </div>
               </td>
             </tr>
           <% }) %>
         <% } else { %>
           <tr>
-            <td colspan="7">
+            <td colspan="8">
               <div class="admin-empty-state">
                 <div class="empty-icon">👥</div>
                 <div class="empty-title">কোনো লেখক বা ইউজার পাওয়া যায়নি</div>
-                <div class="empty-desc">অনুসন্ধানের সাথে মিল রেখে কোনো রেকর্ড নেই।</div>
+                <div class="empty-desc">অনুসন্ধান বা নির্বাচিত ফিল্টারের সাথে মিল রেখে কোনো রেকর্ড নেই।</div>
               </div>
             </td>
           </tr>

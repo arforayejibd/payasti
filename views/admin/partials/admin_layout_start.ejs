@@ -64,7 +64,7 @@
         );
       %>
       <li class="admin-nav-item has-submenu <%= isPostsGroup ? 'open' : '' %>">
-        <a href="/admin/posts" class="menu-toggle">
+        <a href="javascript:void(0)" class="menu-toggle" role="button" aria-expanded="<%= isPostsGroup ? 'true' : 'false' %>">
           <div class="admin-nav-left">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
@@ -139,7 +139,7 @@
         const isBooksGroup = typeof activeMenu !== 'undefined' && activeMenu === 'manage_books';
       %>
       <li class="admin-nav-item has-submenu <%= isBooksGroup ? 'open' : '' %>">
-        <a href="/admin/books" class="menu-toggle">
+        <a href="javascript:void(0)" class="menu-toggle" role="button" aria-expanded="<%= isBooksGroup ? 'true' : 'false' %>">
           <div class="admin-nav-left">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
               <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
@@ -166,7 +166,7 @@
         const isUsersGroup = typeof activeMenu !== 'undefined' && (activeMenu === 'manage_users' || activeMenu === 'user_profile');
       %>
       <li class="admin-nav-item has-submenu <%= isUsersGroup ? 'open' : '' %>">
-        <a href="/admin/users" class="menu-toggle">
+        <a href="javascript:void(0)" class="menu-toggle" role="button" aria-expanded="<%= isUsersGroup ? 'true' : 'false' %>">
           <div class="admin-nav-left">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
               <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
@@ -176,13 +176,26 @@
             </svg>
             <span>ইউজার</span>
           </div>
-          <svg class="submenu-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="6 9 12 15 18 9"></polyline>
-          </svg>
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <% if (typeof adminPendingUsersCount !== 'undefined' && adminPendingUsersCount > 0) { %>
+              <span class="admin-nav-badge"><%= toBengaliNumber(adminPendingUsersCount) %></span>
+            <% } %>
+            <svg class="submenu-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </div>
         </a>
         <ul class="admin-submenu">
           <li class="admin-submenu-item <%= typeof activeMenu !== 'undefined' && activeMenu === 'manage_users' ? 'active' : '' %>">
             <a href="/admin/users">সকল ইউজার</a>
+          </li>
+          <li class="admin-submenu-item">
+            <a href="/admin/users?status=pending_approval">
+              <span>পেন্ডিং অনুমোদন</span>
+              <% if (typeof adminPendingUsersCount !== 'undefined' && adminPendingUsersCount > 0) { %>
+                <span class="admin-nav-badge" style="font-size: 13px; padding: 2px 7px;"><%= toBengaliNumber(adminPendingUsersCount) %></span>
+              <% } %>
+            </a>
           </li>
           <li class="admin-submenu-item">
             <a href="/admin/users/new">নতুন লেখক</a>

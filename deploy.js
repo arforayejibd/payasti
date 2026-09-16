@@ -20,6 +20,7 @@ const SYNC_DIRS = [
   'middleware',
   'public',
   'routes',
+  'scripts',
   'services',
   'views'
 ];
@@ -81,14 +82,32 @@ async function deploy() {
       }
     }
 
-    // 3. Ensure nodemailer is uploaded to remote node_modules (symlinked in cPanel nodevenv)
-    const localNodemailer = path.join(__dirname, 'node_modules', 'nodemailer');
-    const remoteNodemailer = '/home/payasti/nodevenv/payasti/22/lib/node_modules/nodemailer';
-    if (fs.existsSync(localNodemailer)) {
-      console.log('\n📦 Syncing nodemailer to cPanel nodevenv...');
-      await uploadDir(sftp, localNodemailer, remoteNodemailer);
-      console.log('✅ nodemailer synced successfully!');
+    // 3. Ensure required packages are synced to cPanel nodevenv
+    const REMOTE_NODE_MODULES = '/home/payasti/nodevenv/payasti/22/lib/node_modules';
+    const packagesToSync = [
+      'nodemailer',
+      'mysql2',
+      'aws-ssl-profiles',
+      'generate-function',
+      'iconv-lite',
+      'long',
+      'lru.min',
+      'named-placeholders',
+      'sql-escaper',
+      'is-property',
+      'destroy'
+    ];
+
+    console.log('\n📦 Syncing npm modules to cPanel nodevenv...');
+    for (const pkg of packagesToSync) {
+      const localPkg = path.join(__dirname, 'node_modules', pkg);
+      const remotePkg = path.posix.join(REMOTE_NODE_MODULES, pkg);
+      if (fs.existsSync(localPkg)) {
+        console.log(`  📦 Syncing ${pkg}...`);
+        await uploadDir(sftp, localPkg, remotePkg);
+      }
     }
+    console.log('✅ All required modules synced to cPanel nodevenv successfully!');
 
     // 4. Trigger Passenger / LiteSpeed restart
     console.log('\n🔄 Restarting application via tmp/restart.txt...');

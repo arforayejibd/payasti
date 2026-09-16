@@ -163,10 +163,29 @@ body.admin-body {
   flex: 1;
   padding: 20px 14px;
   overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-gutter: stable;
   list-style: none;
   display: flex;
   flex-direction: column;
   gap: 6px;
+}
+
+.admin-sidebar-nav::-webkit-scrollbar {
+  width: 4px;
+}
+
+.admin-sidebar-nav::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.admin-sidebar-nav::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 4px;
+}
+
+.admin-sidebar-nav::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
 }
 
 .admin-nav-section-title {
@@ -178,7 +197,7 @@ body.admin-body {
   padding: 12px 12px 6px;
 }
 
-.admin-nav-item a {
+.admin-nav-item > a {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -187,42 +206,46 @@ body.admin-body {
   color: var(--admin-sidebar-text);
   text-decoration: none;
   font-weight: 500;
-  font-size: 19px;
-  transition: all 0.2s ease;
+  font-size: 18px;
+  transition: background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), 
+              color 0.2s ease, 
+              box-shadow 0.2s ease;
+  position: relative;
+  user-select: none;
 }
 
-.admin-nav-item a .admin-nav-left {
+.admin-nav-item > a .admin-nav-left {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-.admin-nav-item a svg {
+.admin-nav-item > a svg {
   width: 21px;
   height: 21px;
   stroke-width: 2;
   color: #64748b;
-  transition: color 0.2s ease;
+  transition: color 0.2s ease, transform 0.2s ease;
   flex-shrink: 0;
 }
 
-.admin-nav-item:hover a {
+.admin-nav-item:hover > a {
   background-color: var(--admin-sidebar-hover);
   color: #ffffff;
 }
 
-.admin-nav-item:hover a svg {
-  color: #38bdf8;
+.admin-nav-item:hover > a svg {
+  color: #4ade80;
 }
 
-.admin-nav-item.active a {
+.admin-nav-item.active > a {
   background: linear-gradient(135deg, #075603 0%, #068200 100%);
   color: #ffffff;
   font-weight: 600;
   box-shadow: 0 4px 12px rgba(7, 86, 3, 0.35);
 }
 
-.admin-nav-item.active a svg {
+.admin-nav-item.active > a svg {
   color: #ffffff;
 }
 
@@ -241,6 +264,7 @@ body.admin-body {
 .admin-nav-item.has-submenu {
   display: flex;
   flex-direction: column;
+  transition: background-color 0.25s ease, border-color 0.25s ease;
 }
 
 .admin-nav-item.has-submenu > a {
@@ -249,51 +273,100 @@ body.admin-body {
 }
 
 .admin-nav-item.has-submenu .submenu-arrow {
-  width: 14px;
-  height: 14px;
-  transition: transform 0.2s ease;
+  width: 15px;
+  height: 15px;
+  transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1), color 0.2s ease;
   color: #64748b;
   flex-shrink: 0;
 }
 
-.admin-nav-item.has-submenu.open > a .submenu-arrow {
-  transform: rotate(180deg);
-  color: #ffffff;
+/* When Submenu is Open: Soft, distinct highlighted wrapper */
+.admin-nav-item.has-submenu.open {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 6px;
 }
 
+/* Main Menu Header when Open: soft, subtle background & clear divider line */
+.admin-nav-item.has-submenu.open > a {
+  background: rgba(7, 86, 3, 0.16);
+  color: #ffffff;
+  border-radius: 11px 11px 0 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.09); /* পরিচ্ছন্ন ও সূক্ষ্ম লম্বা দাগ */
+}
+
+.admin-nav-item.has-submenu.open > a svg {
+  color: #4ade80;
+}
+
+.admin-nav-item.has-submenu.open > a .submenu-arrow {
+  transform: rotate(180deg);
+  color: #4ade80;
+}
+
+/* Submenu container with smooth height & opacity transition and light subtle tint */
 .admin-submenu {
-  display: none;
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
   list-style: none;
-  padding: 4px 0 6px 36px;
+  padding: 0 0 0 32px;
+  margin: 0;
+  display: flex;
   flex-direction: column;
   gap: 2px;
+  transition: max-height 0.28s cubic-bezier(0.4, 0, 0.2, 1), 
+              opacity 0.22s ease, 
+              padding 0.28s ease;
 }
 
 .admin-nav-item.has-submenu.open .admin-submenu {
-  display: flex;
+  max-height: 350px;
+  opacity: 1;
+  background: rgba(0, 0, 0, 0.08); /* হালকা ও কোমল ব্যাকগ্রাউন্ড */
+  border-radius: 0 0 11px 11px;
+  padding: 6px 10px 8px 30px;
 }
 
+/* Submenu Items - Exact same 18px font size as main menu */
 .admin-submenu-item a {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 7px 12px;
-  border-radius: 6px;
-  color: #94a3b8;
-  font-size: 17px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  color: #cbd5e1;
+  font-size: 18px; /* SAME FONT SIZE AS MAIN MENU */
+  font-weight: 500;
   text-decoration: none;
-  transition: all 0.15s ease;
+  position: relative;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .admin-submenu-item a:hover {
   color: #ffffff;
-  background-color: rgba(255, 255, 255, 0.06);
+  background-color: rgba(255, 255, 255, 0.09);
+  transform: translateX(4px);
 }
 
 .admin-submenu-item.active a {
   color: #4ade80 !important;
   font-weight: 600 !important;
-  background-color: rgba(74, 222, 128, 0.12) !important;
+  background-color: rgba(74, 222, 128, 0.14) !important;
+}
+
+.admin-submenu-item.active a::before {
+  content: '';
+  position: absolute;
+  left: 2px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 14px;
+  border-radius: 2px;
+  background: #4ade80;
 }
 
 /* Sidebar Footer (User Info & Logout) */

@@ -31,6 +31,7 @@ function generateSeoMeta(options = {}) {
   return {
     title: pageTitle,
     description: metaDesc,
+    keywords: keywords,
     canonical: canonicalUrl,
     og: {
       title: pageTitle,
@@ -167,10 +168,107 @@ function getBreadcrumbSchema(items = []) {
   };
 }
 
+function getSpellCheckerSchema() {
+  return {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'WebApplication',
+        '@id': `${SITE_URL}/bangla-spell#webapp`,
+        'name': 'পয়স্তি বাংলা বানান শুদ্ধিকরণ ও সংশোধন (Bangla Spell Checker)',
+        'alternateName': [
+          'অনলাইন বাংলা বানান পরীক্ষক',
+          'Bangla Spell Checker',
+          'Bengali Spelling Corrector',
+          'বাংলা বানান শুদ্ধ করার টুল',
+          'Bangla Banan Shuddhikoron'
+        ],
+        'url': `${SITE_URL}/bangla-spell`,
+        'applicationCategory': 'UtilitiesApplication',
+        'operatingSystem': 'All',
+        'browserRequirements': 'Requires JavaScript. Requires HTML5.',
+        'description': 'বাংলা একাডেমি প্রমিত বানানরীতি ও ১ লক্ষাধিক শব্দের অভিধান সম্বলিত ফ্রি অনলাইন বাংলা বানান পরীক্ষক ও শুদ্ধিকরণ সফটওয়্যার।',
+        'inLanguage': 'bn-BD',
+        'offers': {
+          '@type': 'Offer',
+          'price': '0',
+          'priceCurrency': 'BDT'
+        },
+        'publisher': {
+          '@type': 'Organization',
+          'name': `${SITE_NAME} - ${TAGLINE}`,
+          'url': SITE_URL,
+          'logo': {
+            '@type': 'ImageObject',
+            'url': `${SITE_URL}/images/Payasti-logo.png`
+          }
+        }
+      },
+      {
+        '@type': 'FAQPage',
+        '@id': `${SITE_URL}/bangla-spell#faq`,
+        'mainEntity': [
+          {
+            '@type': 'Question',
+            'name': 'অনলাইন বাংলা বানান শুদ্ধিকরণ বা স্পেল চেকার টুল কী?',
+            'acceptedAnswer': {
+              '@type': 'Answer',
+              'text': 'পয়স্তি বাংলা বানান শুদ্ধিকরণ হলো একটি আধুনিক ফ্রি অনলাইন টুল যা বাংলা একাডেমির প্রমিত বানানরীতি অনুসরণ করে যেকোনো বাংলা টেক্সটের ভুল বানান নিমেষেই সনাক্ত করে এবং এক ক্লিকে সঠিক রূপ সাজেস্ট করে।'
+            }
+          },
+          {
+            '@type': 'Question',
+            'name': 'কীভাবে অনলাইনে বাংলা বানান পরীক্ষা ও সংশোধন করবেন?',
+            'acceptedAnswer': {
+              '@type': 'Answer',
+              'text': 'এডিটরে আপনার বাংলা লেখা পেস্ট বা টাইপ করুন। ভুল শব্দগুলোর নিচে লাল দাগ আসবে। ভুল শব্দের ওপর ক্লিক করে অথবা ডানপাশের ভুলের তালিকা থেকে শুদ্ধ শব্দে ক্লিক করলেই তা এডিটরে সঙ্গে সঙ্গে ঠিক হয়ে যাবে।'
+            }
+          },
+          {
+            '@type': 'Question',
+            'name': 'এই টুলটি কি বাংলা একাডেমির নতুন প্রমিত বানান নিয়ম মানে?',
+            'acceptedAnswer': {
+              '@type': 'Answer',
+              'text': 'হ্যাঁ, এটি সম্পূর্ণভাবে বাংলা একাডেমির আধুনিক প্রমিত বানানরীতি ও ১,০০,০০০+ প্রমিত শব্দের অভিধান দ্বারা পরিচালিত।'
+            }
+          },
+          {
+            '@type': 'Question',
+            'name': 'পয়স্তি বানান পরীক্ষক কি বিনামূল্যে ব্যবহার করা যায়?',
+            'acceptedAnswer': {
+              '@type': 'Answer',
+              'text': 'হ্যাঁ, কোনো প্রকার লগইন বা সাবস্ক্রিপশন ছাড়াই যেকোনো লেখক, শিক্ষার্থী ও পেশাজীবী বিনামূল্যে সীমাহীন লেখা বানান শুদ্ধ করতে পারবেন।'
+            }
+          }
+        ]
+      },
+      {
+        '@type': 'BreadcrumbList',
+        '@id': `${SITE_URL}/bangla-spell#breadcrumb`,
+        'itemListElement': [
+          {
+            '@type': 'ListItem',
+            'position': 1,
+            'name': 'হোম',
+            'item': `${SITE_URL}/`
+          },
+          {
+            '@type': 'ListItem',
+            'position': 2,
+            'name': 'বাংলা বানান শুদ্ধিকরণ',
+            'item': `${SITE_URL}/bangla-spell`
+          }
+        ]
+      }
+    ]
+  };
+}
+
 module.exports = {
   generateSeoMeta,
   getArticleSchema,
   getBookSchema,
   getWebsiteSchema,
-  getBreadcrumbSchema
+  getBreadcrumbSchema,
+  getSpellCheckerSchema
 };

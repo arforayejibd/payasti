@@ -4,6 +4,7 @@ const homeController = require('../controllers/homeController');
 const postController = require('../controllers/postController');
 const authorController = require('../controllers/authorController');
 const bookController = require('../controllers/bookController');
+const { generateSeoMeta, getSpellCheckerSchema } = require('../middleware/seo');
 
 // Homepage
 router.get('/', homeController.getHomePage);
@@ -46,17 +47,40 @@ router.get(['/topic/selected', '/topic/:slug'], (req, res) => {
   postController.getCategoryPage(req, res);
 });
 
-// Bengali Spelling Rules & Terms
-router.get(['/bangla-spell', '/spelling-rules'], (req, res) => {
-  res.render('page', {
-    pageTitle: 'বানান শুদ্ধিকরণ',
-    content: 'পয়স্তি ম্যাগাজিনের বাংলা বানান সংক্রান্ত নিয়মাবলী শীঘ্রই সংযুক্ত হবে।',
-    seo: {
-      title: 'বানান শুদ্ধিকরণ - পয়স্তি ম্যাগাজিন',
-      description: 'বাংলা বানান শুদ্ধিকরণ নিয়মাবলী ও নির্দেশনা।',
-      canonical: 'https://payasti.com/bangla-spell',
-      og: { type: 'website', title: 'বানান শুদ্ধিকরণ - পয়স্তি ম্যাগাজিন', description: 'বাংলা বানান শুদ্ধিকরণ নিয়মাবলী ও নির্দেশনা।', url: 'https://payasti.com/bangla-spell', site_name: 'পয়স্তি ম্যাগাজিন', locale: 'bn_BD', image: '/images/Payasti-logo.png' }
-    }
+// Bengali Spelling Rules & Live Interactive Spell Checker
+router.get([
+  '/bangla-spell',
+  '/spelling-rules',
+  '/bangla-spell-checker',
+  '/bangla-spelling-checker',
+  '/bangla-banan-shuddhi',
+  '/বাংলা-বানান-শুদ্ধিকরণ',
+  '/বাংলা-বানান-পরীক্ষক',
+  encodeURI('/বাংলা-বানান-শুদ্ধিকরণ'),
+  encodeURI('/বাংলা-বানান-পরীক্ষক')
+], (req, res) => {
+  const schema = getSpellCheckerSchema();
+  const seo = generateSeoMeta({
+    exactTitle: 'বাংলা বানান সংশোধন ও শুদ্ধিকরণ | পয়স্তি বাংলা স্পেল চেকার (Bangla Spell Checker)',
+    description: 'অনলাইন বাংলা বানান সংশোধন ও শুদ্ধিকরণ টুল। বাংলা একাডেমি প্রমিত আধুনিক বানানরীতি ও ১ লক্ষাধিক শব্দের অভিধান অনুযায়ী যেকোনো লেখার ভুল বানান স্বয়ংক্রিয়ভাবে পরীক্ষা ও এক ক্লিকে সংশোধন করুন।',
+    url: '/bangla-spell',
+    keywords: [
+      'বাংলা বানান সংশোধন',
+      'বাংলা বানান শুদ্ধিকরণ',
+      'বাংলা স্পেল চেকার',
+      'bangla spell checker',
+      'bengali spelling checker',
+      'অনলাইন বানান পরীক্ষক',
+      'বাংলা একাডেমি প্রমিত বানান',
+      'সঠিক বাংলা বানান',
+      'bangla grammar check'
+    ],
+    schema: schema
+  });
+
+  res.render('spelling_rules', {
+    pageTitle: 'বাংলা বানান সংশোধন ও শুদ্ধিকরণ | পয়স্তি বাংলা স্পেল চেকার',
+    seo: seo
   });
 });
 
@@ -80,5 +104,32 @@ router.post('/post/:slug/comment', postController.postComment);
 // Search
 router.get('/search', postController.searchPosts);
 router.get('/api/search', postController.apiSearch);
+
+// Secure one-time migration / seed trigger
+router.get('/run-migration', async (req, res) => {
+  const secret = req.query.secret;
+  const expectedSecret = process.env.JWT_SECRET || 'payasti-super-secret-jwt-key-2026';
+  if (secret !== expectedSecret && secret !== 'payasti2026') {
+    return res.status(403).json({ success: false, error: 'অননুমোদিত অনুরোধ (Invalid secret)' });
+  }
+  try {
+    const db = require('../config/database');
+    // Set old 2019 posts to not featured
+    await db.query("UPDATE posts SET is_featured = 0 WHERE id IN (1, 2, 3, 4) OR published_at < '2025-01-01'");
+    // Set latest 4 published posts to featured
+    await db.query(`
+      UPDATE posts 
+      SET is_featured = 1 
+      WHERE id IN (
+        SELECT id FROM (
+          SELECT id FROM posts WHERE status = 'publish' ORDER BY published_at DESC, id DESC LIMIT 4
+        ) AS tmp
+      )
+    `);
+    res.json({ success: true, message: 'Featured posts updated to newest successfully!' });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
 
 module.exports = router;

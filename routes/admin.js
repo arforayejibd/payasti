@@ -9,13 +9,18 @@ const db = require('../config/database');
 router.use(requireRole(['admin', 'editor']));
 
 // Global admin metrics middleware
-router.use((req, res, next) => {
+router.use(async (req, res, next) => {
   try {
-    res.locals.adminPendingCount = db.prepare("SELECT COUNT(*) AS total FROM posts WHERE status = 'pending'").get().total;
-    res.locals.adminCommentsCount = db.prepare("SELECT COUNT(*) AS total FROM comments WHERE status = 'pending'").get().total;
+    const pendRow = await db.prepare("SELECT COUNT(1) AS total FROM posts WHERE status = 'pending'").get();
+    const commRow = await db.prepare("SELECT COUNT(1) AS total FROM comments WHERE status = 'pending'").get();
+    const userPendRow = await db.prepare("SELECT COUNT(1) AS total FROM users WHERE status IN ('pending_approval', 'pending_verification') OR (role = 'author' AND is_approved = 0)").get();
+    res.locals.adminPendingCount = pendRow ? pendRow.total : 0;
+    res.locals.adminCommentsCount = commRow ? commRow.total : 0;
+    res.locals.adminPendingUsersCount = userPendRow ? userPendRow.total : 0;
   } catch (err) {
     res.locals.adminPendingCount = 0;
     res.locals.adminCommentsCount = 0;
+    res.locals.adminPendingUsersCount = 0;
   }
   next();
 });
@@ -64,6 +69,7 @@ router.get('/users/new', adminController.getNewUser);
 router.post('/users/new', upload.single('avatar'), adminController.postNewUser);
 router.get('/users/:id/edit', adminController.getEditUser);
 router.post('/users/:id/edit', upload.single('avatar'), adminController.postEditUser);
+router.post('/users/:id/approve', adminController.approveUser);
 router.post('/users/:id/delete', adminController.deleteUser);
 
 // 7. Settings

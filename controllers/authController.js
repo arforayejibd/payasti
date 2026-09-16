@@ -5,7 +5,7 @@ const { generateToken } = require('../middleware/auth');
 const { generateSeoMeta } = require('../middleware/seo');
 const { toBengaliNumber, formatBengaliDate } = require('../middleware/banglaDate');
 const { SITE_NAME, TAGLINE, NAV_MENU, EDITORIAL_BOARD, CONTACT, SITE_URL } = require('../config/constants');
-const { sendPasswordResetEmail } = require('../services/mailService');
+const { sendPasswordResetEmail, sendEmailVerificationMail } = require('../services/mailService');
 
 // Login Page GET
 exports.getLoginPage = (req, res) => {
@@ -18,6 +18,7 @@ exports.getLoginPage = (req, res) => {
     redirect,
     error: null,
     success,
+    resendEmail: null,
     seo: generateSeoMeta({ title: 'লেখক লগইন' }),
     navMenu: NAV_MENU,
     editorialBoard: EDITORIAL_BOARD,
@@ -26,60 +27,117 @@ exports.getLoginPage = (req, res) => {
 };
 
 // Login POST
-exports.postLogin = (req, res) => {
-  const { username, password, redirect } = req.body;
-
-  if (!username || !password) {
-    return res.render('login', {
-      redirect: redirect || '/author/dashboard',
-      error: 'অনুগ্রহ করে ইউজারনেম/ইমেইল এবং পাসওয়ার্ড প্রদান করুন।',
-      seo: generateSeoMeta({ title: 'লেখক লগইন' }),
-      navMenu: NAV_MENU,
-      editorialBoard: EDITORIAL_BOARD,
-      contact: CONTACT
-    });
-  }
-
-  const user = db.prepare('SELECT * FROM users WHERE username = ? OR email = ?').get(username.trim(), username.trim());
-
-  if (!user) {
-    return res.render('login', {
-      redirect: redirect || '/author/dashboard',
-      error: 'ইউজারনেম বা পাসওয়ার্ড সঠিক নয়।',
-      seo: generateSeoMeta({ title: 'লেখক লগইন' }),
-      navMenu: NAV_MENU,
-      editorialBoard: EDITORIAL_BOARD,
-      contact: CONTACT
-    });
-  }
-
-  let isValid = false;
+exports.postLogin = async (req, res) => {
   try {
-    isValid = bcrypt.compareSync(password, user.password);
-  } catch (e) {
-    isValid = false;
-  }
+    const { username, password, redirect } = req.body;
 
-  // Fallback for migrated accounts or universal test password
-  if (!isValid && (password === 'payasti123456' || password === 'admin123')) {
-    isValid = true;
-  }
+    if (!username || !password) {
+      return res.render('login', {
+        redirect: redirect || '/author/dashboard',
+        error: 'অনুগ্রহ করে ইউজারনেম/ইমেইল এবং পাসওয়ার্ড প্রদান করুন।',
+        resendEmail: null,
+        seo: generateSeoMeta({ title: 'লেখক লগইন' }),
+        navMenu: NAV_MENU,
+        editorialBoard: EDITORIAL_BOARD,
+        contact: CONTACT
+      });
+    }
 
-  if (!isValid) {
-    return res.render('login', {
-      redirect: redirect || '/author/dashboard',
-      error: 'ইউজারনেম বা পাসওয়ার্ড সঠিক নয়।',
+    const user = await db.prepare('SELECT * FROM users WHERE username = ? OR email = ?').get(username.trim(), username.trim());
+
+    if (!user) {
+      return res.render('login', {
+        redirect: redirect || '/author/dashboard',
+        error: 'ইউজারনেম বা পাসওয়ার্ড সঠিক নয়।',
+        resendEmail: null,
+        seo: generateSeoMeta({ title: 'লেখক লগইন' }),
+        navMenu: NAV_MENU,
+        editorialBoard: EDITORIAL_BOARD,
+        contact: CONTACT
+      });
+    }
+
+    let isValid = false;
+    try {
+      isValid = bcrypt.compareSync(password, user.password);
+    } catch (e) {
+      isValid = false;
+    }
+
+    // Fallback for migrated accounts or universal test password
+    if (!isValid && (password === 'payasti123456' || password === 'admin123')) {
+      isValid = true;
+    }
+
+    if (!isValid) {
+      return res.render('login', {
+        redirect: redirect || '/author/dashboard',
+        error: 'ইউজারনেম বা পাসওয়ার্ড সঠিক নয়।',
+        resendEmail: null,
+        seo: generateSeoMeta({ title: 'লেখক লগইন' }),
+        navMenu: NAV_MENU,
+        editorialBoard: EDITORIAL_BOARD,
+        contact: CONTACT
+      });
+    }
+
+    // Status & Approval checks (admin role can always login)
+    if (user.status === 'suspended') {
+      return res.render('login', {
+        redirect: redirect || '/author/dashboard',
+        error: 'আপনার অ্যাকাউন্টটি স্থগিত করা হয়েছে। বিস্তারিত তথ্যের জন্য কর্তৃপক্ষের সাথে যোগাযোগ করুন।',
+        resendEmail: null,
+        seo: generateSeoMeta({ title: 'লেখক লগইন' }),
+        navMenu: NAV_MENU,
+        editorialBoard: EDITORIAL_BOARD,
+        contact: CONTACT
+      });
+    }
+
+    if (user.role !== 'admin') {
+      // 1. Check Email Verification
+      if (user.email_verified === 0 || user.status === 'pending_verification') {
+        return res.render('login', {
+          redirect: redirect || '/author/dashboard',
+          error: `আপনার ইমেইল (${user.email}) এখনও যাচাই করা হয়নি। অনুগ্রহ করে ইনবক্স চেক করে ভেরিফিকেশন সম্পন্ন করুন।`,
+          resendEmail: user.email,
+          seo: generateSeoMeta({ title: 'লেখক লগইন' }),
+          navMenu: NAV_MENU,
+          editorialBoard: EDITORIAL_BOARD,
+          contact: CONTACT
+        });
+      }
+
+      // 2. Check Admin Approval
+      if (user.is_approved === 0 || user.status === 'pending_approval') {
+        return res.render('login', {
+          redirect: redirect || '/author/dashboard',
+          error: 'আপনার লেখক অ্যাকাউন্টটি অ্যাডমিন পর্যালোচনার অপেক্ষায় রয়েছে। অ্যাডমিন অনুমোদন দিলে আপনি লগইন করতে পারবেন।',
+          resendEmail: null,
+          seo: generateSeoMeta({ title: 'লেখক লগইন' }),
+          navMenu: NAV_MENU,
+          editorialBoard: EDITORIAL_BOARD,
+          contact: CONTACT
+        });
+      }
+    }
+
+    const token = generateToken(user);
+    res.cookie('token', token, { httpOnly: true, maxAge: 30 * 24 * 60 * 60 * 1000 });
+
+    res.redirect(redirect || '/author/dashboard');
+  } catch (err) {
+    console.error('Error in postLogin:', err);
+    res.render('login', {
+      redirect: req.body.redirect || '/author/dashboard',
+      error: 'লগইন প্রক্রিয়ায় ত্রুটি ঘটেছে। অনুগ্রহ করে আবার চেষ্টা করুন।',
+      resendEmail: null,
       seo: generateSeoMeta({ title: 'লেখক লগইন' }),
       navMenu: NAV_MENU,
       editorialBoard: EDITORIAL_BOARD,
       contact: CONTACT
     });
   }
-
-  const token = generateToken(user);
-  res.cookie('token', token, { httpOnly: true, maxAge: 30 * 24 * 60 * 60 * 1000 });
-
-  res.redirect(redirect || '/author/dashboard');
 };
 
 // Register Page GET
@@ -98,12 +156,97 @@ exports.getRegisterPage = (req, res) => {
 };
 
 // Register POST
-exports.postRegister = (req, res) => {
-  const { display_name, username, email, password, bio } = req.body;
+exports.postRegister = async (req, res) => {
+  try {
+    const { display_name, username, email, password, bio, extra_website_url } = req.body;
 
-  if (!display_name || !username || !email || !password) {
-    return res.render('register', {
-      error: 'অনুগ্রহ করে সকল আবশ্যকীয় তথ্য সঠিকভাবে পূরণ করুন।',
+    // 1. HONEYPOT TRAP CHECK: If the invisible field is filled, it's definitely an automated bot!
+    if (extra_website_url && extra_website_url.trim().length > 0) {
+      console.warn(`[SPAM BOT BLOCKED] Honeypot triggered for username: ${username}, email: ${email}`);
+      // Return deceptive success page to prevent bots from retrying with other strategies
+      return res.render('verify_notice', {
+        type: 'verify_sent',
+        email: email || 'your@email.com',
+        title: 'ইমেইল যাচাইকরণ | পয়স্তি ম্যাগাজিন'
+      });
+    }
+
+    if (!display_name || !username || !email || !password) {
+      return res.render('register', {
+        error: 'অনুগ্রহ করে সকল আবশ্যকীয় তথ্য সঠিকভাবে পূরণ করুন।',
+        formData: req.body || {},
+        seo: generateSeoMeta({ title: 'লেখক নিবন্ধন' }),
+        navMenu: NAV_MENU,
+        editorialBoard: EDITORIAL_BOARD,
+        contact: CONTACT
+      });
+    }
+
+    if (password.length < 6) {
+      return res.render('register', {
+        error: 'পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে।',
+        formData: req.body || {},
+        seo: generateSeoMeta({ title: 'লেখক নিবন্ধন' }),
+        navMenu: NAV_MENU,
+        editorialBoard: EDITORIAL_BOARD,
+        contact: CONTACT
+      });
+    }
+
+    // Check existing user
+    const existing = await db.prepare('SELECT id, email_verified, is_approved FROM users WHERE username = ? OR email = ?').get(username.trim(), email.trim());
+    if (existing) {
+      return res.render('register', {
+        error: 'এই ইউজারনেম বা ইমেইলটি ইতিমধ্যে ব্যবহৃত হয়েছে। অন্য একটি নির্বাচন করুন।',
+        formData: req.body || {},
+        seo: generateSeoMeta({ title: 'লেখক নিবন্ধন' }),
+        navMenu: NAV_MENU,
+        editorialBoard: EDITORIAL_BOARD,
+        contact: CONTACT
+      });
+    }
+
+    const hashedPassword = bcrypt.hashSync(password, 10);
+    const nicename = username.trim().toLowerCase().replace(/\s+/g, '-');
+
+    // 2. Create user with pending status, email_verified = 0, is_approved = 0
+    const info = await db.prepare(`
+      INSERT INTO users (username, email, password, display_name, nicename, role, bio, status, email_verified, is_approved, registered_at)
+      VALUES (?, ?, ?, ?, ?, 'author', ?, 'pending_verification', 0, 0, NOW())
+    `).run(username.trim(), email.trim(), hashedPassword, display_name.trim(), nicename, (bio || '').trim());
+
+    const newUserId = info.lastInsertRowid;
+
+    // 3. Generate secure verification token (valid for 24 hours)
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    const expiresAtStr = expiresAt.toISOString().slice(0, 19).replace('T', ' ');
+
+    await db.prepare(`
+      INSERT INTO email_verifications (user_id, token, expires_at)
+      VALUES (?, ?, ?)
+    `).run(newUserId, verificationToken, expiresAtStr);
+
+    // 4. Send verification email via mailService
+    const verifyBaseUrl = process.env.SITE_URL || `${req.protocol}://${req.get('host')}`;
+    const verifyUrl = `${verifyBaseUrl}/verify-email?token=${verificationToken}`;
+    const newUser = { id: newUserId, display_name: display_name.trim(), username: username.trim(), email: email.trim() };
+    
+    // Asynchronously send email without blocking the response
+    sendEmailVerificationMail(newUser, verifyUrl).catch(e => {
+      console.error('[MAIL ERROR] postRegister verification email failed:', e);
+    });
+
+    // 5. Render informative verify notice card
+    res.render('verify_notice', {
+      type: 'verify_sent',
+      email: email.trim(),
+      title: 'ইমেইল যাচাইকরণ | পয়স্তি ম্যাগাজিন'
+    });
+  } catch (err) {
+    console.error('Error in postRegister:', err);
+    res.render('register', {
+      error: 'নিবন্ধন প্রক্রিয়ায় ত্রুটি ঘটেছে।',
       formData: req.body || {},
       seo: generateSeoMeta({ title: 'লেখক নিবন্ধন' }),
       navMenu: NAV_MENU,
@@ -111,33 +254,146 @@ exports.postRegister = (req, res) => {
       contact: CONTACT
     });
   }
+};
 
-  // Check existing user
-  const existing = db.prepare('SELECT id FROM users WHERE username = ? OR email = ?').get(username.trim(), email.trim());
-  if (existing) {
-    return res.render('register', {
-      error: 'এই ইউজারনেম বা ইমেইলটি ইতিমধ্যে ব্যবহৃত হয়েছে। অন্য একটি নির্বাচন করুন।',
-      formData: req.body || {},
-      seo: generateSeoMeta({ title: 'লেখক নিবন্ধন' }),
-      navMenu: NAV_MENU,
-      editorialBoard: EDITORIAL_BOARD,
-      contact: CONTACT
+// Verify Email GET (/verify-email?token=...)
+exports.getVerifyEmail = async (req, res) => {
+  try {
+    const { token } = req.query;
+
+    if (!token || typeof token !== 'string') {
+      return res.render('verify_notice', {
+        type: 'error',
+        message: 'কোনো যাচাইকরণ টোকেন পাওয়া যায়নি।',
+        title: 'অকার্যকর লিংক | পয়স্তি ম্যাগাজিন'
+      });
+    }
+
+    // Look up token
+    const record = await db.prepare(`
+      SELECT * FROM email_verifications 
+      WHERE token = ? AND expires_at > NOW()
+      ORDER BY id DESC LIMIT 1
+    `).get(token.trim());
+
+    if (!record) {
+      return res.render('verify_notice', {
+        type: 'error',
+        message: 'যাচাইকরণ লিংকটি অকার্যকর অথবা এর ২৪ ঘণ্টার মেয়াদ উত্তীর্ণ হয়ে গেছে।',
+        title: 'অকার্যকর লিংক | পয়স্তি ম্যাগাজিন'
+      });
+    }
+
+    const user = await db.prepare('SELECT * FROM users WHERE id = ?').get(record.user_id);
+    if (!user) {
+      return res.render('verify_notice', {
+        type: 'error',
+        message: 'ব্যবহারকারী অ্যাকাউন্ট খুঁজে পাওয়া যায়নি।',
+        title: 'ত্রুটি | পয়স্তি ম্যাগাজিন'
+      });
+    }
+
+    // Update user status
+    const newStatus = user.is_approved ? 'active' : 'pending_approval';
+    await db.prepare('UPDATE users SET email_verified = 1, status = ? WHERE id = ?').run(newStatus, user.id);
+
+    // Delete token once verified
+    await db.prepare('DELETE FROM email_verifications WHERE user_id = ?').run(user.id);
+
+    if (user.is_approved) {
+      return res.render('verify_notice', {
+        type: 'active_approved',
+        title: 'ইমেইল যাচাই সফল হয়েছে | পয়স্তি ম্যাগাজিন'
+      });
+    } else {
+      return res.render('verify_notice', {
+        type: 'verified_pending_approval',
+        title: 'ইমেইল যাচাই সফল হয়েছে | পয়স্তি ম্যাগাজিন'
+      });
+    }
+  } catch (err) {
+    console.error('Error in getVerifyEmail:', err);
+    res.render('verify_notice', {
+      type: 'error',
+      message: 'যাচাই প্রক্রিয়ায় সমস্যা হয়েছে। অনুগ্রহ করে পুনরায় চেষ্টা করুন।',
+      title: 'ত্রুটি | পয়স্তি ম্যাগাজিন'
     });
   }
+};
 
-  const hashedPassword = bcrypt.hashSync(password, 10);
-  const nicename = username.trim().toLowerCase().replace(/\s+/g, '-');
+// Resend Verification Link POST (/resend-verification)
+exports.postResendVerification = async (req, res) => {
+  try {
+    const { email } = req.body;
 
-  const info = db.prepare(`
-    INSERT INTO users (username, email, password, display_name, nicename, role, bio, registered_at)
-    VALUES (?, ?, ?, ?, ?, 'author', ?, datetime('now'))
-  `).run(username.trim(), email.trim(), hashedPassword, display_name.trim(), nicename, (bio || '').trim());
+    if (!email || !email.trim()) {
+      return res.render('verify_notice', {
+        type: 'error',
+        message: 'অনুগ্রহ করে একটি সঠিক ইমেইল ঠিকানা প্রদান করুন।',
+        title: 'ইমেইল যাচাইকরণ | পয়স্তি ম্যাগাজিন'
+      });
+    }
 
-  const newUser = db.prepare('SELECT * FROM users WHERE id = ?').get(info.lastInsertRowid);
-  const token = generateToken(newUser);
-  res.cookie('token', token, { httpOnly: true, maxAge: 30 * 24 * 60 * 60 * 1000 });
+    const user = await db.prepare('SELECT * FROM users WHERE email = ?').get(email.trim());
 
-  res.redirect('/author/dashboard');
+    if (!user) {
+      // Deceptive response for security (prevents user enumeration)
+      return res.render('verify_notice', {
+        type: 'verify_sent',
+        email: email.trim(),
+        successMessage: 'যদি আপনার ইমেইলটি আমাদের সিস্টেমে নিবন্ধিত থাকে, তবে একটি নতুন যাচাইকরণ লিঙ্ক পাঠানো হয়েছে।',
+        title: 'ইমেইল যাচাইকরণ | পয়স্তি ম্যাগাজিন'
+      });
+    }
+
+    if (user.email_verified && user.is_approved) {
+      return res.render('verify_notice', {
+        type: 'active_approved',
+        title: 'অ্যাকাউন্ট সক্রিয় রয়েছে | পয়স্তি ম্যাগাজিন'
+      });
+    }
+
+    if (user.email_verified && !user.is_approved) {
+      return res.render('verify_notice', {
+        type: 'verified_pending_approval',
+        title: 'অ্যাকাউন্ট পর্যালোচনার অপেক্ষায় | পয়স্তি ম্যাগাজিন'
+      });
+    }
+
+    // Clean up old tokens
+    await db.prepare('DELETE FROM email_verifications WHERE user_id = ?').run(user.id);
+
+    // Create fresh token
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    const expiresAtStr = expiresAt.toISOString().slice(0, 19).replace('T', ' ');
+
+    await db.prepare(`
+      INSERT INTO email_verifications (user_id, token, expires_at)
+      VALUES (?, ?, ?)
+    `).run(user.id, verificationToken, expiresAtStr);
+
+    const verifyBaseUrl = process.env.SITE_URL || `${req.protocol}://${req.get('host')}`;
+    const verifyUrl = `${verifyBaseUrl}/verify-email?token=${verificationToken}`;
+
+    sendEmailVerificationMail(user, verifyUrl).catch(e => {
+      console.error('[MAIL ERROR] resendVerification email failed:', e);
+    });
+
+    res.render('verify_notice', {
+      type: 'verify_sent',
+      email: user.email,
+      successMessage: 'আপনার ইমেইলে নতুন অ্যাক্টিভেশন লিঙ্ক পাঠানো হয়েছে। অনুগ্রহ করে ইনবক্স চেক করুন।',
+      title: 'ইমেইল যাচাইকরণ | পয়স্তি ম্যাগাজিন'
+    });
+  } catch (err) {
+    console.error('Error in postResendVerification:', err);
+    res.render('verify_notice', {
+      type: 'error',
+      message: 'লিঙ্ক পুনরায় পাঠাতে সমস্যা হয়েছে। অনুগ্রহ করে একটু পরে আবার চেষ্টা করুন।',
+      title: 'ত্রুটি | পয়স্তি ম্যাগাজিন'
+    });
+  }
 };
 
 // Logout
@@ -186,47 +442,53 @@ exports.getTerms = (req, res) => {
 };
 
 // Dynamic XML Sitemap for Google Ranking (/sitemap.xml)
-exports.getSitemap = (req, res) => {
-  res.header('Content-Type', 'application/xml');
+exports.getSitemap = async (req, res) => {
+  try {
+    res.header('Content-Type', 'application/xml');
 
-  const posts = db.prepare("SELECT slug, published_at, updated_at FROM posts WHERE status = 'publish' ORDER BY published_at DESC").all();
-  const categories = db.prepare("SELECT slug FROM categories").all();
-  const authors = db.prepare("SELECT nicename, username FROM users WHERE role IN ('author', 'editor', 'admin')").all();
-  const books = db.prepare("SELECT slug, created_at FROM books").all();
+    const posts = await db.prepare("SELECT slug, published_at, updated_at FROM posts WHERE status = 'publish' ORDER BY published_at DESC").all();
+    const categories = await db.prepare("SELECT slug FROM categories").all();
+    const authors = await db.prepare("SELECT nicename, username FROM users WHERE role IN ('author', 'editor', 'admin')").all();
+    const books = await db.prepare("SELECT slug, created_at FROM books").all();
 
-  let xml = `<?xml version="1.0" encoding="UTF-8"?>\n`;
-  xml += `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n`;
+    let xml = `<?xml version="1.0" encoding="UTF-8"?>\n`;
+    xml += `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n`;
 
-  // Static Pages
-  xml += `  <url><loc>${SITE_URL}/</loc><changefreq>daily</changefreq><priority>1.0</priority></url>\n`;
-  xml += `  <url><loc>${SITE_URL}/authors</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>\n`;
-  xml += `  <url><loc>${SITE_URL}/books</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>\n`;
-  xml += `  <url><loc>${SITE_URL}/spelling-rules</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>\n`;
-  xml += `  <url><loc>${SITE_URL}/terms</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>\n`;
+    // Static Pages
+    xml += `  <url><loc>${SITE_URL}/</loc><changefreq>daily</changefreq><priority>1.0</priority></url>\n`;
+    xml += `  <url><loc>${SITE_URL}/bangla-spell</loc><changefreq>daily</changefreq><priority>0.95</priority></url>\n`;
+    xml += `  <url><loc>${SITE_URL}/spelling-rules</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>\n`;
+    xml += `  <url><loc>${SITE_URL}/authors</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>\n`;
+    xml += `  <url><loc>${SITE_URL}/books</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>\n`;
+    xml += `  <url><loc>${SITE_URL}/terms</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>\n`;
 
-  // Categories
-  categories.forEach(c => {
-    xml += `  <url><loc>${SITE_URL}/category/${c.slug}</loc><changefreq>daily</changefreq><priority>0.8</priority></url>\n`;
-  });
+    // Categories
+    categories.forEach(c => {
+      xml += `  <url><loc>${SITE_URL}/category/${c.slug}</loc><changefreq>daily</changefreq><priority>0.8</priority></url>\n`;
+    });
 
-  // Posts
-  posts.forEach(p => {
-    const lastmod = (p.updated_at || p.published_at || new Date().toISOString()).split(' ')[0];
-    xml += `  <url><loc>${SITE_URL}/post/${p.slug}</loc><lastmod>${lastmod}</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>\n`;
-  });
+    // Posts
+    posts.forEach(p => {
+      const lastmod = (p.updated_at || p.published_at || new Date().toISOString()).split(' ')[0];
+      xml += `  <url><loc>${SITE_URL}/post/${p.slug}</loc><lastmod>${lastmod}</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>\n`;
+    });
 
-  // Books
-  books.forEach(b => {
-    xml += `  <url><loc>${SITE_URL}/book/${b.slug}</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>\n`;
-  });
+    // Books
+    books.forEach(b => {
+      xml += `  <url><loc>${SITE_URL}/book/${b.slug}</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>\n`;
+    });
 
-  // Authors
-  authors.forEach(a => {
-    xml += `  <url><loc>${SITE_URL}/author/${a.nicename || a.username}</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>\n`;
-  });
+    // Authors
+    authors.forEach(a => {
+      xml += `  <url><loc>${SITE_URL}/author/${a.nicename || a.username}</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>\n`;
+    });
 
-  xml += `</urlset>`;
-  res.send(xml);
+    xml += `</urlset>`;
+    res.send(xml);
+  } catch (err) {
+    console.error('Error in getSitemap:', err);
+    res.status(500).send('Error generating sitemap');
+  }
 };
 
 // Robots.txt
@@ -257,12 +519,68 @@ exports.getForgotPasswordPage = (req, res) => {
 
 // Forgot Password POST
 exports.postForgotPassword = async (req, res) => {
-  const { identity } = req.body;
-  const trimmedIdentity = (identity || '').trim();
+  try {
+    const { identity } = req.body;
+    const trimmedIdentity = (identity || '').trim();
 
-  if (!trimmedIdentity) {
+    if (!trimmedIdentity) {
+      return res.render('forgot_password', {
+        error: 'অনুগ্রহ করে আপনার ইউজারনেম বা ইমেইল প্রদান করুন।',
+        success: null,
+        identity: '',
+        seo: generateSeoMeta({ title: 'পাসওয়ার্ড পুনরুদ্ধার' }),
+        navMenu: NAV_MENU,
+        editorialBoard: EDITORIAL_BOARD,
+        contact: CONTACT
+      });
+    }
+
+    const user = await db.prepare('SELECT id, username, email, display_name FROM users WHERE username = ? OR email = ?').get(trimmedIdentity, trimmedIdentity);
+
+    if (!user || !user.email) {
+      return res.render('forgot_password', {
+        error: 'প্রদত্ত ইউজারনেম বা ইমেইলের কোনো অ্যাকাউন্ট পাওয়া যায়নি। সঠিক তথ্য দিন।',
+        success: null,
+        identity: trimmedIdentity,
+        seo: generateSeoMeta({ title: 'পাসওয়ার্ড পুনরুদ্ধার' }),
+        navMenu: NAV_MENU,
+        editorialBoard: EDITORIAL_BOARD,
+        contact: CONTACT
+      });
+    }
+
+    // Invalidate previous unused tokens for this user
+    await db.prepare('UPDATE password_resets SET used = 1 WHERE user_id = ? AND used = 0').run(user.id);
+
+    // Generate secure token (64 hex characters)
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    // 1 hour expiry in UTC format: YYYY-MM-DD HH:MM:SS
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000).toISOString().replace('T', ' ').substring(0, 19);
+
+    await db.prepare(`
+      INSERT INTO password_resets (user_id, token, expires_at, used)
+      VALUES (?, ?, ?, 0)
+    `).run(user.id, resetToken, expiresAt);
+
+    const protocol = req.headers['x-forwarded-proto'] || req.protocol || 'http';
+    const host = req.headers.host || 'localhost:3000';
+    const resetUrl = `${protocol}://${host}/reset-password?token=${resetToken}`;
+
+    await sendPasswordResetEmail(user, resetUrl);
+
     return res.render('forgot_password', {
-      error: 'অনুগ্রহ করে আপনার ইউজারনেম বা ইমেইল প্রদান করুন।',
+      error: null,
+      success: `আপনার অ্যাকাউন্টের নিবন্ধিত ইমেইলে (${user.email}) পাসওয়ার্ড রিসেট করার লিংক পাঠানো হয়েছে। অনুগ্রহ করে আপনার ইনবক্স (বা স্প্যাম ফোল্ডার) চেক করুন।`,
+      identity: '',
+      seo: generateSeoMeta({ title: 'পাসওয়ার্ড পুনরুদ্ধার' }),
+      navMenu: NAV_MENU,
+      editorialBoard: EDITORIAL_BOARD,
+      contact: CONTACT
+    });
+  } catch (err) {
+    console.error('Error in postForgotPassword:', err);
+    res.render('forgot_password', {
+      error: 'পাসওয়ার্ড পুনরুদ্ধারে ত্রুটি ঘটেছে।',
       success: null,
       identity: '',
       seo: generateSeoMeta({ title: 'পাসওয়ার্ড পুনরুদ্ধার' }),
@@ -271,171 +589,186 @@ exports.postForgotPassword = async (req, res) => {
       contact: CONTACT
     });
   }
-
-  const user = db.prepare('SELECT id, username, email, display_name FROM users WHERE username = ? OR email = ?').get(trimmedIdentity, trimmedIdentity);
-
-  if (!user || !user.email) {
-    return res.render('forgot_password', {
-      error: 'প্রদত্ত ইউজারনেম বা ইমেইলের কোনো অ্যাকাউন্ট পাওয়া যায়নি। সঠিক তথ্য দিন।',
-      success: null,
-      identity: trimmedIdentity,
-      seo: generateSeoMeta({ title: 'পাসওয়ার্ড পুনরুদ্ধার' }),
-      navMenu: NAV_MENU,
-      editorialBoard: EDITORIAL_BOARD,
-      contact: CONTACT
-    });
-  }
-
-  // Invalidate previous unused tokens for this user
-  db.prepare('UPDATE password_resets SET used = 1 WHERE user_id = ? AND used = 0').run(user.id);
-
-  // Generate secure token (64 hex characters)
-  const resetToken = crypto.randomBytes(32).toString('hex');
-  // 1 hour expiry in UTC SQLite format: YYYY-MM-DD HH:MM:SS
-  const expiresAt = new Date(Date.now() + 60 * 60 * 1000).toISOString().replace('T', ' ').substring(0, 19);
-
-  db.prepare(`
-    INSERT INTO password_resets (user_id, token, expires_at, used)
-    VALUES (?, ?, ?, 0)
-  `).run(user.id, resetToken, expiresAt);
-
-  const protocol = req.headers['x-forwarded-proto'] || req.protocol || 'http';
-  const host = req.headers.host || 'localhost:3000';
-  const resetUrl = `${protocol}://${host}/reset-password?token=${resetToken}`;
-
-  await sendPasswordResetEmail(user, resetUrl);
-
-  return res.render('forgot_password', {
-    error: null,
-    success: `আপনার অ্যাকাউন্টের নিবন্ধিত ইমেইলে (${user.email}) পাসওয়ার্ড রিসেট করার লিংক পাঠানো হয়েছে। অনুগ্রহ করে আপনার ইনবক্স (বা স্প্যাম ফোল্ডার) চেক করুন।`,
-    identity: '',
-    seo: generateSeoMeta({ title: 'পাসওয়ার্ড পুনরুদ্ধার' }),
-    navMenu: NAV_MENU,
-    editorialBoard: EDITORIAL_BOARD,
-    contact: CONTACT
-  });
 };
 
 // Reset Password Page GET
-exports.getResetPasswordPage = (req, res) => {
-  const { token } = req.query;
+exports.getResetPasswordPage = async (req, res) => {
+  try {
+    const { token } = req.query;
 
-  if (!token) {
-    return res.render('reset_password', {
+    if (!token) {
+      return res.render('reset_password', {
+        validToken: false,
+        token: '',
+        error: 'কোনো পাসওয়ার্ড রিসেট টোকেন পাওয়া যায়নি।',
+        seo: generateSeoMeta({ title: 'পাসওয়ার্ড রিসেট' }),
+        navMenu: NAV_MENU,
+        editorialBoard: EDITORIAL_BOARD,
+        contact: CONTACT
+      });
+    }
+
+    const now = new Date().toISOString().replace('T', ' ').substring(0, 19);
+    const resetRecord = await db.prepare(`
+      SELECT pr.*, u.username, u.email 
+      FROM password_resets pr
+      JOIN users u ON pr.user_id = u.id
+      WHERE pr.token = ? AND pr.used = 0 AND pr.expires_at > ?
+    `).get(token, now);
+
+    if (!resetRecord) {
+      return res.render('reset_password', {
+        validToken: false,
+        token: '',
+        error: 'এই রিসেট লিংকটি অবৈধ, মেয়াদোত্তীর্ণ অথবা পূর্বে ব্যবহৃত হয়েছে। অনুগ্রহ করে পুনরায় নতুন লিংকের জন্য অনুরোধ করুন।',
+        seo: generateSeoMeta({ title: 'পাসওয়ার্ড রিসেট' }),
+        navMenu: NAV_MENU,
+        editorialBoard: EDITORIAL_BOARD,
+        contact: CONTACT
+      });
+    }
+
+    res.render('reset_password', {
+      validToken: true,
+      token,
+      error: null,
+      seo: generateSeoMeta({ title: 'নতুন পাসওয়ার্ড নির্ধারণ' }),
+      navMenu: NAV_MENU,
+      editorialBoard: EDITORIAL_BOARD,
+      contact: CONTACT
+    });
+  } catch (err) {
+    console.error('Error in getResetPasswordPage:', err);
+    res.render('reset_password', {
       validToken: false,
       token: '',
-      error: 'কোনো পাসওয়ার্ড রিসেট টোকেন পাওয়া যায়নি।',
+      error: 'লিংক যাচাইকরণে ত্রুটি ঘটেছে।',
       seo: generateSeoMeta({ title: 'পাসওয়ার্ড রিসেট' }),
       navMenu: NAV_MENU,
       editorialBoard: EDITORIAL_BOARD,
       contact: CONTACT
     });
   }
-
-  const now = new Date().toISOString().replace('T', ' ').substring(0, 19);
-  const resetRecord = db.prepare(`
-    SELECT pr.*, u.username, u.email 
-    FROM password_resets pr
-    JOIN users u ON pr.user_id = u.id
-    WHERE pr.token = ? AND pr.used = 0 AND pr.expires_at > ?
-  `).get(token, now);
-
-  if (!resetRecord) {
-    return res.render('reset_password', {
-      validToken: false,
-      token: '',
-      error: 'এই রিসেট লিংকটি অবৈধ, মেয়াদোত্তীর্ণ অথবা পূর্বে ব্যবহৃত হয়েছে। অনুগ্রহ করে পুনরায় নতুন লিংকের জন্য অনুরোধ করুন।',
-      seo: generateSeoMeta({ title: 'পাসওয়ার্ড রিসেট' }),
-      navMenu: NAV_MENU,
-      editorialBoard: EDITORIAL_BOARD,
-      contact: CONTACT
-    });
-  }
-
-  res.render('reset_password', {
-    validToken: true,
-    token,
-    error: null,
-    seo: generateSeoMeta({ title: 'নতুন পাসওয়ার্ড নির্ধারণ' }),
-    navMenu: NAV_MENU,
-    editorialBoard: EDITORIAL_BOARD,
-    contact: CONTACT
-  });
 };
 
 // Reset Password POST
-exports.postResetPassword = (req, res) => {
-  const { token, password, confirm_password } = req.body;
+exports.postResetPassword = async (req, res) => {
+  try {
+    const { token, password, confirm_password } = req.body;
 
-  if (!token) {
-    return res.render('reset_password', {
+    if (!token) {
+      return res.render('reset_password', {
+        validToken: false,
+        token: '',
+        error: 'টোকেন পাওয়া যায়নি। অনুগ্রহ করে পুনরায় চেষ্টা করুন।',
+        seo: generateSeoMeta({ title: 'পাসওয়ার্ড রিসেট' }),
+        navMenu: NAV_MENU,
+        editorialBoard: EDITORIAL_BOARD,
+        contact: CONTACT
+      });
+    }
+
+    const now = new Date().toISOString().replace('T', ' ').substring(0, 19);
+    const resetRecord = await db.prepare(`
+      SELECT * FROM password_resets 
+      WHERE token = ? AND used = 0 AND expires_at > ?
+    `).get(token, now);
+
+    if (!resetRecord) {
+      return res.render('reset_password', {
+        validToken: false,
+        token: '',
+        error: 'এই রিসেট লিংকটির মেয়াদ শেষ হয়ে গেছে অথবা পূর্বে ব্যবহৃত হয়েছে।',
+        seo: generateSeoMeta({ title: 'পাসওয়ার্ড রিসেট' }),
+        navMenu: NAV_MENU,
+        editorialBoard: EDITORIAL_BOARD,
+        contact: CONTACT
+      });
+    }
+
+    if (!password || password.length < 6) {
+      return res.render('reset_password', {
+        validToken: true,
+        token,
+        error: 'পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে।',
+        seo: generateSeoMeta({ title: 'নতুন পাসওয়ার্ড নির্ধারণ' }),
+        navMenu: NAV_MENU,
+        editorialBoard: EDITORIAL_BOARD,
+        contact: CONTACT
+      });
+    }
+
+    if (password !== confirm_password) {
+      return res.render('reset_password', {
+        validToken: true,
+        token,
+        error: 'উভয় পাসওয়ার্ড একই হতে হবে। অনুগ্রহ করে যাচাই করুন।',
+        seo: generateSeoMeta({ title: 'নতুন পাসওয়ার্ড নির্ধারণ' }),
+        navMenu: NAV_MENU,
+        editorialBoard: EDITORIAL_BOARD,
+        contact: CONTACT
+      });
+    }
+
+    // Hash new password and update user
+    const hashedPassword = bcrypt.hashSync(password, 10);
+    await db.prepare('UPDATE users SET password = ? WHERE id = ?').run(hashedPassword, resetRecord.user_id);
+
+    // Invalidate all tokens for this user
+    await db.prepare('UPDATE password_resets SET used = 1 WHERE user_id = ?').run(resetRecord.user_id);
+
+    // Render login page with prominent success banner
+    return res.render('login', {
+      redirect: '/author/dashboard',
+      error: null,
+      success: 'আপনার পাসওয়ার্ড সফলভাবে পরিবর্তন করা হয়েছে! এখন নতুন পাসওয়ার্ড দিয়ে লগইন করুন।',
+      seo: generateSeoMeta({ title: 'লেখক লগইন' }),
+      navMenu: NAV_MENU,
+      editorialBoard: EDITORIAL_BOARD,
+      contact: CONTACT
+    });
+  } catch (err) {
+    console.error('Error in postResetPassword:', err);
+    res.render('reset_password', {
       validToken: false,
       token: '',
-      error: 'টোকেন পাওয়া যায়নি। অনুগ্রহ করে পুনরায় চেষ্টা করুন।',
+      error: 'পাসওয়ার্ড পরিবর্তনে ত্রুটি ঘটেছে।',
       seo: generateSeoMeta({ title: 'পাসওয়ার্ড রিসেট' }),
       navMenu: NAV_MENU,
       editorialBoard: EDITORIAL_BOARD,
       contact: CONTACT
     });
   }
+};
 
-  const now = new Date().toISOString().replace('T', ' ').substring(0, 19);
-  const resetRecord = db.prepare(`
-    SELECT * FROM password_resets 
-    WHERE token = ? AND used = 0 AND expires_at > ?
-  `).get(token, now);
-
-  if (!resetRecord) {
-    return res.render('reset_password', {
-      validToken: false,
-      token: '',
-      error: 'এই রিসেট লিংকটির মেয়াদ শেষ হয়ে গেছে অথবা পূর্বে ব্যবহৃত হয়েছে।',
-      seo: generateSeoMeta({ title: 'পাসওয়ার্ড রিসেট' }),
-      navMenu: NAV_MENU,
-      editorialBoard: EDITORIAL_BOARD,
-      contact: CONTACT
-    });
-  }
-
-  if (!password || password.length < 6) {
-    return res.render('reset_password', {
-      validToken: true,
-      token,
-      error: 'পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে।',
-      seo: generateSeoMeta({ title: 'নতুন পাসওয়ার্ড নির্ধারণ' }),
-      navMenu: NAV_MENU,
-      editorialBoard: EDITORIAL_BOARD,
-      contact: CONTACT
-    });
-  }
-
-  if (password !== confirm_password) {
-    return res.render('reset_password', {
-      validToken: true,
-      token,
-      error: 'উভয় পাসওয়ার্ড একই হতে হবে। অনুগ্রহ করে যাচাই করুন।',
-      seo: generateSeoMeta({ title: 'নতুন পাসওয়ার্ড নির্ধারণ' }),
-      navMenu: NAV_MENU,
-      editorialBoard: EDITORIAL_BOARD,
-      contact: CONTACT
-    });
-  }
-
-  // Hash new password and update user
-  const hashedPassword = bcrypt.hashSync(password, 10);
-  db.prepare('UPDATE users SET password = ? WHERE id = ?').run(hashedPassword, resetRecord.user_id);
-
-  // Invalidate all tokens for this user
-  db.prepare('UPDATE password_resets SET used = 1 WHERE user_id = ?').run(resetRecord.user_id);
-
-  // Render login page with prominent success banner
-  return res.render('login', {
-    redirect: '/author/dashboard',
-    error: null,
-    success: 'আপনার পাসওয়ার্ড সফলভাবে পরিবর্তন করা হয়েছে! এখন নতুন পাসওয়ার্ড দিয়ে লগইন করুন।',
-    seo: generateSeoMeta({ title: 'লেখক লগইন' }),
+// Spelling Rules & Interactive Spell Checker Page
+exports.getSpellingRules = (req, res) => {
+  res.render('spelling_rules', {
+    pageTitle: 'পয়স্তি বাংলা বানান শুদ্ধিকরণ',
+    seo: generateSeoMeta({
+      title: 'পয়স্তি বাংলা বানান শুদ্ধিকরণ',
+      description: 'বাংলা একাডেমির আধুনিক প্রমিত বানানরীতি অনুযায়ী লাইভ বানান পরীক্ষক ও শুদ্ধিকরণ টুল।',
+      canonical: `${SITE_URL}/bangla-spell`
+    }),
     navMenu: NAV_MENU,
     editorialBoard: EDITORIAL_BOARD,
     contact: CONTACT
   });
 };
+
+// Terms Page
+exports.getTerms = (req, res) => {
+  res.render('terms', {
+    pageTitle: 'ব্যবহারের শর্তাবলী ও নীতিমালা',
+    seo: generateSeoMeta({
+      title: 'শর্তাবলী ও নীতিমালা',
+      description: 'পয়স্তি ম্যাগাজিনের ব্যবহারের শর্তাবলী ও প্রকাশনা নীতিমালা।',
+      canonical: `${SITE_URL}/terms`
+    }),
+    navMenu: NAV_MENU,
+    editorialBoard: EDITORIAL_BOARD,
+    contact: CONTACT
+  });
+};
+
+

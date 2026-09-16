@@ -9,6 +9,7 @@
 
 <!-- Quill Rich Text Editor Styles -->
 <link rel="stylesheet" href="/vendor/quill/quill.snow.css">
+<link rel="stylesheet" href="/css/payasti-spellchecker.css?v=3.5">
 
 <% if (typeof error !== 'undefined' && error) { %>
   <div style="background: #fef2f2; border: 1.5px solid #fecaca; color: #b91c1c; padding: 14px 20px; border-radius: 8px; margin-bottom: 20px; font-size: 15px; font-weight: 500;">
@@ -216,6 +217,7 @@
 <!-- Quill Editor Scripts -->
 <script src="/vendor/quill/quill.min.js"></script>
 <script src="/js/payasti-quill.js"></script>
+<script src="/js/payasti-spellchecker.js?v=3.5"></script>
 
 <script>
   (function () {
@@ -224,6 +226,11 @@
     const quill = window.createPayastiEditor('#quillEditor', {
       placeholder: 'সম্পূর্ণ সাহিত্যকর্ম, কবিতা, প্রবন্ধ বা গল্প এখানে লিখুন...'
     });
+
+    // Initialize Bangla Spell Checker Assistant
+    if (window.attachPayastiSpellChecker) {
+      window.attachPayastiSpellChecker(quill);
+    }
 
     const form = document.getElementById('postForm');
     const titleInput = document.getElementById('postTitleInput');

@@ -7,6 +7,8 @@ router.get('/login', authController.getLoginPage);
 router.post('/login', authController.postLogin);
 router.get('/register', authController.getRegisterPage);
 router.post('/register', authController.postRegister);
+router.get('/verify-email', authController.getVerifyEmail);
+router.post('/resend-verification', authController.postResendVerification);
 router.get('/logout', authController.logout);
 
 // Forgot & Reset Password Routes

@@ -45,8 +45,8 @@
     <div class="stat-info">
       <span class="stat-label">নিবন্ধিত লেখক</span>
       <span class="stat-number"><%= toBengaliNumber(stats.users) %></span>
-      <a href="/authors" target="_blank" class="stat-link">
-        সকল লেখক তালিকা &rarr;
+      <a href="/admin/users" class="stat-link">
+        লেখক তালিকা ম্যানেজ করুন &rarr;
       </a>
     </div>
     <div class="stat-icon-wrap">
@@ -58,6 +58,27 @@
       </svg>
     </div>
   </div>
+
+  <!-- Pending Authors / Users -->
+  <% if (typeof stats.pendingUsers !== 'undefined' && stats.pendingUsers > 0) { %>
+    <div class="admin-stat-card warning" style="border-left: 4px solid #f59e0b;">
+      <div class="stat-info">
+        <span class="stat-label">পেন্ডিং লেখক অনুমোদন</span>
+        <span class="stat-number" style="color: #b45309;"><%= toBengaliNumber(stats.pendingUsers) %></span>
+        <a href="/admin/users?status=pending_approval" class="stat-link" style="color: #b45309; font-weight: 700;">
+          অনুমোদন করুন &rarr;
+        </a>
+      </div>
+      <div class="stat-icon-wrap" style="background: #fef3c7; color: #b45309;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+          <circle cx="8.5" cy="7" r="4"></circle>
+          <line x1="20" y1="8" x2="20" y2="14"></line>
+          <line x1="23" y1="11" x2="17" y2="11"></line>
+        </svg>
+      </div>
+    </div>
+  <% } %>
 
   <!-- Books Catalog -->
   <div class="admin-stat-card purple">

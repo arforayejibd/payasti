@@ -7,215 +7,375 @@
   topbarButton: { text: '+ নতুন লেখা লিখুন', url: '/author/new-post' }
 }) %>
 
-<!-- Welcome Hero Card -->
-<div class="admin-card" style="margin-bottom: 24px; background: linear-gradient(135deg, #075603 0%, #064002 100%); color: #ffffff; border: none;">
-  <div class="admin-card-body" style="padding: 24px 28px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;">
-    <div>
-      <h2 style="font-size: 26px; font-weight: 700; color: #ffffff; margin: 0 0 6px 0;">
-        পয়স্তি লেখক প্যানেলে আপনাকে স্বাগতম<% if (user && user.display_name) { %>, <%= user.display_name %><% } %>!
-      </h2>
-      <p style="font-size: 16px; color: #bbf7d0; margin: 0; max-width: 680px; line-height: 1.5;">
-        পয়স্তি সাহিত্য স্মারকে আপনার সাহিত্য চর্চা অব্যাহত থাকুক। নতুন লেখা জমা দিন কিংবা আপনার পূর্ববর্তী প্রকাশিত লেখাগুলোর প্রতিক্রিয়া ও পাঠসংখ্যা পর্যবেক্ষণ করুন।
-      </p>
+<!-- 1. Author Literary Hero Card -->
+<div class="author-hero-card">
+  <div class="author-hero-content">
+    <div class="author-hero-profile">
+      <div class="author-hero-avatar-wrap">
+        <img src="<%= user && user.avatar ? user.avatar : '/images/default-avatar.png' %>" alt="<%= user.display_name || user.username %>" class="author-hero-avatar">
+        <span class="author-hero-status-dot" title="অনলাইন"></span>
+      </div>
+      <div class="author-hero-info">
+        <div class="author-hero-greeting">
+          <span>✨ <%= typeof greeting !== 'undefined' ? greeting : 'স্বাগতম' %></span>
+          <span class="author-badge-pill">পয়স্তি লেখক পরিষদ</span>
+        </div>
+        <h1 class="author-hero-name">
+          <%= user && user.display_name ? user.display_name : 'সম্মানিত লেখক' %>
+        </h1>
+        <div class="author-hero-meta-row">
+          <% if (typeof publicProfileUrl !== 'undefined') { %>
+            <a href="<%= publicProfileUrl %>" target="_blank" class="author-hero-public-link" title="পাঠকরা আপনার প্রোফাইল যেভাবে দেখেন">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              <span>পাবলিক প্রোফাইল দেখুন ↗</span>
+            </a>
+          <% } %>
+          <span style="color: rgba(255,255,255,0.4); font-size: 14px;">•</span>
+          <span style="color: #bbf7d0; font-size: 14px;">
+            পয়স্তিতে সাহিত্যচর্চা: <strong><%= stats.duration %></strong>
+          </span>
+        </div>
+      </div>
     </div>
-    <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
-      <a href="/author/new-post" class="btn-new-action" style="background: #ffffff; color: #075603; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
-        ✍️ নতুন লেখা লিখুন
+    <div class="author-hero-actions">
+      <a href="/author/new-post" class="hero-btn-primary">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+        <span>নতুন লেখা জমা দিন</span>
       </a>
-      <a href="/author/my-posts" class="btn-view-site" style="background: rgba(255,255,255,0.15); color: #ffffff; border-color: rgba(255,255,255,0.3);">
-        📑 আমার লেখাসমূহ
+      <a href="/author/my-posts" class="hero-btn-secondary">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+        <span>আমার লেখাসমূহ</span>
       </a>
     </div>
   </div>
 </div>
 
-<!-- Special Literary Callout Banner -->
-<div style="display: flex; align-items: center; justify-content: space-between; background: #fefce8; border: 1.5px solid #fef08a; border-radius: 10px; padding: 12px 20px; margin-bottom: 24px; flex-wrap: wrap; gap: 12px;">
-  <div style="display: flex; align-items: center; gap: 10px; font-size: 15px; color: #854d0e;">
-    <span style="background: #eab308; color: #ffffff; font-weight: 700; font-size: 12px; padding: 2px 8px; border-radius: 4px;">বিশেষ সংখ্যা</span>
-    <span>✨ <strong>শারদীয় সাহিত্য সংখ্যা ২০২৬</strong>-এর জন্য গল্প, কবিতা ও প্রবন্ধ আহ্বান করা হচ্ছে!</span>
-  </div>
-  <a href="/author/new-post" style="color: #075603; font-weight: 700; font-size: 15px; text-decoration: none;">
-    লেখা পাঠান &raquo;
-  </a>
-</div>
-
-<!-- 4 Quick Stat Metric Cards (Admin Style) -->
-<div class="admin-stats-grid" style="margin-bottom: 24px;">
-  <!-- Stat 1: Total Readers / Views -->
-  <div class="admin-stat-card">
-    <div class="stat-icon-wrap" style="background: #ecfdf5; color: #075603;">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-        <circle cx="12" cy="12" r="3"></circle>
-      </svg>
+<!-- 2. Special Literary Callout / Notice Banner -->
+<% if (typeof notices !== 'undefined' && notices && notices.length > 0) { %>
+  <% const activeNotice = notices[0]; %>
+  <div class="author-notice-ribbon">
+    <div class="notice-ribbon-left">
+      <span class="notice-ribbon-tag">📢 সম্পাদকীয় আহ্বান</span>
+      <span><%= activeNotice.title %></span>
     </div>
-    <div class="stat-data">
-      <span class="stat-number"><%= toBengaliNumber(stats.totalViews) %></span>
-      <span class="stat-label">মোট পাঠক ও ভিউজ</span>
-    </div>
+    <a href="/author/new-post" class="notice-ribbon-link">
+      লেখা পাঠান &raquo;
+    </a>
   </div>
+<% } else { %>
+  <div class="author-notice-ribbon">
+    <div class="notice-ribbon-left">
+      <span class="notice-ribbon-tag">✨ বিশেষ সাহিত্য সংখ্যা</span>
+      <span><strong>শারদীয় সাহিত্য সংখ্যা ২০২৬</strong>-এর জন্য গল্প, কবিতা ও প্রবন্ধ আহ্বান করা হচ্ছে!</span>
+    </div>
+    <a href="/author/new-post" class="notice-ribbon-link">
+      লেখা পাঠান &raquo;
+    </a>
+  </div>
+<% } %>
 
-  <!-- Stat 2: Approved Posts -->
-  <div class="admin-stat-card">
-    <div class="stat-icon-wrap" style="background: #eff6ff; color: #2563eb;">
+<!-- 3. 5 Interactive Metric Cards -->
+<div class="author-stats-grid-5">
+  <!-- Stat 1: Published Posts -->
+  <a href="/author/my-posts?status=publish" class="interactive-stat-card" title="অনুমোদিত লেখাগুলো দেখুন">
+    <div class="stat-icon-box stat-icon-green">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
         <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
       </svg>
     </div>
-    <div class="stat-data">
-      <span class="stat-number"><%= toBengaliNumber(stats.approved) %> <span style="font-size: 18px; font-weight: 500;">টি</span></span>
-      <span class="stat-label">প্রকাশিত সাহিত্য</span>
+    <div class="stat-meta">
+      <div class="stat-val"><%= toBengaliNumber(stats.approved) %><span class="stat-unit">টি</span></div>
+      <div class="stat-lbl">প্রকাশিত সাহিত্য</div>
     </div>
-  </div>
+  </a>
 
-  <!-- Stat 3: Pending Review -->
-  <div class="admin-stat-card">
-    <div class="stat-icon-wrap" style="background: #fffbeb; color: #d97706;">
+  <!-- Stat 2: Pending Review -->
+  <a href="/author/my-posts?status=pending" class="interactive-stat-card" title="পর্যালোচনায় থাকা লেখাগুলো দেখুন">
+    <div class="stat-icon-box stat-icon-amber">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="12" cy="12" r="10"></circle>
         <polyline points="12 6 12 12 16 14"></polyline>
       </svg>
     </div>
-    <div class="stat-data">
-      <span class="stat-number"><%= toBengaliNumber(stats.pending) %> <span style="font-size: 18px; font-weight: 500;">টি</span></span>
-      <span class="stat-label">পর্যালোচনায় রয়েছে</span>
+    <div class="stat-meta">
+      <div class="stat-val"><%= toBengaliNumber(stats.pending) %><span class="stat-unit">টি</span></div>
+      <div class="stat-lbl">পর্যালোচনায় রয়েছে</div>
+    </div>
+  </a>
+
+  <!-- Stat 3: Drafts -->
+  <a href="/author/my-posts?status=draft" class="interactive-stat-card" title="অপ্রকাশিত খসড়া লেখাগুলো দেখুন">
+    <div class="stat-icon-box stat-icon-purple">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+      </svg>
+    </div>
+    <div class="stat-meta">
+      <div class="stat-val"><%= toBengaliNumber(stats.draft) %><span class="stat-unit">টি</span></div>
+      <div class="stat-lbl">খসড়া সাহিত্য</div>
+    </div>
+  </a>
+
+  <!-- Stat 4: Total Views -->
+  <div class="interactive-stat-card" style="cursor: default;" title="আপনার সকল লেখার সম্মিলিত পাঠসংখ্যা">
+    <div class="stat-icon-box stat-icon-blue">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+        <circle cx="12" cy="12" r="3"></circle>
+      </svg>
+    </div>
+    <div class="stat-meta">
+      <div class="stat-val"><%= toBengaliNumber(stats.totalViews) %></div>
+      <div class="stat-lbl">মোট পাঠক ও ভিউ</div>
     </div>
   </div>
 
-  <!-- Stat 4: Membership Duration -->
-  <div class="admin-stat-card">
-    <div class="stat-icon-wrap" style="background: #fdf4ff; color: #a855f7;">
+  <!-- Stat 5: Reader Feedback / Comments -->
+  <div class="interactive-stat-card" style="cursor: default;" title="পাঠকদের পক্ষ থেকে পাওয়া মোট প্রতিক্রিয়া">
+    <div class="stat-icon-box stat-icon-rose">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
       </svg>
     </div>
-    <div class="stat-data">
-      <span class="stat-number" style="font-size: 20px;"><%= stats.duration %></span>
-      <span class="stat-label">পয়স্তিতে সাহিত্য যাত্রা</span>
+    <div class="stat-meta">
+      <div class="stat-val"><%= toBengaliNumber(stats.totalComments || 0) %><span class="stat-unit">টি</span></div>
+      <div class="stat-lbl">পাঠকের মন্তব্য</div>
     </div>
   </div>
 </div>
 
-<!-- 2-Column Section: Editorial Status Tracker & Top Writings -->
+<!-- 4. 2-Column Content Grid: Status & Studio / Top Writings & Community -->
 <% 
   const currentLatestPost = typeof latestPost !== 'undefined' ? latestPost : null;
   const currentTopPosts = typeof topPosts !== 'undefined' ? topPosts : [];
+  const currentComments = typeof recentComments !== 'undefined' ? recentComments : [];
 %>
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 24px; margin-bottom: 24px;">
-  <!-- Panel 1: Editorial Submission Tracker -->
-  <div class="admin-card" style="margin-bottom: 0;">
-    <div class="admin-card-header">
-      <div class="admin-card-title">
-        <span>🖋️ সাম্প্রতিক লেখার সম্পাদকীয় অবস্থা</span>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 24px; margin-bottom: 24px;">
+  <!-- ================= LEFT COLUMN ================= -->
+  <div style="display: flex; flex-direction: column; gap: 24px;">
+    
+    <!-- 1. Editorial Timeline Tracker -->
+    <div class="admin-card" style="margin-bottom: 0;">
+      <div class="admin-card-header">
+        <div class="admin-card-title">
+          <span>🖋️ সাম্প্রতিক লেখার সম্পাদকীয় অবস্থা</span>
+        </div>
+        <% if (currentLatestPost) { %>
+          <span class="admin-badge <%= currentLatestPost.status === 'publish' ? 'admin-badge-published' : (currentLatestPost.status === 'pending' ? 'admin-badge-pending' : 'admin-badge-draft') %>">
+            <%= currentLatestPost.status === 'publish' ? 'অনুমোদিত ও প্রকাশিত' : (currentLatestPost.status === 'pending' ? 'সম্পাদকীয় পর্যালোচনায়' : 'খসড়া') %>
+          </span>
+        <% } %>
       </div>
-      <% if (currentLatestPost) { %>
-        <span class="admin-badge <%= currentLatestPost.status === 'publish' ? 'admin-badge-published' : (currentLatestPost.status === 'pending' ? 'admin-badge-pending' : 'admin-badge-draft') %>">
-          <%= currentLatestPost.status === 'publish' ? 'অনুমোদিত ও প্রকাশিত' : (currentLatestPost.status === 'pending' ? 'পর্যালোচনায় রয়েছে' : 'খসড়া') %>
-        </span>
-      <% } %>
+
+      <div class="admin-card-body">
+        <% if (currentLatestPost) { %>
+          <% const isPub = currentLatestPost.status === 'publish'; %>
+          <% const isPend = currentLatestPost.status === 'pending'; %>
+          
+          <div class="timeline-stepper">
+            <!-- Step 1 -->
+            <div class="timeline-step completed">
+              <div class="timeline-step-circle">✓</div>
+              <div class="timeline-step-label">জমা হয়েছে</div>
+            </div>
+            <!-- Step 2 -->
+            <div class="timeline-step <%= isPub ? 'completed' : (isPend ? 'current' : '') %>">
+              <div class="timeline-step-circle"><%= isPub ? '✓' : '২' %></div>
+              <div class="timeline-step-label">সম্পাদনা</div>
+            </div>
+            <!-- Step 3 -->
+            <div class="timeline-step <%= isPub ? 'completed' : '' %>">
+              <div class="timeline-step-circle"><%= isPub ? '✓' : '৩' %></div>
+              <div class="timeline-step-label">প্রুফ রিডিং</div>
+            </div>
+            <!-- Step 4 -->
+            <div class="timeline-step <%= isPub ? 'completed' : '' %>">
+              <div class="timeline-step-circle"><%= isPub ? '✓' : '৪' %></div>
+              <div class="timeline-step-label">প্রকাশিত</div>
+            </div>
+          </div>
+
+          <div style="margin-top: 20px; padding: 16px; background: #f8fafc; border-radius: 10px; border: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+            <div>
+              <div style="font-size: 13px; color: #64748b; margin-bottom: 2px;">সর্বশেষ লেখার শিরোনাম:</div>
+              <strong style="font-size: 18px; color: #1e293b; display: block;"><%= currentLatestPost.title %></strong>
+              <% if (currentLatestPost.category_name) { %>
+                <span class="writing-cat-tag" style="margin-top: 4px; display: inline-block;"><%= currentLatestPost.category_name %></span>
+              <% } %>
+            </div>
+            <% if (isPub) { %>
+              <a href="/post/<%= encodeURIComponent(currentLatestPost.slug) %>" target="_blank" class="btn-new-action" style="padding: 7px 16px; font-size: 14px;">
+                লেখাটি পড়ুন ↗
+              </a>
+            <% } else { %>
+              <a href="/author/my-posts" class="btn-view-site" style="padding: 7px 14px; font-size: 13px; color: #b45309; border-color: #fde68a; background: #fffbeb;">
+                লেখার তালিকা দেখুন &raquo;
+              </a>
+            <% } %>
+          </div>
+
+          <!-- Editorial Reassurance Message -->
+          <div class="editorial-note-box">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+            <div>
+              পয়স্তি সম্পাদকীয় পর্ষদ প্রতি মঙ্গলবার ও শুক্রবার নতুন জমা পড়া লেখা মূল্যায়ন করে থাকে। সাধারণত ৩–৫ কার্যদিবসের মধ্যে সম্পাদনা প্রক্রিয়া সম্পন্ন হয়।
+            </div>
+          </div>
+        <% } else { %>
+          <div class="admin-empty-state" style="padding: 30px 10px;">
+            <div class="empty-icon">✍️</div>
+            <div class="empty-title">আপনি এখনো কোনো লেখা জমা দেননি</div>
+            <div class="empty-desc" style="margin-bottom: 14px;">পয়স্তিতে আপনার প্রথম সাহিত্যকর্ম জমা দিন।</div>
+            <a href="/author/new-post" class="btn-new-action">+ প্রথম লেখা জমা দিন</a>
+          </div>
+        <% } %>
+      </div>
     </div>
 
-    <div class="admin-card-body">
-      <% if (currentLatestPost) { %>
-        <% const isPub = currentLatestPost.status === 'publish'; %>
-        <% const isPend = currentLatestPost.status === 'pending'; %>
-        
-        <div class="timeline-stepper">
-          <!-- Step 1 -->
-          <div class="timeline-step completed">
-            <div class="timeline-step-circle">✓</div>
-            <div class="timeline-step-label">জমা হয়েছে</div>
-          </div>
-          <!-- Step 2 -->
-          <div class="timeline-step <%= isPub ? 'completed' : (isPend ? 'current' : '') %>">
-            <div class="timeline-step-circle"><%= isPub ? '✓' : '২' %></div>
-            <div class="timeline-step-label">সম্পাদনা</div>
-          </div>
-          <!-- Step 3 -->
-          <div class="timeline-step <%= isPub ? 'completed' : '' %>">
-            <div class="timeline-step-circle"><%= isPub ? '✓' : '৩' %></div>
-            <div class="timeline-step-label">প্রুফ রিডিং</div>
-          </div>
-          <!-- Step 4 -->
-          <div class="timeline-step <%= isPub ? 'completed' : '' %>">
-            <div class="timeline-step-circle"><%= isPub ? '✓' : '৪' %></div>
-            <div class="timeline-step-label">প্রকাশিত</div>
-          </div>
+    <!-- 2. Literary Quick Scratchpad (Writer's Notebook) -->
+    <div class="author-scratchpad-card">
+      <div class="scratchpad-header">
+        <div class="scratchpad-title">
+          <span>💡 লেখকের তাত্ক্ষণিক ভাবনা ও নোটবুক</span>
         </div>
-
-        <div style="margin-top: 20px; padding: 14px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
-          <div>
-            <div style="font-size: 13px; color: #64748b;">সর্বশেষ লেখার শিরোনাম:</div>
-            <strong style="font-size: 18px; color: #1e293b;"><%= currentLatestPost.title %></strong>
-          </div>
-          <% if (isPub) { %>
-            <a href="/post/<%= encodeURIComponent(currentLatestPost.slug) %>" target="_blank" class="btn-new-action" style="padding: 6px 14px; font-size: 14px;">
-              লেখাটি পড়ুন &raquo;
-            </a>
-          <% } else { %>
-            <span style="font-size: 14px; color: #b45309; font-weight: 600;">
-              সম্পাদকের টেবিলে অপেক্ষমাণ
-            </span>
-          <% } %>
+        <span class="scratchpad-status" id="scratchpadStatus">সংরক্ষিত ✓</span>
+      </div>
+      <textarea id="authorScratchpad" class="scratchpad-textarea" placeholder="আপনার তাৎক্ষণিক সাহিত্য ভাবনা, কবিতার পঙ্‌ক্তি বা লেখার খসড়া এখানে লিখে রাখুন... (স্বয়ংক্রিয়ভাবে সংরক্ষিত থাকবে)"></textarea>
+      <div class="scratchpad-footer">
+        <span style="font-size: 13px; color: #94a3b8;">আপনার ব্রাউজারে এটি নিরাপদ থাকবে</span>
+        <div class="scratchpad-actions">
+          <button type="button" class="scratchpad-btn" id="btnCopyScratchpad" title="কপিবোর্ডে কপি করুন">
+            📋 কপি করুন
+          </button>
+          <button type="button" class="scratchpad-btn" id="btnClearScratchpad" title="নোট মুছুন">
+            মুছুন
+          </button>
+          <a href="/author/new-post" class="scratchpad-btn primary" title="নতুন পোস্ট পেজে নিয়ে যান">
+            ✍️ নতুন লেখায় যান
+          </a>
         </div>
-      <% } else { %>
-        <div class="admin-empty-state" style="padding: 30px 10px;">
-          <div class="empty-icon">✍️</div>
-          <div class="empty-title">আপনি এখনো কোনো লেখা জমা দেননি</div>
-          <div class="empty-desc" style="margin-bottom: 14px;">পয়স্তিতে আপনার প্রথম লেখাটি এখনই জমা দিন।</div>
-          <a href="/author/new-post" class="btn-new-action">+ প্রথম লেখা জমা দিন</a>
-        </div>
-      <% } %>
+      </div>
     </div>
+
   </div>
 
-  <!-- Panel 2: Top Read Writings -->
-  <div class="admin-card" style="margin-bottom: 0;">
-    <div class="admin-card-header">
-      <div class="admin-card-title">
-        <span>🏆 সর্বাধিক পঠিত সাহিত্য</span>
-      </div>
-      <a href="/author/my-posts" style="font-size: 14px; color: var(--admin-primary); font-weight: 600; text-decoration: none;">
-        সবগুলো দেখুন &raquo;
-      </a>
-    </div>
+  <!-- ================= RIGHT COLUMN ================= -->
+  <div style="display: flex; flex-direction: column; gap: 24px;">
 
-    <div class="admin-card-body" style="padding: 0;">
-      <% if (currentTopPosts && currentTopPosts.length) { %>
-        <ul class="top-writings-list" style="margin: 0; padding: 12px 18px; list-style: none;">
-          <% currentTopPosts.forEach((post, index) => { %>
-            <li class="top-writing-item" style="display: flex; align-items: center; gap: 14px; padding: 10px 0; border-bottom: 1px solid #f1f5f9;">
-              <div class="top-writing-rank" style="width: 28px; height: 28px; border-radius: 50%; background: #ecfdf5; color: #075603; font-weight: 700; display: flex; align-items: center; justify-content: center; font-size: 14px;">
-                <%= toBengaliNumber(index + 1) %>
-              </div>
-              <div class="top-writing-title" style="flex: 1; min-width: 0;">
-                <a href="/post/<%= encodeURIComponent(post.slug) %>" target="_blank" style="font-size: 16px; font-weight: 600; color: #1e293b; text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block;">
-                  <%= post.title %>
-                </a>
-                <div style="font-size: 13px; color: #64748b; margin-top: 2px;">
-                  <%= formatBengaliDate(post.published_at) %>
+    <!-- 1. Top Read Writings with One-Click Social Share -->
+    <div class="admin-card" style="margin-bottom: 0;">
+      <div class="admin-card-header">
+        <div class="admin-card-title">
+          <span>🏆 সর্বাধিক পঠিত সাহিত্য ও পাঠকপ্রিয়তা</span>
+        </div>
+        <a href="/author/my-posts" style="font-size: 14px; color: var(--admin-primary); font-weight: 600; text-decoration: none;">
+          সকল লেখা &raquo;
+        </a>
+      </div>
+
+      <div class="admin-card-body" style="padding: 0;">
+        <% if (currentTopPosts && currentTopPosts.length) { %>
+          <div style="display: flex; flex-direction: column;">
+            <% currentTopPosts.forEach((post, index) => { %>
+              <% const postUrl = 'https://payasti.com/post/' + encodeURIComponent(post.slug); %>
+              <div class="top-writing-row">
+                <!-- Rank Badge -->
+                <div class="rank-badge rank-<%= index === 0 ? '1' : (index === 1 ? '2' : (index === 2 ? '3' : 'other')) %>">
+                  <%= toBengaliNumber(index + 1) %>
+                </div>
+
+                <!-- Main Info -->
+                <div class="writing-main-col">
+                  <a href="/post/<%= encodeURIComponent(post.slug) %>" target="_blank" class="writing-post-title" title="<%= post.title %>">
+                    <%= post.title %>
+                  </a>
+                  <div class="writing-meta-row">
+                    <% if (post.category_name) { %>
+                      <span class="writing-cat-tag"><%= post.category_name %></span>
+                    <% } %>
+                    <span><%= formatBengaliDate(post.published_at) %></span>
+                  </div>
+                </div>
+
+                <!-- Actions: Views + Social Share -->
+                <div class="writing-actions-col">
+                  <span class="writing-views-pill" title="মোট ভিউ সংখ্যা">
+                    <%= toBengaliNumber(post.views) %> ভিউ
+                  </span>
+
+                  <!-- Facebook Share Button -->
+                  <a href="https://www.facebook.com/sharer/sharer.php?u=<%= encodeURIComponent(postUrl) %>" target="_blank" rel="noopener noreferrer" class="social-share-btn" title="ফেসবুকে লেখাটি শেয়ার করুন">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
+                  </a>
+
+                  <!-- Copy Link Button -->
+                  <button type="button" class="social-share-btn copy" onclick="copyPostLink('<%= postUrl %>')" title="লিংক কপি করুন">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+                  </button>
                 </div>
               </div>
-              <div class="top-writing-views" style="font-size: 14px; font-weight: 600; color: #075603; white-space: nowrap;">
-                <%= toBengaliNumber(post.views) %> ভিউ
-              </div>
-            </li>
-          <% }) %>
-        </ul>
-      <% } else { %>
-        <div class="admin-empty-state" style="padding: 30px 10px;">
-          <div class="empty-icon">📖</div>
-          <div class="empty-title">পঠিত লেখার তালিকা এখনো খালি</div>
-          <div class="empty-desc">আপনার লেখা প্রকাশিত ও পঠিত হলে এখানে তালিকা দেখতে পাবেন।</div>
-        </div>
-      <% } %>
+            <% }) %>
+          </div>
+        <% } else { %>
+          <div class="admin-empty-state" style="padding: 30px 10px;">
+            <div class="empty-icon">📖</div>
+            <div class="empty-title">পঠিত লেখার তালিকা এখনো খালি</div>
+            <div class="empty-desc">আপনার লেখা প্রকাশিত ও পঠিত হলে এখানে তালিকা দেখতে পাবেন।</div>
+          </div>
+        <% } %>
+      </div>
     </div>
+
+    <!-- 2. Recent Reader Feedback / Comments -->
+    <div class="admin-card" style="margin-bottom: 0;">
+      <div class="admin-card-header">
+        <div class="admin-card-title">
+          <span>💬 পাঠকদের সাম্প্রতিক প্রতিক্রিয়া</span>
+        </div>
+        <span class="admin-badge admin-badge-published" style="font-size: 13px;">
+          মোট <%= toBengaliNumber(stats.totalComments || 0) %> টি মন্তব্য
+        </span>
+      </div>
+
+      <div class="admin-card-body" style="padding: 0;">
+        <% if (currentComments && currentComments.length > 0) { %>
+          <% currentComments.forEach(comment => { %>
+            <div class="recent-comment-item">
+              <div class="comment-meta-header">
+                <span class="commenter-name">
+                  👤 <%= comment.author_name || 'পাঠক' %>
+                </span>
+                <span class="comment-date">
+                  <%= formatBengaliDate(comment.created_at) %>
+                </span>
+              </div>
+              <div class="comment-snippet">
+                “<%= comment.content %>”
+              </div>
+              <div class="comment-target-post">
+                লেখা: <a href="/post/<%= encodeURIComponent(comment.post_slug) %>" target="_blank"><%= comment.post_title %></a>
+              </div>
+            </div>
+          <% }) %>
+        <% } else { %>
+          <div style="padding: 24px 20px; text-align: center; color: #64748b;">
+            <div style="font-size: 28px; margin-bottom: 6px;">💌</div>
+            <div style="font-size: 15px; font-weight: 600; color: #334155; margin-bottom: 4px;">এখনো কোনো নতুন মন্তব্য নেই</div>
+            <div style="font-size: 13px; line-height: 1.5; max-width: 320px; margin: 0 auto;">
+              আপনার লেখাগুলো সামাজিক মাধ্যমে বা বন্ধু মহলে শেয়ার করুন যাতে পাঠকরা এসে মন্তব্য করতে পারেন।
+            </div>
+          </div>
+        <% } %>
+      </div>
+    </div>
+
   </div>
 </div>
 
-<!-- Books Showcase Carousel Section inside Admin Card -->
+<!-- 5. Books Showcase Carousel Section inside Admin Card -->
 <div class="admin-card">
   <div class="admin-card-header">
     <div class="admin-card-title">
@@ -223,9 +383,9 @@
         <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
         <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
       </svg>
-      <span>পয়স্তি প্রকাশন-এর প্রকাশিত বইসমূহ</span>
+      <span>📚 পয়েন্টতি প্রকাশন ও সাহিত্য সম্ভার</span>
       <% if (books && books.length) { %>
-        <span class="admin-card-badge"><%= toBengaliNumber(books.length) %> টি বই</span>
+        <span class="admin-card-badge"><%= toBengaliNumber(books.length) %> টি গ্রন্থ</span>
       <% } %>
     </div>
 
@@ -263,7 +423,86 @@
   </div>
 </div>
 
+<!-- Floating Toast Notification for Link Copy -->
+<div id="dashboardToast" class="dashboard-toast">
+  লিংক কপি করা হয়েছে! ✓
+</div>
+
 <script>
+  // 1. Copy Link with Floating Toast
+  function copyPostLink(url) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(() => showToast());
+    } else {
+      const tempInput = document.createElement('input');
+      tempInput.value = url;
+      document.body.appendChild(tempInput);
+      tempInput.select();
+      document.execCommand('copy');
+      document.body.removeChild(tempInput);
+      showToast();
+    }
+  }
+
+  function showToast(msg) {
+    const toast = document.getElementById('dashboardToast');
+    if (!toast) return;
+    if (msg) toast.innerText = msg;
+    toast.classList.add('show');
+    setTimeout(() => {
+      toast.classList.remove('show');
+    }, 2500);
+  }
+
+  // 2. Author Scratchpad Auto-Save
+  (function() {
+    const textarea = document.getElementById('authorScratchpad');
+    const status = document.getElementById('scratchpadStatus');
+    const btnClear = document.getElementById('btnClearScratchpad');
+    const btnCopy = document.getElementById('btnCopyScratchpad');
+    const STORAGE_KEY = 'payasti_author_scratchpad_notes';
+
+    if (textarea) {
+      // Load saved note
+      const savedNote = localStorage.getItem(STORAGE_KEY);
+      if (savedNote) {
+        textarea.value = savedNote;
+      }
+
+      let saveTimeout;
+      textarea.addEventListener('input', () => {
+        if (status) status.innerText = 'সংরক্ষণ হচ্ছে...';
+        clearTimeout(saveTimeout);
+        saveTimeout = setTimeout(() => {
+          localStorage.setItem(STORAGE_KEY, textarea.value);
+          if (status) status.innerText = 'সংরক্ষিত ✓';
+        }, 500);
+      });
+
+      if (btnClear) {
+        btnClear.addEventListener('click', () => {
+          if (confirm('আপনি কি এই খসড়া নোটটি মুছে ফেলতে চান?')) {
+            textarea.value = '';
+            localStorage.removeItem(STORAGE_KEY);
+            if (status) status.innerText = 'মুছে ফেলা হয়েছে';
+          }
+        });
+      }
+
+      if (btnCopy) {
+        btnCopy.addEventListener('click', () => {
+          if (!textarea.value.trim()) {
+            showToast('নোটবুক খালি!');
+            return;
+          }
+          copyPostLink(textarea.value);
+          showToast('নোট কপি করা হয়েছে! ✓');
+        });
+      }
+    }
+  })();
+
+  // 3. Books Carousel
   (function() {
     const track = document.getElementById('booksCarouselTrack');
     if (!track) return;

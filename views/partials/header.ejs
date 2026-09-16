@@ -16,6 +16,7 @@
   <!-- Dynamic SEO Meta Tags -->
   <title><%= seo.title %></title>
   <meta name="description" content="<%= seo.description %>">
+  <meta name="keywords" content="<%= (seo && seo.keywords) ? (Array.isArray(seo.keywords) ? seo.keywords.join(', ') : seo.keywords) : 'পয়স্তি ম্যাগাজিন, বাংলা সাহিত্য, কবিতা, গল্প, বই' %>">
   <link rel="canonical" href="<%= seo.canonical %>">
   <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
 

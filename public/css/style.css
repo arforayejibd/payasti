@@ -7,7 +7,23 @@
 @font-face {
   font-family: 'payasti_uni';
   src: url('/fonts/8029Payasti_uni.woff2') format('woff2');
-  font-weight: 400;
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'payasti_uni';
+  src: url('/fonts/8029Payasti_uni.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'payasti_uni';
+  src: url('/fonts/8029Payasti_uni.woff2') format('woff2');
+  font-weight: bold;
   font-style: normal;
   font-display: swap;
 }
@@ -779,7 +795,7 @@ button, input, textarea, select {
 .post-card-excerpt {
   font-size: 21px;
   font-weight: 500;
-  line-height: 1.72;
+  line-height: 1.48;
   color: var(--text-muted);
   margin-bottom: 16px;
 }

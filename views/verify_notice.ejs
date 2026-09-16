@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= (typeof title !== 'undefined' && title) ? title : 'ইমেইল যাচাইকরণ | পয়স্তি ম্যাগাজিন' %></title>
+  
+  <link rel="icon" href="/images/favicon-32x32.png" sizes="32x32">
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+  <meta name="theme-color" content="#075603">
+  <meta name="robots" content="noindex, nofollow">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    @font-face {
+      font-family: 'payasti_uni';
+      src: url('/fonts/8029Payasti_uni.woff2') format('woff2');
+      font-display: swap;
+    }
+
+    :root {
+      --primary: #075603;
+      --primary-hover: #054002;
+      --primary-light: #e8f5e7;
+      --accent: #068200;
+      --text-main: #1f2937;
+      --text-muted: #6b7280;
+      --bg-page: #f4f7f5;
+      --card-bg: #ffffff;
+      --border-color: #e5e7eb;
+      --radius: 12px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Hind Siliguri', sans-serif;
+      background-color: var(--bg-page);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 16px;
+      position: relative;
+    }
+
+    .notice-container {
+      width: 100%;
+      max-width: 520px;
+      margin: 0 auto;
+    }
+
+    .brand-header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .brand-logo {
+      height: 48px;
+      max-width: 100%;
+      object-fit: contain;
+    }
+
+    .brand-tagline {
+      font-size: 14px;
+      color: var(--primary);
+      font-weight: 600;
+      margin-top: 6px;
+    }
+
+    .notice-card {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      box-shadow: 0 10px 25px -5px rgba(7, 86, 3, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+      border: 1px solid #e2ece0;
+      padding: 36px 30px;
+      text-align: center;
+    }
+
+    .icon-wrapper {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      margin: 0 auto 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .icon-wrapper.success {
+      background-color: #ecfdf5;
+      color: #059669;
+      border: 2px solid #a7f3d0;
+    }
+
+    .icon-wrapper.info {
+      background-color: #eff6ff;
+      color: #2563eb;
+      border: 2px solid #bfdbfe;
+    }
+
+    .icon-wrapper.warning {
+      background-color: #fffbeb;
+      color: #d97706;
+      border: 2px solid #fde68a;
+    }
+
+    .icon-wrapper.error {
+      background-color: #fef2f2;
+      color: #dc2626;
+      border: 2px solid #fecaca;
+    }
+
+    .notice-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: #111827;
+      margin-bottom: 12px;
+      line-height: 1.35;
+    }
+
+    .notice-desc {
+      font-size: 15px;
+      line-height: 1.7;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+    }
+
+    .notice-desc strong {
+      color: var(--text-main);
+    }
+
+    .email-highlight {
+      display: inline-block;
+      background: #f0fdf4;
+      border: 1px dashed var(--accent);
+      color: var(--primary);
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-weight: 600;
+      word-break: break-all;
+      margin: 6px 0;
+    }
+
+    .steps-box {
+      background: #f9fafb;
+      border-radius: 8px;
+      border: 1px solid #edf2f7;
+      padding: 16px;
+      text-align: left;
+      margin-bottom: 24px;
+      font-size: 14px;
+    }
+
+    .steps-box h4 {
+      font-size: 14px;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .steps-box ol {
+      padding-left: 20px;
+      color: #4b5563;
+      line-height: 1.6;
+    }
+
+    .steps-box ol li {
+      margin-bottom: 4px;
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+      color: #ffffff;
+      font-size: 16px;
+      font-weight: 600;
+      padding: 12px 24px;
+      border-radius: 8px;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      width: 100%;
+      box-shadow: 0 4px 12px rgba(7, 86, 3, 0.2);
+      transition: all 0.2s ease;
+    }
+
+    .btn-primary:hover {
+      background: linear-gradient(135deg, var(--primary-hover) 0%, var(--primary) 100%);
+      box-shadow: 0 6px 16px rgba(7, 86, 3, 0.3);
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      background: #ffffff;
+      color: var(--primary);
+      font-size: 15px;
+      font-weight: 600;
+      padding: 10px 20px;
+      border-radius: 8px;
+      text-decoration: none;
+      border: 1px solid #d1d5db;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 10px;
+      transition: all 0.2s ease;
+    }
+
+    .btn-secondary:hover {
+      background: #f9fafb;
+      border-color: #9ca3af;
+    }
+
+    .resend-box {
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border-color);
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .resend-form {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .resend-input {
+      flex: 1;
+      padding: 8px 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      font-size: 14px;
+      outline: none;
+      font-family: inherit;
+    }
+
+    .resend-input:focus {
+      border-color: var(--primary);
+    }
+
+    .resend-btn {
+      background: var(--primary-light);
+      color: var(--primary);
+      border: 1px solid #c7e5c5;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      white-space: nowrap;
+      font-family: inherit;
+    }
+
+    .resend-btn:hover {
+      background: #d8eed6;
+    }
+
+    .alert {
+      padding: 10px 14px;
+      border-radius: 6px;
+      font-size: 14px;
+      margin-bottom: 16px;
+      text-align: left;
+    }
+    .alert-success { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
+    .alert-error { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+
+    .footer-links {
+      text-align: center;
+      margin-top: 24px;
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    .footer-links a {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .footer-links a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="notice-container">
+    <!-- Brand -->
+    <div class="brand-header">
+      <a href="/">
+        <img src="/images/Payasti-logo.png" alt="পয়স্তি ম্যাগাজিন" class="brand-logo">
+      </a>
+      <div class="brand-tagline">সাহিত্য স্মারক ও সৃষ্টিশীল প্রকাশনা</div>
+    </div>
+
+    <!-- Notice Card -->
+    <div class="notice-card">
+      
+      <% if (typeof successMessage !== 'undefined' && successMessage) { %>
+        <div class="alert alert-success"><%= successMessage %></div>
+      <% } %>
+
+      <% if (typeof errorMessage !== 'undefined' && errorMessage) { %>
+        <div class="alert alert-error"><%= errorMessage %></div>
+      <% } %>
+
+      <% if (type === 'verify_sent') { %>
+        <!-- Case 1: Verification Email Sent -->
+        <div class="icon-wrapper info">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+            <polyline points="22,6 12,13 2,6"></polyline>
+          </svg>
+        </div>
+
+        <h1 class="notice-title">আপনার ইমেইল চেক করুন</h1>
+        <p class="notice-desc">
+          লেখক অ্যাকাউন্টের নিবন্ধন সম্পন্ন করার জন্য আমরা একটি অ্যাক্টিভেশন লিঙ্ক পাঠিয়েছি:<br>
+          <span class="email-highlight"><%= email %></span>
+        </p>
+
+        <div class="steps-box">
+          <h4>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="16" x2="12" y2="12"></line>
+              <line x1="12" y1="8" x2="12.01" y2="8"></line>
+            </svg>
+            পরবর্তী করণীয়:
+          </h4>
+          <ol>
+            <li>আপনার ইমেইল ইনবক্স খুলুন এবং পয়েন্ট থেকে পাঠানো ইমেইলটি দেখুন।</li>
+            <li>ইমেইলে থাকা <strong>"ইমেইল যাচাই সম্পন্ন করুন"</strong> বাটনে ক্লিক করুন।</li>
+            <li>ইনবক্সে না পেলে অনুগ্রহ করে <strong>Spam / Junk</strong> ফোল্ডার চেক করুন।</li>
+            <li>ইমেইল ভেরিফাই করার পর অ্যাডমিন অ্যাকাউন্টটি অনুমোদন করবেন।</li>
+          </ol>
+        </div>
+
+        <a href="/login" class="btn-secondary">
+          লগইন পেজে যান
+        </a>
+
+        <div class="resend-box">
+          ইমেইল পাননি? পুনরায় পাঠানোর অনুরোধ করুন:
+          <form action="/resend-verification" method="POST" class="resend-form">
+            <input type="email" name="email" value="<%= email %>" required class="resend-input" placeholder="আপনার ইমেইল">
+            <button type="submit" class="resend-btn">লিঙ্ক পুনরায় পাঠান</button>
+          </form>
+        </div>
+
+      <% } else if (type === 'verified_pending_approval') { %>
+        <!-- Case 2: Email verified, waiting for admin approval -->
+        <div class="icon-wrapper warning">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+        </div>
+
+        <h1 class="notice-title">ইমেইল যাচাই সফল হয়েছে!</h1>
+        <p class="notice-desc">
+          আপনার ইমেইল ঠিকানা সফলভাবে নিশ্চিত করা হয়েছে। গুণগত মান ও সুরক্ষা বজায় রাখতে পয়েন্ট ম্যাগাজিনে <strong>অ্যাডমিন অনুমোদন</strong> প্রয়োজন হয়।
+        </p>
+
+        <div class="steps-box" style="background: #fffdf5; border-color: #fef3c7;">
+          <h4 style="color: #92400e;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+            </svg>
+            অ্যাকাউন্ট স্ট্যাটাস: পর্যালোচনার অপেক্ষায়
+          </h4>
+          <p style="color: #78350f; line-height: 1.6; margin-top: 4px;">
+            আমাদের মডারেশন টিম শীঘ্রই আপনার প্রোফাইলটি পর্যালোচনা করে অনুমোদন সম্পন্ন করবে। অনুমোদিত হলে আপনি আপনার ইউজারনেম ও পাসওয়ার্ড দিয়ে লগইন করে লেখা প্রকাশ করতে পারবেন।
+          </p>
+        </div>
+
+        <a href="/login" class="btn-primary">
+          লগইন পেজে ফিরে যান
+        </a>
+
+      <% } else if (type === 'active_approved') { %>
+        <!-- Case 3: Fully Active -->
+        <div class="icon-wrapper success">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+          </svg>
+        </div>
+
+        <h1 class="notice-title">অ্যাকাউন্ট সক্রিয় রয়েছে!</h1>
+        <p class="notice-desc">
+          আপনার অ্যাকাউন্টটি সম্পূর্ণ সক্রিয় ও অনুমোদিত। আপনি এখনই লগইন করতে পারেন।
+        </p>
+
+        <a href="/login" class="btn-primary">
+          লগইন করুন
+        </a>
+
+      <% } else { %>
+        <!-- Case 4: Error or Expired -->
+        <div class="icon-wrapper error">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+        </div>
+
+        <h1 class="notice-title">যাচাইকরণ লিংকটি অকার্যকর</h1>
+        <p class="notice-desc">
+          <%= (typeof message !== 'undefined' && message) ? message : 'লিংকটির মেয়াদ শেষ হয়ে গেছে বা এটি ইতিমধ্যে ব্যবহৃত হয়েছে।' %>
+        </p>
+
+        <div class="resend-box" style="border-top: none; margin-top: 0; padding-top: 0;">
+          <p style="margin-bottom: 10px; font-weight: 600;">একটি নতুন ভেরিফিকেশন লিঙ্ক পেতে আপনার ইমেইল দিন:</p>
+          <form action="/resend-verification" method="POST" class="resend-form">
+            <input type="email" name="email" required class="resend-input" placeholder="আপনার নিবন্ধিত ইমেইল">
+            <button type="submit" class="resend-btn">নতুন লিঙ্ক পাঠান</button>
+          </form>
+        </div>
+
+        <a href="/login" class="btn-secondary" style="margin-top: 20px;">
+          লগইন পেজে যান
+        </a>
+      <% } %>
+
+    </div>
+
+    <div class="footer-links">
+      <a href="/">← মূল ওয়েবসাইটে ফিরে যান</a>
+    </div>
+
+  </div>
+
+</body>
+</html>

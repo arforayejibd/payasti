@@ -65,12 +65,12 @@ function formatDuration(startDateInput) {
 
 /**
  * Format card excerpt preserving poetry line breaks (<br>) and removing &nbsp;/nbsp;
- * Matches live Oxygen builder PHP script:
- * $content = strip_tags($content, '<br>');
- * $content = str_replace(['<br>', '<br/>', '<br />'], "\n", $content);
- * trimmed to 18 words, output with <br>
+ * Rules:
+ * 1. Maximum maxLines (default 4 lines).
+ * 2. Maximum maxWords (default 26 words for prose).
+ * 3. Whichever limit is hit first stops the excerpt, appending '...'.
  */
-function formatCardExcerpt(rawContent, maxWords = 18) {
+function formatCardExcerpt(rawContent, maxWords = 26, maxLines = 4) {
   if (!rawContent) return '';
 
   let text = String(rawContent)
@@ -102,12 +102,12 @@ function formatCardExcerpt(rawContent, maxWords = 18) {
     .replace(/&rsquo;/g, "'")
     .replace(/&lsquo;/g, "'");
 
-  const lines = text.split(/\r\n|\r|\n/);
+  const rawLines = text.split(/\r\n|\r|\n/);
   const trimmedLines = [];
   let totalWords = 0;
 
-  for (let line of lines) {
-    if (totalWords >= maxWords) break;
+  for (let line of rawLines) {
+    if (trimmedLines.length >= maxLines || totalWords >= maxWords) break;
 
     // Clean multiple spaces within the line
     line = line.trim().replace(/[ \t]+/g, ' ');
@@ -119,6 +119,10 @@ function formatCardExcerpt(rawContent, maxWords = 18) {
     if (totalWords + count <= maxWords) {
       trimmedLines.push(line);
       totalWords += count;
+      if (trimmedLines.length === maxLines && !trimmedLines[trimmedLines.length - 1].endsWith('...')) {
+        trimmedLines[trimmedLines.length - 1] += '...';
+        break;
+      }
     } else {
       const remaining = maxWords - totalWords;
       if (remaining > 0) {
@@ -128,6 +132,11 @@ function formatCardExcerpt(rawContent, maxWords = 18) {
       }
       break;
     }
+  }
+
+  const allWords = text.trim().split(/\s+/).filter(Boolean);
+  if (trimmedLines.length > 0 && !trimmedLines[trimmedLines.length - 1].endsWith('...') && allWords.length > totalWords) {
+    trimmedLines[trimmedLines.length - 1] += '...';
   }
 
   return trimmedLines.join('<br>');

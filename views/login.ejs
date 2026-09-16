@@ -479,12 +479,24 @@
 
       <% if (typeof error !== 'undefined' && error) { %>
         <div class="alert-error" role="alert">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 2px;">
             <circle cx="12" cy="12" r="10"></circle>
             <line x1="12" y1="8" x2="12" y2="12"></line>
             <line x1="12" y1="16" x2="12.01" y2="16"></line>
           </svg>
-          <span><%= error %></span>
+          <div>
+            <span><%= error %></span>
+            <% if (typeof resendEmail !== 'undefined' && resendEmail) { %>
+              <div style="margin-top: 6px;">
+                <form action="/resend-verification" method="POST" style="display: inline;">
+                  <input type="hidden" name="email" value="<%= resendEmail %>">
+                  <button type="submit" style="background: none; border: none; padding: 0; color: #991b1b; text-decoration: underline; font-weight: 700; cursor: pointer; font-size: 14px; font-family: inherit;">
+                    → নতুন ভেরিফিকেশন লিঙ্ক পাঠান
+                  </button>
+                </form>
+              </div>
+            <% } %>
+          </div>
         </div>
       <% } %>
 

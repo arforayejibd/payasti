@@ -463,6 +463,12 @@
       <% } %>
 
       <form action="/register" method="POST">
+        <!-- Honeypot Bot Trap (Invisible to humans, irresistible to bots) -->
+        <div style="opacity: 0; position: absolute; top: 0; left: -9999px; height: 0; width: 0; z-index: -1; overflow: hidden;" aria-hidden="true">
+          <label for="extra_website_url">Website URL</label>
+          <input type="text" name="extra_website_url" id="extra_website_url" tabindex="-1" autocomplete="off" value="">
+        </div>
+
         <div class="form-row">
           <div class="form-group">
             <label class="form-label" for="display_name">পূর্ণ নাম (বাংলায়) *</label>
