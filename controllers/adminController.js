@@ -234,12 +234,16 @@ exports.postNewPost = async (req, res) => {
       slug = `${slug}-${Date.now()}`;
     }
 
+    let cleanContent = (content || '')
+      .replace(/<span class="payasti-spell-error[^"]*"[^>]*>([\s\S]*?)<\/span>/gi, '$1');
+
     let cleanExcerpt = (excerpt || '').trim();
     if (!cleanExcerpt) {
-      cleanExcerpt = generateCleanExcerpt(content, 160);
+      cleanExcerpt = generateCleanExcerpt(cleanContent, 160);
     }
 
-    const postAuthorId = author_id ? parseInt(author_id, 10) : req.user.id;
+    const postAuthorId = author_id && !isNaN(parseInt(author_id, 10)) ? parseInt(author_id, 10) : req.user.id;
+    const postCategoryId = category_id && !isNaN(parseInt(category_id, 10)) ? parseInt(category_id, 10) : null;
     const postStatus = status || 'publish';
     const postFeatured = is_featured === '1' ? 1 : 0;
 
@@ -250,10 +254,10 @@ exports.postNewPost = async (req, res) => {
       postAuthorId,
       title.trim(),
       slug,
-      content,
+      cleanContent,
       cleanExcerpt,
       featuredImage,
-      parseInt(category_id, 10),
+      postCategoryId,
       postStatus,
       postFeatured
     );
@@ -312,12 +316,17 @@ exports.postEditPost = async (req, res) => {
       featuredImage = `/uploads/${req.file.filename}`;
     }
 
+    let cleanContent = (content || existingPost.content || '')
+      .replace(/<span class="payasti-spell-error[^"]*"[^>]*>([\s\S]*?)<\/span>/gi, '$1');
+
     let cleanExcerpt = (excerpt || '').trim();
     if (!cleanExcerpt) {
-      cleanExcerpt = generateCleanExcerpt(content, 160);
+      cleanExcerpt = generateCleanExcerpt(cleanContent, 160);
     }
 
-    const postAuthorId = author_id ? parseInt(author_id, 10) : existingPost.author_id;
+    const postTitle = (title || existingPost.title || '').trim();
+    const postAuthorId = author_id && !isNaN(parseInt(author_id, 10)) ? parseInt(author_id, 10) : (existingPost.author_id || req.user.id);
+    const postCategoryId = category_id && !isNaN(parseInt(category_id, 10)) ? parseInt(category_id, 10) : (existingPost.category_id || null);
     const postStatus = status || existingPost.status;
     const postFeatured = is_featured === '1' ? 1 : 0;
 
@@ -332,11 +341,11 @@ exports.postEditPost = async (req, res) => {
       SET title = ?, author_id = ?, category_id = ?, excerpt = ?, content = ?, featured_image = ?, status = ?, is_featured = ?, published_at = ?, updated_at = NOW()
       WHERE id = ?
     `).run(
-      title.trim(),
+      postTitle,
       postAuthorId,
-      parseInt(category_id, 10),
+      postCategoryId,
       cleanExcerpt,
-      content,
+      cleanContent,
       featuredImage,
       postStatus,
       postFeatured,

@@ -176,7 +176,7 @@
 <!-- Quill Editor JS & Initialization -->
 <script src="/vendor/quill/quill.min.js"></script>
 <script src="/js/payasti-quill.js"></script>
-<script src="/js/payasti-spellchecker.js?v=3.5"></script>
+<script src="/js/payasti-spellchecker.js?v=4.2"></script>
 <script>
   document.addEventListener('DOMContentLoaded', function() {
     const quill = window.createPayastiEditor('#quillEditor', {
@@ -199,7 +199,11 @@
     const contentInput = document.getElementById('postContentInput');
 
     form.addEventListener('submit', function(e) {
-      const html = quill.root.innerHTML;
+      if (window.activePayastiSpellChecker) {
+        window.activePayastiSpellChecker.clearHighlights();
+      }
+      let html = quill.root.innerHTML;
+      html = html.replace(/<span class="payasti-spell-error[^"]*"[^>]*>([\s\S]*?)<\/span>/gi, '$1');
       const text = quill.getText().trim();
       if (!text || text.length === 0) {
         alert('অনুগ্রহ করে মূল সাহিত্য বা লেখার বিষয়বস্তু লিখুন।');
