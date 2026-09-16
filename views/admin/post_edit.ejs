@@ -56,8 +56,8 @@
           <div class="payasti-editor-wrapper">
             <div id="quillEditor"></div>
           </div>
-          <!-- Hidden textarea with raw content for safe JS initialization -->
-          <textarea id="rawPostContent" style="display: none;"><%- post.content %></textarea>
+          <!-- Safe JSON data block for raw content initialization -->
+          <script type="application/json" id="rawPostContentJson"><%- JSON.stringify(post.content || '') %></script>
           <!-- Hidden input holding the HTML content for form submission -->
           <input type="hidden" name="content" id="postContentInput">
         </div>
@@ -175,8 +175,8 @@
 
 <!-- Quill Editor JS & Initialization -->
 <script src="/vendor/quill/quill.min.js"></script>
-<script src="/js/payasti-quill.js"></script>
-<script src="/js/payasti-spellchecker.js?v=4.2"></script>
+<script src="/js/payasti-quill.js?v=2.0"></script>
+<script src="/js/payasti-spellchecker.js?v=5.2"></script>
 <script>
   document.addEventListener('DOMContentLoaded', function() {
     const quill = window.createPayastiEditor('#quillEditor', {
@@ -184,9 +184,21 @@
     });
 
     // Safely load and clean existing content preserving soft line breaks and paragraphs
+    const jsonEl = document.getElementById('rawPostContentJson');
     const rawEl = document.getElementById('rawPostContent');
-    if (rawEl && rawEl.value) {
-      const cleanHtml = window.cleanArticleHtmlForEditor(rawEl.value);
+    let rawContent = '';
+    if (jsonEl && jsonEl.textContent) {
+      try {
+        rawContent = JSON.parse(jsonEl.textContent);
+      } catch (e) {
+        rawContent = jsonEl.textContent;
+      }
+    } else if (rawEl) {
+      rawContent = rawEl.value;
+    }
+
+    if (rawContent) {
+      const cleanHtml = window.cleanArticleHtmlForEditor(rawContent);
       quill.clipboard.dangerouslyPasteHTML(cleanHtml);
     }
 

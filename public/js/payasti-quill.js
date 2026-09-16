@@ -57,20 +57,6 @@
           matchers: [
             ['BR', function(node, delta) {
               return new Delta().insert({ softbreak: true });
-            }],
-            [Node.TEXT_NODE, function(node, delta) {
-              if (node.data && node.data.includes('\n')) {
-                const lines = node.data.split('\n');
-                const res = new Delta();
-                lines.forEach((line, idx) => {
-                  if (line) res.insert(line);
-                  if (idx < lines.length - 1) {
-                    res.insert({ softbreak: true });
-                  }
-                });
-                return res;
-              }
-              return delta;
             }]
           ]
         }
@@ -89,11 +75,15 @@
       .replace(/\\'/g, "'")
       .trim();
 
-    // If plain text with newlines and no HTML tags, convert newlines to paragraphs & breaks
+    // If plain text with newlines and no HTML block tags, convert newlines to paragraphs & breaks
     if (!/<(p|br|div|blockquote|h[1-6]|ul|ol|table)\b/i.test(clean)) {
       clean = clean
-        .split(/\r?\n\r?\n/)
-        .map(para => '<p>' + para.replace(/\r?\n/g, '<br>') + '</p>')
+        .split(/\r?\n\s*\r?\n/)
+        .map(para => {
+          const lines = para.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
+          return lines.length ? '<p>' + lines.join('<br>') + '</p>' : '';
+        })
+        .filter(Boolean)
         .join('');
     }
     return clean;
