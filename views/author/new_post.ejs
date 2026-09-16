@@ -217,7 +217,7 @@
 <!-- Quill Editor Scripts -->
 <script src="/vendor/quill/quill.min.js"></script>
 <script src="/js/payasti-quill.js?v=2.0"></script>
-<script src="/js/payasti-spellchecker.js?v=5.2"></script>
+<script src="/js/payasti-spellchecker.js?v=5.3"></script>
 
 <script>
   (function () {
@@ -227,9 +227,9 @@
       placeholder: 'সম্পূর্ণ সাহিত্যকর্ম, কবিতা, প্রবন্ধ বা গল্প এখানে লিখুন...'
     });
 
-    // Initialize Bangla Spell Checker Assistant (On-Demand Mode)
+    // Initialize Bangla Spell Checker Assistant (Live Mode)
     if (window.attachPayastiSpellChecker) {
-      window.attachPayastiSpellChecker(quill, { autoScan: false });
+      window.attachPayastiSpellChecker(quill, { autoScan: true });
     }
 
     const form = document.getElementById('postForm');

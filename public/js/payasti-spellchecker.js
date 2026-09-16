@@ -144,7 +144,7 @@
         wordlistUrl: '/data/bangla_wordlist_80k.json',
         debounceMs: 500,
         widgetContainer: null,
-        autoScan: false // Instant load by default for editors
+        autoScan: true // Active live spell check by default
       }, options);
 
       this.rulesDictionary = {};

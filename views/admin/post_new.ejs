@@ -152,7 +152,7 @@
 <!-- Quill Editor JS & Initialization -->
 <script src="/vendor/quill/quill.min.js"></script>
 <script src="/js/payasti-quill.js?v=2.0"></script>
-<script src="/js/payasti-spellchecker.js?v=5.2"></script>
+<script src="/js/payasti-spellchecker.js?v=5.3"></script>
 <script>
   document.addEventListener('DOMContentLoaded', function() {
     const quill = window.createPayastiEditor('#quillEditor', {
@@ -175,7 +175,7 @@
     });
 
     if (window.attachPayastiSpellChecker) {
-      window.attachPayastiSpellChecker(quill, { autoScan: false });
+      window.attachPayastiSpellChecker(quill, { autoScan: true });
     }
 
     const form = document.getElementById('postForm');
