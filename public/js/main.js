@@ -235,14 +235,46 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
 
+    // Helper to get accurate Article Author and Title
+    function getArticleAuthorAndTitle() {
+      const visualEl = document.getElementById('quoteCardVisual');
+      let authorName = visualEl ? visualEl.getAttribute('data-author') : '';
+      let postTitle = visualEl ? visualEl.getAttribute('data-title') : '';
+
+      if (!authorName) {
+        const authorModalEl = document.getElementById('quoteCardAuthor');
+        const authorLinkEl = document.querySelector('.article-author-name') || document.querySelector('.single-article-author-name');
+        if (authorModalEl && authorModalEl.textContent.trim()) {
+          authorName = authorModalEl.textContent.trim().replace(/^—\s*/, '');
+        } else if (authorLinkEl && authorLinkEl.textContent.trim()) {
+          authorName = authorLinkEl.textContent.trim();
+        } else {
+          authorName = 'পয়স্তি লেখক';
+        }
+      }
+
+      if (!postTitle) {
+        const titleEl = document.querySelector('.article-title') || document.querySelector('.single-article-title');
+        if (titleEl && titleEl.textContent.trim()) {
+          postTitle = titleEl.textContent.trim();
+        } else {
+          const sourceEl = document.querySelector('.quote-card-source');
+          if (sourceEl) {
+            const match = sourceEl.textContent.match(/লেখা:\s*(.*?)\s*\|/);
+            if (match && match[1]) postTitle = match[1].trim();
+          }
+        }
+      }
+
+      return { authorName, postTitle };
+    }
+
     // Copy Quote with Author and Source
     function copyFormattedQuote() {
-      const authorEl = document.querySelector('.single-article-author-name') || document.querySelector('#text_block-417-36');
-      const titleEl = document.querySelector('.single-article-title') || document.querySelector('#headline-5-36');
-      const authorName = authorEl ? authorEl.textContent.trim() : 'পয়স্তি লেখক';
-      const postTitle = titleEl ? titleEl.textContent.trim() : '';
-
-      const formatted = `“${activeSelectedText}”\n— ${authorName} (${postTitle})\nউৎস: পয়েন্টস্তি (payasti.com)`;
+      const { authorName, postTitle } = getArticleAuthorAndTitle();
+      const quoteText = activeSelectedText || (quoteCardText ? quoteCardText.textContent.trim() : '');
+      const titlePart = postTitle ? ` (${postTitle})` : '';
+      const formatted = `“${quoteText}”\n— ${authorName}${titlePart}\nউৎস: পয়েন্টস্তি (payasti.com)`;
 
       navigator.clipboard.writeText(formatted).then(() => {
         if (btnCopyQuote) {
@@ -265,11 +297,83 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
+    // Helper to calculate dynamic font-size and weight based on quote text length
+    function getDynamicQuoteTypography(textLength) {
+      if (textLength <= 60) {
+        // Very short powerful quote (1 short line)
+        return {
+          previewFontSize: '32px',
+          previewLineHeight: '1.58',
+          fontWeight: '700',
+          downloadFontSize: 72,
+          downloadLineHeight: 115,
+          downloadFontWeight: '700'
+        };
+      } else if (textLength <= 120) {
+        // Short quote (1-2 sentences)
+        return {
+          previewFontSize: '27px',
+          previewLineHeight: '1.62',
+          fontWeight: '700',
+          downloadFontSize: 60,
+          downloadLineHeight: 98,
+          downloadFontWeight: '700'
+        };
+      } else if (textLength <= 210) {
+        // Medium quote (2-4 sentences)
+        return {
+          previewFontSize: '23px',
+          previewLineHeight: '1.68',
+          fontWeight: '600',
+          downloadFontSize: 50,
+          downloadLineHeight: 84,
+          downloadFontWeight: '600'
+        };
+      } else if (textLength <= 360) {
+        // Standard passage (4-6 sentences)
+        return {
+          previewFontSize: '19.5px',
+          previewLineHeight: '1.72',
+          fontWeight: '600',
+          downloadFontSize: 40,
+          downloadLineHeight: 70,
+          downloadFontWeight: '600'
+        };
+      } else if (textLength <= 550) {
+        // Long passage
+        return {
+          previewFontSize: '17px',
+          previewLineHeight: '1.75',
+          fontWeight: '500',
+          downloadFontSize: 34,
+          downloadLineHeight: 58,
+          downloadFontWeight: '500'
+        };
+      } else {
+        // Extra long passage (550+ characters)
+        return {
+          previewFontSize: '15px',
+          previewLineHeight: '1.75',
+          fontWeight: '500',
+          downloadFontSize: 28,
+          downloadLineHeight: 48,
+          downloadFontWeight: '500'
+        };
+      }
+    }
+
     // Open Quote Card Modal
     if (btnMakeQuoteCard && quoteModal && quoteCardText) {
       btnMakeQuoteCard.addEventListener('click', (e) => {
         e.stopPropagation();
         quoteCardText.textContent = activeSelectedText;
+
+        // Auto-scale font size & weight dynamically based on selected quote length
+        const typo = getDynamicQuoteTypography(activeSelectedText.length);
+        quoteCardText.style.fontSize = typo.previewFontSize;
+        quoteCardText.style.lineHeight = typo.previewLineHeight;
+        quoteCardText.style.fontWeight = typo.fontWeight;
+
         quoteToolbar.style.display = 'none';
         quoteModal.style.display = 'flex';
       });
@@ -296,93 +400,147 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    // Download Quote as PNG Image using Canvas
+    // Download Quote as PNG Image matching the exact card layout, font and proportions
     if (btnDownloadQuoteCard) {
-      btnDownloadQuoteCard.addEventListener('click', () => {
-        const authorEl = document.querySelector('.single-article-author-name');
-        const titleEl = document.querySelector('.single-article-title');
-        const authorName = authorEl ? authorEl.textContent.trim() : 'পয়স্তি লেখক';
-        const postTitle = titleEl ? titleEl.textContent.trim() : '';
+      btnDownloadQuoteCard.addEventListener('click', async () => {
+        const origBtnHtml = btnDownloadQuoteCard.innerHTML;
+        btnDownloadQuoteCard.innerHTML = '⌛ প্রস্তুত হচ্ছে...';
+        btnDownloadQuoteCard.disabled = true;
 
-        const canvas = document.createElement('canvas');
-        const width = 1080;
-        const height = 1080;
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d');
-
-        // 1. Background Gradient
-        const gradient = ctx.createLinearGradient(0, 0, width, height);
-        gradient.addColorStop(0, '#064e1d');
-        gradient.addColorStop(1, '#087f23');
-        ctx.fillStyle = gradient;
-        ctx.fillRect(0, 0, width, height);
-
-        // 2. Subtle decorative border
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
-        ctx.lineWidth = 4;
-        ctx.strokeRect(40, 40, width - 80, height - 80);
-
-        // 3. Watermark
-        ctx.font = '900 180px "Hind Siliguri", "Noto Sans Bengali", sans-serif';
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.04)';
-        ctx.textAlign = 'right';
-        ctx.fillText('পয়স্তি', width - 80, height - 120);
-
-        // 4. Quote Mark
-        ctx.font = 'bold 160px serif';
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.35)';
-        ctx.textAlign = 'left';
-        ctx.fillText('“', 90, 200);
-
-        // 5. Quote Text Wrapping
-        ctx.font = '500 42px "Hind Siliguri", "Noto Serif Bengali", sans-serif';
-        ctx.fillStyle = '#ffffff';
-        const maxTextWidth = width - 200;
-        const lineHeight = 70;
-        const words = activeSelectedText.split(' ');
-        let line = '';
-        let y = 280;
-
-        for (let n = 0; n < words.length; n++) {
-          const testLine = line + words[n] + ' ';
-          const metrics = ctx.measureText(testLine);
-          if (metrics.width > maxTextWidth && n > 0) {
-            ctx.fillText(line, 100, y);
-            line = words[n] + ' ';
-            y += lineHeight;
-            if (y > 800) {
-              line += '...';
-              break;
+        try {
+          // Preload and ensure payasti_uni web font is active in document
+          if (document.fonts) {
+            try {
+              await Promise.all([
+                document.fonts.load('700 72px payasti_uni'),
+                document.fonts.load('700 60px payasti_uni'),
+                document.fonts.load('600 50px payasti_uni'),
+                document.fonts.load('600 40px payasti_uni'),
+                document.fonts.load('500 34px payasti_uni'),
+                document.fonts.load('bold 38px payasti_uni'),
+                document.fonts.load('900 280px payasti_uni'),
+                document.fonts.load('400 26px payasti_uni')
+              ]);
+              await document.fonts.ready;
+            } catch (fe) {
+              console.warn('Font loading check:', fe);
             }
-          } else {
-            line = testLine;
           }
+
+          const { authorName, postTitle } = getArticleAuthorAndTitle();
+          const quoteText = activeSelectedText || (quoteCardText ? quoteCardText.textContent.trim() : '');
+
+          const canvas = document.createElement('canvas');
+          const size = 1200;
+          canvas.width = size;
+          canvas.height = size;
+          const ctx = canvas.getContext('2d');
+
+          // 1. Background Gradient with Rounded Corners
+          const gradient = ctx.createLinearGradient(0, 0, size, size);
+          gradient.addColorStop(0, '#074718');
+          gradient.addColorStop(1, '#068200');
+          ctx.fillStyle = gradient;
+
+          if (typeof ctx.roundRect === 'function') {
+            ctx.beginPath();
+            ctx.roundRect(0, 0, size, size, 40);
+            ctx.fill();
+          } else {
+            ctx.fillRect(0, 0, size, size);
+          }
+
+          // 2. Watermark at bottom right
+          ctx.font = '900 280px payasti_uni, sans-serif';
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+          ctx.textAlign = 'right';
+          ctx.textBaseline = 'alphabetic';
+          ctx.fillText('পয়স্তি', size - 20, size - 30);
+          ctx.textAlign = 'left';
+
+          // 3. Quotation Mark at top left
+          ctx.font = 'bold 160px Georgia, serif';
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
+          ctx.fillText('“', 85, 185);
+
+          // 4. Dynamic Typography Scaling
+          const textLen = quoteText.length;
+          const typo = getDynamicQuoteTypography(textLen);
+          const fontSize = typo.downloadFontSize;
+          const lineHeight = typo.downloadLineHeight;
+          const fontWeight = typo.downloadFontWeight;
+
+          ctx.font = `${fontWeight} ${fontSize}px payasti_uni, sans-serif`;
+          ctx.fillStyle = '#ffffff';
+
+          const maxTextWidth = size - 170; // 1030px printable width
+          const rawParagraphs = quoteText.split(/\r?\n/);
+          const lines = [];
+
+          rawParagraphs.forEach((para, pIdx) => {
+            const words = para.trim().split(/\s+/).filter(Boolean);
+            let currentLine = '';
+
+            words.forEach(word => {
+              const testLine = currentLine ? currentLine + ' ' + word : word;
+              const metrics = ctx.measureText(testLine);
+              if (metrics.width > maxTextWidth && currentLine) {
+                lines.push(currentLine);
+                currentLine = word;
+              } else {
+                currentLine = testLine;
+              }
+            });
+            if (currentLine) lines.push(currentLine);
+            if (pIdx < rawParagraphs.length - 1) lines.push(''); // blank line between paragraphs
+          });
+
+          // Calculate vertical center positioning between quote mark (y=230) and footer separator (y=1030)
+          const availableHeight = 800; // between 230 and 1030
+          const totalTextHeight = (lines.length - 1) * lineHeight + fontSize;
+          const startY = 230 + Math.max(0, (availableHeight - totalTextHeight) / 2) + (fontSize * 0.85);
+
+          let currentY = startY;
+          for (let i = 0; i < lines.length; i++) {
+            if (currentY > 1010) break;
+            if (lines[i]) {
+              ctx.fillText(lines[i], 85, currentY);
+            }
+            currentY += lineHeight;
+          }
+
+          // 5. Footer (Divider, Author, Source)
+          const sepY = 1040;
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.22)';
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.moveTo(85, sepY);
+          ctx.lineTo(size - 85, sepY);
+          ctx.stroke();
+
+          // Author
+          ctx.font = 'bold 38px payasti_uni, sans-serif';
+          ctx.fillStyle = '#fffae6';
+          ctx.fillText(`— ${authorName}`, 85, sepY + 54);
+
+          // Source
+          ctx.font = '400 26px payasti_uni, sans-serif';
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+          ctx.fillText(`লেখা: ${postTitle} | payasti.com`, 85, sepY + 102);
+
+          // 6. Download Trigger
+          const link = document.createElement('a');
+          link.download = `payasti-quote-${Date.now()}.png`;
+          link.href = canvas.toDataURL('image/png');
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        } catch (err) {
+          console.error('Quote download error:', err);
+        } finally {
+          btnDownloadQuoteCard.innerHTML = origBtnHtml;
+          btnDownloadQuoteCard.disabled = false;
         }
-        ctx.fillText(line, 100, y);
-
-        // 6. Separator line
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(100, 880);
-        ctx.lineTo(width - 100, 880);
-        ctx.stroke();
-
-        // 7. Author & Source Info
-        ctx.font = 'bold 36px "Hind Siliguri", "Noto Sans Bengali", sans-serif';
-        ctx.fillStyle = '#fffae6';
-        ctx.fillText(`— ${authorName}`, 100, 935);
-
-        ctx.font = '400 26px "Hind Siliguri", "Noto Sans Bengali", sans-serif';
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-        ctx.fillText(`লেখা: ${postTitle}  |  payasti.com`, 100, 980);
-
-        // 8. Trigger Download
-        const link = document.createElement('a');
-        link.download = `payasti-quote-${Date.now()}.png`;
-        link.href = canvas.toDataURL('image/png');
-        link.click();
       });
     }
   }

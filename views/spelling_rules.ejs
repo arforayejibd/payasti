@@ -2,7 +2,7 @@
 
 <!-- Quill Editor CSS & Spellchecker Styles -->
 <link rel="stylesheet" href="/vendor/quill/quill.snow.css">
-<link rel="stylesheet" href="/css/payasti-spellchecker.css?v=3.5">
+<link rel="stylesheet" href="/css/payasti-spellchecker.css?v=5.5">
 
 <style>
   /* ==========================================================================
@@ -74,10 +74,10 @@
   }
 
   .sothik-wrapper {
-    flex: 1 !important;
+    flex: 1 1 auto !important;
     min-height: 0 !important;
-    height: 100% !important;
-    max-height: 100% !important;
+    height: auto !important;
+    max-height: none !important;
     width: 100% !important;
     max-width: 100% !important;
     margin: 0 auto !important;
@@ -96,7 +96,7 @@
     justify-content: space-between;
     flex-wrap: wrap;
     gap: 10px;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
     padding: 8px 18px;
     background: #ffffff;
     border: 1px solid #e2e8f0;
@@ -161,9 +161,9 @@
 
   /* Main 2-Column Container */
   .sothik-container {
-    flex: 1 !important;
+    flex: 1 1 auto !important;
     min-height: 0 !important;
-    height: 100% !important;
+    height: auto !important;
     display: flex;
     position: relative;
     background: #ffffff;
@@ -175,71 +175,86 @@
 
   /* Left Editor Area */
   .sothik-editor-area {
-    flex: 1 !important;
+    flex: 1 1 auto !important;
     min-height: 0 !important;
-    height: 100% !important;
+    min-width: 0 !important;
+    height: auto !important;
     display: flex;
     flex-direction: column;
-    min-width: 0;
     background: #ffffff;
     position: relative;
     overflow: hidden !important;
   }
   .sothik-quill-wrapper {
-    flex: 1 !important;
+    flex: 1 1 auto !important;
     min-height: 0 !important;
-    height: 100% !important;
+    height: auto !important;
     display: flex;
     flex-direction: column;
+    position: relative;
     overflow: hidden !important;
   }
   .sothik-quill-wrapper .ql-container {
-    flex: 1 !important;
+    flex: 1 1 auto !important;
     min-height: 0 !important;
     height: 100% !important;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden !important;
+    position: relative !important;
+    border: none !important;
     font-family: 'payasti_uni', 'Hind Siliguri', sans-serif !important;
     font-feature-settings: "ss01" 1 !important;
     -webkit-font-feature-settings: "ss01" 1 !important;
-    border: none !important;
   }
   .sothik-quill-wrapper .ql-editor {
-    flex: 1 !important;
-    min-height: 0 !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
     height: 100% !important;
     overflow-y: auto !important;
     font-family: 'payasti_uni', 'Hind Siliguri', sans-serif !important;
     font-feature-settings: "ss01" 1 !important;
     -webkit-font-feature-settings: "ss01" 1 !important;
-    font-size: 23px !important;
+    font-size: 19.5px !important;
     font-weight: 400 !important;
-    line-height: 1.8 !important;
+    line-height: 1.85 !important;
     color: #1e293b !important;
-    padding: 22px 28px !important;
+    padding: 24px 30px !important;
     box-sizing: border-box !important;
+    letter-spacing: 0.15px !important;
   }
-  .sothik-quill-wrapper .ql-editor p,
+  .sothik-quill-wrapper .ql-editor p {
+    font-family: 'payasti_uni', 'Hind Siliguri', sans-serif !important;
+    font-feature-settings: "ss01" 1 !important;
+    -webkit-font-feature-settings: "ss01" 1 !important;
+    font-size: 19.5px !important;
+    line-height: 1.85 !important;
+    margin-bottom: 18px !important;
+    text-align: justify !important;
+    text-justify: inter-word !important;
+  }
+  .sothik-quill-wrapper .ql-editor p:last-child {
+    margin-bottom: 0 !important;
+  }
   .sothik-quill-wrapper .ql-editor span,
   .sothik-quill-wrapper .ql-editor div {
     font-family: 'payasti_uni', 'Hind Siliguri', sans-serif !important;
     font-feature-settings: "ss01" 1 !important;
     -webkit-font-feature-settings: "ss01" 1 !important;
-    font-size: 23px !important;
-    line-height: 1.8 !important;
+    font-size: inherit !important;
+    line-height: inherit !important;
   }
   .sothik-quill-wrapper .ql-editor.ql-blank::before {
     font-family: 'payasti_uni', 'Hind Siliguri', sans-serif !important;
     font-feature-settings: "ss01" 1 !important;
     -webkit-font-feature-settings: "ss01" 1 !important;
-    font-size: 23px !important;
+    font-size: 19.5px !important;
     font-weight: 400 !important;
-    line-height: 1.8 !important;
+    line-height: 1.85 !important;
     color: #94a3b8 !important;
     font-style: normal;
-    left: 28px;
-    right: 28px;
+    left: 30px;
+    right: 30px;
   }
   .sothik-quill-wrapper .ql-toolbar {
     display: none !important;
@@ -247,10 +262,10 @@
 
   /* Custom Slim Scrollbar for Quill Editor */
   .sothik-quill-wrapper .ql-editor::-webkit-scrollbar {
-    width: 7px;
+    width: 8px;
   }
   .sothik-quill-wrapper .ql-editor::-webkit-scrollbar-track {
-    background: transparent;
+    background: #f8fafc;
   }
   .sothik-quill-wrapper .ql-editor::-webkit-scrollbar-thumb {
     background: #cbd5e1;
@@ -266,10 +281,10 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 10px 22px;
+    padding: 8px 20px;
     background: #f8fafc;
     border-top: 1px solid #e2e8f0;
-    font-size: 15px;
+    font-size: 14.5px;
     color: #64748b;
   }
   .sothik-stats-group {
@@ -637,9 +652,9 @@
     }
 
     .sothik-container {
-      flex: 1 !important;
+      flex: 1 1 auto !important;
       min-height: 0 !important;
-      height: 100% !important;
+      height: auto !important;
     }
 
     .sothik-toggle-sidebar-btn {
@@ -665,11 +680,11 @@
     }
 
     .sothik-quill-wrapper .ql-editor {
-      font-size: 19px !important;
+      font-size: 17px !important;
       padding: 14px 16px !important;
     }
     .sothik-quill-wrapper .ql-editor.ql-blank::before {
-      font-size: 19px !important;
+      font-size: 17px !important;
       left: 16px !important;
       right: 16px !important;
     }
@@ -744,6 +759,7 @@
         <div class="sothik-stats-group">
           <div>শব্দ: <strong id="statWords">০</strong></div>
           <div>অক্ষর: <strong id="statChars">০</strong></div>
+          <div>অনুচ্ছেদ: <strong id="statParas">০</strong></div>
         </div>
 
         <div style="font-size: 12px; color: #64748b;">
@@ -790,8 +806,8 @@
 
 <!-- Quill JS & Spellchecker Engine -->
 <script src="/vendor/quill/quill.min.js"></script>
-<script src="/js/payasti-quill.js"></script>
-<script src="/js/payasti-spellchecker.js?v=4.2"></script>
+<script src="/js/payasti-quill.js?v=2.6"></script>
+<script src="/js/payasti-spellchecker.js?v=5.5"></script>
 
 <script>
   (function () {
@@ -800,10 +816,16 @@
       toolbar: false
     });
 
-    const checker = window.attachPayastiSpellChecker ? window.attachPayastiSpellChecker(quill, { autoScan: true }) : null;
+    const checker = window.attachPayastiSpellChecker ? window.attachPayastiSpellChecker(quill, {
+      autoScan: true,
+      onScanComplete: function() {
+        updateStatsAndSidebar();
+      }
+    }) : null;
 
     const statWords = document.getElementById('statWords');
     const statChars = document.getElementById('statChars');
+    const statParas = document.getElementById('statParas');
     const btnSample = document.getElementById('btnSampleText');
     const btnClear = document.getElementById('btnClearText');
     const btnCopy = document.getElementById('btnCopyText');
@@ -993,32 +1015,91 @@
       });
     }
 
-    // Word replacement helper
+    // Safe Word replacement helper preserving rich-text & formatting
     function replaceWordInQuill(wrongWord, correctWord) {
       if (!wrongWord || !correctWord) return;
-      const text = quill.getText();
-      const regex = new RegExp(wrongWord, 'g');
-      const newText = text.replace(regex, correctWord);
-      quill.setText(newText);
+
+      const errorNodes = quill.root.querySelectorAll('.payasti-spell-error');
+      let replaced = false;
+
+      errorNodes.forEach(node => {
+        const dWord = node.getAttribute('data-word') || (node.textContent || '').trim();
+        if (dWord === wrongWord || (node.textContent || '').trim() === wrongWord) {
+          try {
+            const blot = Quill.find(node);
+            if (blot) {
+              const index = quill.getIndex(blot);
+              const length = blot.length();
+              quill.deleteText(index, length, Quill.sources.USER);
+              quill.insertText(index, correctWord, Quill.sources.USER);
+              quill.formatText(index, correctWord.length, 'spellError', false, Quill.sources.SILENT);
+              replaced = true;
+            }
+          } catch (e) {}
+        }
+      });
+
+      if (!replaced) {
+        const contents = quill.getContents();
+        let changed = false;
+        if (contents && contents.ops) {
+          contents.ops.forEach(op => {
+            if (typeof op.insert === 'string' && op.insert.includes(wrongWord)) {
+              op.insert = op.insert.split(wrongWord).join(correctWord);
+              changed = true;
+            }
+          });
+        }
+        if (changed) {
+          quill.setContents(contents, Quill.sources.USER);
+        }
+      }
+
       showToast(`'${wrongWord}' ➔ '${correctWord}' সংশোধন করা হয়েছে`);
       if (checker) checker.scheduleScan(100);
-      setTimeout(updateStatsAndSidebar, 250);
+      setTimeout(updateStatsAndSidebar, 200);
     }
 
     function updateStatsAndSidebar() {
       const text = quill.getText().trim();
       const words = text ? text.split(/\s+/).filter(Boolean).length : 0;
       const chars = text.length;
+      const paras = text ? text.split(/\n+/).map(p => p.trim()).filter(Boolean).length : 0;
 
       if (statWords) statWords.textContent = toBn(words);
       if (statChars) statChars.textContent = toBn(chars);
+      if (statParas) statParas.textContent = toBn(paras);
 
       renderSidebarMistakes();
     }
 
     quill.on('text-change', () => {
       updateStatsAndSidebar();
-      setTimeout(updateStatsAndSidebar, 450);
+    });
+
+    // Seamless paste handler ensuring 100% of copied text & paragraphs are inserted without truncation
+    quill.root.addEventListener('paste', function(e) {
+      const clipboardData = e.clipboardData || window.clipboardData;
+      if (!clipboardData) return;
+      const text = clipboardData.getData('text/plain');
+      const html = clipboardData.getData('text/html');
+
+      if (text && (!html || !/<(table|h[1-6]|img|svg|iframe)\b/i.test(html))) {
+        e.preventDefault();
+        // Normalize redundant multiple empty lines / excessive enters
+        const cleanText = text
+          .replace(/\r\n/g, '\n')
+          .replace(/\r/g, '\n')
+          .replace(/\n\s*\n+/g, '\n')
+          .trim();
+
+        const selection = quill.getSelection(true) || { index: 0, length: 0 };
+        quill.deleteText(selection.index, selection.length, Quill.sources.USER);
+        quill.insertText(selection.index, cleanText, Quill.sources.USER);
+        quill.setSelection(selection.index + cleanText.length, Quill.sources.SILENT);
+        if (checker) checker.scheduleScan(100);
+        setTimeout(updateStatsAndSidebar, 150);
+      }
     });
 
     // Sample Text Button
@@ -1035,6 +1116,7 @@
     if (btnClear) {
       btnClear.addEventListener('click', () => {
         quill.setText('');
+        if (checker) checker.clearHighlights();
         updateStatsAndSidebar();
       });
     }
@@ -1062,35 +1144,68 @@
         const allErrors = checker.getFoundErrors ? checker.getFoundErrors() : [];
         if (allErrors.length === 0) return;
 
-        let text = quill.getText();
-        let fixCount = 0;
-        const processedWords = new Set();
-
+        const fixMap = new Map();
         allErrors.forEach(err => {
           const wrong = err.word;
           const suggestions = Array.isArray(err.correct) ? err.correct : [err.correct];
           const topFix = suggestions[0];
-
-          if (topFix && !processedWords.has(wrong) && text.includes(wrong)) {
-            processedWords.add(wrong);
-            const regex = new RegExp(wrong, 'g');
-            text = text.replace(regex, topFix);
-            fixCount++;
+          if (topFix && !fixMap.has(wrong)) {
+            fixMap.set(wrong, topFix);
           }
         });
 
-        if (fixCount > 0) {
-          quill.setText(text);
+        if (fixMap.size === 0) return;
+
+        let replacedCount = 0;
+        const errorNodes = quill.root.querySelectorAll('.payasti-spell-error');
+        errorNodes.forEach(node => {
+          const dWord = node.getAttribute('data-word') || (node.textContent || '').trim();
+          if (fixMap.has(dWord)) {
+            const corr = fixMap.get(dWord);
+            try {
+              const blot = Quill.find(node);
+              if (blot) {
+                const index = quill.getIndex(blot);
+                const length = blot.length();
+                quill.deleteText(index, length, Quill.sources.USER);
+                quill.insertText(index, corr, Quill.sources.USER);
+                quill.formatText(index, corr.length, 'spellError', false, Quill.sources.SILENT);
+                replacedCount++;
+              }
+            } catch (e) {}
+          }
+        });
+
+        const contents = quill.getContents();
+        let changed = false;
+        if (contents && contents.ops) {
+          contents.ops.forEach(op => {
+            if (typeof op.insert === 'string') {
+              for (const [wrong, corr] of fixMap.entries()) {
+                if (op.insert.includes(wrong)) {
+                  op.insert = op.insert.split(wrong).join(corr);
+                  changed = true;
+                  replacedCount++;
+                }
+              }
+            }
+          });
+        }
+        if (changed) {
+          quill.setContents(contents, Quill.sources.USER);
+        }
+
+        if (replacedCount > 0) {
           showToast('✨ সকল বানান সফলভাবে শুদ্ধ করা হয়েছে!');
-          if (checker) checker.scheduleScan(150);
-          setTimeout(updateStatsAndSidebar, 250);
+          if (checker) checker.scheduleScan(100);
+          setTimeout(updateStatsAndSidebar, 200);
         }
       });
     }
 
     // Initial load
-    setTimeout(updateStatsAndSidebar, 500);
-    setTimeout(updateStatsAndSidebar, 1200);
+    setTimeout(updateStatsAndSidebar, 400);
+    setTimeout(updateStatsAndSidebar, 1000);
 
   })();
 </script>

@@ -286,7 +286,9 @@
         <button type="button" id="btnCloseQuoteCard" class="quote-modal-close" aria-label="Close">&times;</button>
       </div>
       <div class="quote-modal-body">
-        <div id="quoteCardVisual" class="quote-card-preview-box">
+        <div id="quoteCardVisual" class="quote-card-preview-box" 
+             data-author="<%= author ? author.display_name : (post.author_name || 'পয়স্তি লেখক') %>" 
+             data-title="<%= post.title %>">
           <div class="quote-card-watermark">পয়স্তি</div>
           <div class="quote-card-quote-mark">“</div>
           <div class="quote-card-text" id="quoteCardText"></div>
@@ -310,4 +312,5 @@
   </div>
 </main>
 
+<script src="/vendor/html2canvas.min.js"></script>
 <%- include('partials/footer') %>

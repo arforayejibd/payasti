@@ -69,31 +69,44 @@
       .replace(/াাঁ/g, 'াঁ');
   }
 
-  // Common Bengali suffixes & inflections
+  // Common Bengali suffixes & inflections (Longest first)
   const BENGALI_SUFFIXES = [
-    'গুলোর', 'গুলোয়', 'গুলোই', 'গুলোও', 'গুলো',
-    'গুলির', 'গুলিই', 'গুলিও', 'গুলি',
-    'দেরকে', 'দেরই', 'দেরও', 'দের',
+    // Plural / Compound inflections
+    'গুলোরও', 'গুলোরই', 'গুলোতেই', 'গুলোতেও', 'গুলোতে', 'গুলোর', 'গুলোয়', 'গুলোই', 'গুলোও', 'গুলো',
+    'গুলিরও', 'গুলিরই', 'গুলিতেই', 'গুলিতেও', 'গুলিতে', 'গুলির', 'গুলিই', 'গুলিও', 'গুলি',
+    'গুলাতে', 'গুলার', 'গুলাই', 'গুলাও', 'গুলা',
+    'দেরকেও', 'দেরকেই', 'দেরকে', 'দেরই', 'দেরও', 'দের',
     'খানায়', 'খানা', 'খানি',
-    'টুকুর', 'টুকুতে', 'টুকুই', 'টুকুও', 'টুকু',
+    'টুকুরও', 'টুকুরই', 'টুকুতেই', 'টুকুতেও', 'টুকুতে', 'টুকুর', 'টুকুই', 'টুকুও', 'টুকু',
     'টাকে', 'টাতে', 'টায়', 'টার', 'টাই', 'টাও', 'টা',
     'টিকে', 'টিতে', 'টির', 'টিই', 'টিও', 'টি',
+    'জনকেই', 'জনকেও', 'জনকে', 'জনের', 'জনই', 'জন',
+    // Abstract & Adjectival suffixes
     'ভাবে', 'জনক', 'মূলক', 'হীন', 'শীল', 'প্রাপ্ত', 'করণ', 'কৃত', 'সহ',
+    // Verb inflections
     'ছিলেন', 'ছিলাম', 'ছিলে', 'ছিল',
-    'ছেন', 'বেন', 'লেন', 'তাম',
+    'েছিলেন', 'েছিলাম', 'েছিলে', 'েছিল',
+    'েছেন', 'েছে', 'েছি',
+    'বেন', 'লেন', 'তাম', 'তেন', 'ছেন',
+    'েতাম', 'েতেন', 'েতো', 'িলেন', 'িলাম', 'িলে', 'িল',
+    'য়েছে', 'চ্ছে', 'চ্ছ',
     'তেই', 'তেও', 'তে',
     'লেই', 'লেও', 'লে',
     'বেই', 'বেও', 'বে',
     'বোই', 'বোও', 'বো',
     'লোই', 'লোও', 'লো',
-    'তেন', 'তো',
-    'য়ের', 'য়েই', 'য়েও', 'য়ে',
+    'তো',
+    // Case endings with e-kar (ে), y-e-kar (য়ে), and standard suffixes
+    'য়েরই', 'য়েরও', 'য়ের', 'য়েই', 'য়েও', 'য়ে',
+    'তেই', 'তেও', 'তে',
     'কেই', 'কেও', 'কে',
     'রেই', 'রেও', 'রে',
+    'েরই', 'েরও', 'ের',
+    'েতেই', 'েতেও', 'েতে',
+    'েই', 'েও', 'ে',
     'রই', 'রও', 'র',
-    'এরই', 'এরও', 'এর',
-    'এতেই', 'এতেও', 'এতে',
-    'এই', 'এও', 'এ',
+    'রা',
+    'য়',
     'ও', 'ই'
   ];
 
@@ -113,7 +126,12 @@
     'পাঠকেরা', 'পৌঁছাতে', 'পারলেই', 'আবিষ্কার', 'সম্ভব', 'কবির', 'ভেদ', 'মারফত', 'এমনকি',
     'কবিকেও', 'ফুটতে', 'থাকা', 'গোলাপের', 'একটা', 'যেতে', 'থাকে', 'শরীরতত্ত্বের', 'শেষ',
     'পাঠক', 'বুঝতে', 'পারেন', 'গোলাপটির', 'দেহবিন্যাস', 'প্রস্ফুটিত', 'হলে', 'থেকে', 'প্রথম',
-    'সৌরভটি', 'বুকে', 'তার', 'নাম', 'প্রেম', 'আমাদের', 'তোমাদের', 'তাদের', 'নিজের', 'নিজেদের'
+    'সৌরভটি', 'বুকে', 'তার', 'নাম', 'প্রেম', 'আমাদের', 'তোমাদের', 'তাদের', 'নিজের', 'নিজেদের',
+    'ফুল', 'ফুলের', 'ফুলগুলো', 'ফোটে', 'ফোটানো', 'পাখি', 'পাখির', 'পাখিরা', 'নদী', 'নদীর', 'নদীগুলো',
+    'গাছ', 'গাছে', 'গাছের', 'গাছপালা', 'বই', 'বইয়ের', 'বইগুলো', 'শহর', 'শহরে', 'শহরের', 'গ্রাম', 'গ্রামে', 'গ্রামের',
+    'ভালোবাসি', 'ভালোবাসা', 'মানুষ', 'মানুষের', 'মানুষজন', 'পড়তে', 'লিখতে', 'বলতে', 'চলতে',
+    'দেশ', 'দেশে', 'দেশের', 'সবুজ', 'সুন্দর', 'বাগান', 'বাগানটিতে', 'আকাশ', 'আকাশে', 'বাতাস', 'বাতাসে',
+    'রবীন্দ্রনাথ', 'রবীন্দ্রনাথের', 'নজরুল', 'নজরুলের', 'জীবনানন্দ', 'জীবনানন্দের'
   ];
 
   // Valid standalone 1-letter words in Bengali (ONLY 'এ', 'ও', 'ই')
@@ -271,8 +289,17 @@
       if (!word || word.length === 0) return false;
       if (word.length === 1) return VALID_1_LETTER.has(word);
       const norm = normalizeBengaliUnicode(word);
+
+      // 1. Pure numbers or digits with optional punctuation (e.g. ১০০, ২০২৪, ৩.১৪, ১২-১৫)
+      if (/^[০-৯0-9]+([.,/-][০-৯0-9]+)*$/.test(norm)) return true;
+
+      // 2. Number + standard Bengali ordinal / classifier suffix (e.g. ১টি, ৫টা, ১০ম, ১৭ই, ১লা, ২রা, ৩রা, ৪ঠা, ২৫তম, ৫০%)
+      if (/^[০-৯0-9]+(টি|টা|খানা|খানি|জন|ম|ই|লা|রা|সে|শে|তে|এ|তম|গুণ| শতাংশ|%)$/.test(norm)) return true;
+
+      // 3. Direct dictionary check
       if (this.validWordsSet.has(norm)) return true;
 
+      // 4. Suffix / Inflection stem check
       for (let i = 0; i < BENGALI_SUFFIXES.length; i++) {
         const sfx = BENGALI_SUFFIXES[i];
         if (norm.endsWith(sfx) && norm.length > sfx.length + 1) {
@@ -282,6 +309,8 @@
           if (this.validWordsSet.has(stem + 'ানো')) return true;
           if (this.validWordsSet.has(stem + 'ন')) return true;
           if (this.validWordsSet.has(stem + 'য়')) return true;
+          if (this.validWordsSet.has(stem + 'ওয়া')) return true;
+          if (this.validWordsSet.has(stem + 'য়া')) return true;
         }
       }
 
@@ -554,6 +583,19 @@
         this.currentErrors = foundErrorsList;
         this.updateWidget();
 
+        // Dispatch scan event and callback
+        if (typeof this.options.onScanComplete === 'function') {
+          try {
+            this.options.onScanComplete(this.currentErrors);
+          } catch (cbErr) {
+            console.warn('PayastiSpellChecker: onScanComplete error:', cbErr);
+          }
+        }
+        try {
+          const scanEvt = new CustomEvent('payasti-spell-scanned', { detail: { errors: this.currentErrors } });
+          this.quill.root.dispatchEvent(scanEvt);
+        } catch (e) {}
+
         // Apply formatting silently in batch
         const totalLength = this.quill.getLength();
         if (totalLength > 0) {
@@ -778,6 +820,10 @@
       }
     }
 
+    getFoundErrors() {
+      return this.currentErrors || [];
+    }
+
     clearHighlights() {
       const totalLength = this.quill.getLength();
       if (totalLength > 0) {
@@ -785,6 +831,15 @@
       }
       this.currentErrors = [];
       this.updateWidget();
+      if (typeof this.options.onScanComplete === 'function') {
+        try {
+          this.options.onScanComplete([]);
+        } catch (e) {}
+      }
+      try {
+        const event = new CustomEvent('payasti-spell-scanned', { detail: { errors: [] } });
+        this.quill.root.dispatchEvent(event);
+      } catch (e) {}
     }
   }
 

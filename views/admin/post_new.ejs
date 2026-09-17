@@ -6,7 +6,7 @@
 
 <!-- Quill Editor CSS -->
 <link rel="stylesheet" href="/vendor/quill/quill.snow.css">
-<link rel="stylesheet" href="/css/payasti-spellchecker.css?v=3.5">
+<link rel="stylesheet" href="/css/payasti-spellchecker.css?v=5.5">
 
 <% if (typeof error !== 'undefined' && error) { %>
   <div style="background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; padding: 14px 18px; border-radius: 10px; margin-bottom: 24px; font-size: 16px;">
@@ -47,6 +47,12 @@
         <div class="admin-card-body" style="padding: 16px;">
           <div class="payasti-editor-wrapper">
             <div id="quillEditor"></div>
+          </div>
+          <!-- Live Word Count & Paragraph Stats -->
+          <div class="writing-stats-bar" style="margin-top: 10px; display: flex; gap: 16px; align-items: center; background: #f8fafc; padding: 7px 16px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; color: #64748b;">
+            <div>শব্দ: <strong id="statWordCount" style="color: #0f172a;">০</strong></div>
+            <div>অক্ষর: <strong id="statCharCount" style="color: #0f172a;">০</strong></div>
+            <div>অনুচ্ছেদ: <strong id="statParaCount" style="color: #0f172a;">০</strong></div>
           </div>
           <!-- Hidden textarea holding the HTML content for form submission -->
           <textarea name="content" id="postContentInput" style="display: none;"></textarea>
@@ -141,6 +147,7 @@
           <div class="admin-card-title">
             <span>ফিচার্ড ছবি</span>
           </div>
+        </div>
         <div class="admin-card-body">
           <div class="payasti-image-dropzone" data-name="featured_image" data-prompt="ফিচার্ড ছবি ড্র্যাগ করে ছাড়ুন অথবা ক্লিক করুন" data-hint="ক্লিক করে মিডিয়া লাইব্রেরি থেকে ছবি বাছুন"></div>
         </div>
@@ -151,14 +158,22 @@
 
 <!-- Quill Editor JS & Initialization -->
 <script src="/vendor/quill/quill.min.js"></script>
-<script src="/js/payasti-quill.js?v=2.0"></script>
-<script src="/js/payasti-spellchecker.js?v=5.3"></script>
+<script src="/js/payasti-quill.js?v=2.6"></script>
+<script src="/js/payasti-spellchecker.js?v=5.5"></script>
 <script>
   document.addEventListener('DOMContentLoaded', function() {
     const quill = window.createPayastiEditor('#quillEditor', {
       placeholder: 'সম্পূর্ণ সাহিত্যকর্ম, কবিতা, প্রবন্ধ বা গল্প এখানে লিখুন...'
     });
     const contentInput = document.getElementById('postContentInput');
+    const wordCountEl = document.getElementById('statWordCount');
+    const charCountEl = document.getElementById('statCharCount');
+    const paraCountEl = document.getElementById('statParaCount');
+
+    function toBn(num) {
+      const bnDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+      return String(num).replace(/\d/g, d => bnDigits[d]);
+    }
 
     function syncToInput() {
       if (contentInput) {
@@ -168,6 +183,15 @@
         }
         contentInput.value = html;
       }
+
+      const text = quill.getText().trim();
+      const words = text ? text.split(/\s+/).filter(Boolean).length : 0;
+      const chars = text.length;
+      const paras = text ? text.split(/\n+/).map(p => p.trim()).filter(Boolean).length : 0;
+
+      if (wordCountEl) wordCountEl.textContent = toBn(words);
+      if (charCountEl) charCountEl.textContent = toBn(chars);
+      if (paraCountEl) paraCountEl.textContent = toBn(paras);
     }
 
     quill.on('text-change', function() {

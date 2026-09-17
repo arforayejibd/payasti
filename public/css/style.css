@@ -1621,60 +1621,76 @@ button, input, textarea, select {
 
 .quote-card-preview-box {
   position: relative;
-  background: linear-gradient(135deg, #093b1d 0%, #068200 100%);
+  background: linear-gradient(135deg, #074718 0%, #068200 100%);
   color: #ffffff;
-  border-radius: var(--radius-md);
-  padding: 36px 32px;
-  min-height: 240px;
+  border-radius: 18px;
+  padding: 36px 32px 28px;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  min-height: 460px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  box-sizing: border-box;
 }
 
 .quote-card-watermark {
   position: absolute;
-  right: -20px;
-  bottom: -30px;
-  font-size: 120px;
+  right: -10px;
+  bottom: -20px;
+  font-size: 140px;
   font-weight: 900;
-  color: rgba(255,255,255,0.06);
+  color: rgba(255, 255, 255, 0.05);
   pointer-events: none;
   user-select: none;
+  font-family: 'payasti_uni', 'Hind Siliguri', sans-serif;
 }
 
 .quote-card-quote-mark {
-  font-size: 48px;
-  line-height: 1;
-  color: rgba(255, 255, 255, 0.35);
-  font-family: serif;
+  font-size: 76px;
+  line-height: 0.8;
+  margin-bottom: 12px;
+  color: rgba(255, 255, 255, 0.45);
+  font-family: Georgia, 'Times New Roman', serif;
+  user-select: none;
 }
 
 .quote-card-text {
-  font-size: 20px;
-  line-height: 1.8;
+  font-family: 'payasti_uni', 'Hind Siliguri', sans-serif !important;
+  font-feature-settings: "ss01" 1 !important;
+  -webkit-font-feature-settings: "ss01" 1 !important;
+  font-size: 22px;
+  line-height: 1.7;
   color: #ffffff;
-  font-weight: 500;
-  margin-bottom: 24px;
+  font-weight: 600;
+  margin: auto 0;
+  padding: 12px 0;
   white-space: pre-line;
-  max-height: 260px;
+  max-height: 320px;
   overflow-y: auto;
+  letter-spacing: 0.15px;
 }
 
 .quote-card-footer {
-  border-top: 1px solid rgba(255, 255, 255, 0.2);
-  padding-top: 14px;
+  border-top: 1.5px solid rgba(255, 255, 255, 0.22);
+  padding-top: 16px;
 }
 
 .quote-card-author {
-  font-size: 16px;
+  font-family: 'payasti_uni', 'Hind Siliguri', sans-serif;
+  font-size: 18.5px;
   font-weight: 700;
   color: #fffae6;
+  letter-spacing: 0.1px;
 }
 
 .quote-card-source {
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.75);
+  font-family: 'payasti_uni', 'Hind Siliguri', sans-serif;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.8);
+  margin-top: 2px;
 }
 
 .quote-modal-actions {

@@ -9,7 +9,7 @@
 
 <!-- Quill Rich Text Editor Styles -->
 <link rel="stylesheet" href="/vendor/quill/quill.snow.css">
-<link rel="stylesheet" href="/css/payasti-spellchecker.css?v=3.5">
+<link rel="stylesheet" href="/css/payasti-spellchecker.css?v=5.5">
 
 <% if (typeof error !== 'undefined' && error) { %>
   <div style="background: #fef2f2; border: 1.5px solid #fecaca; color: #b91c1c; padding: 14px 20px; border-radius: 8px; margin-bottom: 20px; font-size: 15px; font-weight: 500;">
@@ -95,7 +95,7 @@
           <!-- Live Word Count & Reading Time Stats -->
           <div class="writing-stats-bar" style="margin-top: 10px;">
             <div class="stat-pill">
-              <span>শব্দ সংখ্যা:</span>
+              <span>শব্দ:</span>
               <strong id="statWordCount">০</strong>
             </div>
             <div class="stat-pill">
@@ -103,7 +103,11 @@
               <strong id="statCharCount">০</strong>
             </div>
             <div class="stat-pill">
-              <span>আনুমানিক পাঠসময়:</span>
+              <span>অনুচ্ছেদ:</span>
+              <strong id="statParaCount">০</strong>
+            </div>
+            <div class="stat-pill">
+              <span>পাঠসময়:</span>
               <strong id="statReadingTime">১ মিনিট</strong>
             </div>
             <div class="stat-pill draft-status" id="draftStatusPill" style="margin-left: auto;">
@@ -216,8 +220,8 @@
 
 <!-- Quill Editor Scripts -->
 <script src="/vendor/quill/quill.min.js"></script>
-<script src="/js/payasti-quill.js?v=2.0"></script>
-<script src="/js/payasti-spellchecker.js?v=5.3"></script>
+<script src="/js/payasti-quill.js?v=2.6"></script>
+<script src="/js/payasti-spellchecker.js?v=5.5"></script>
 
 <script>
   (function () {
@@ -238,6 +242,7 @@
     const contentInput = document.getElementById('postContentInput');
     const wordCountEl = document.getElementById('statWordCount');
     const charCountEl = document.getElementById('statCharCount');
+    const paraCountEl = document.getElementById('statParaCount');
     const readingTimeEl = document.getElementById('statReadingTime');
     const draftStatusText = document.getElementById('draftStatusText');
     const toggleSpellingBtn = document.getElementById('toggleSpellingGuide');
@@ -258,10 +263,12 @@
       const text = quill.getText().trim();
       const words = text ? text.split(/\s+/).filter(Boolean).length : 0;
       const chars = text.length;
+      const paras = text ? text.split(/\n+/).map(p => p.trim()).filter(Boolean).length : 0;
       const readingMinutes = Math.max(1, Math.ceil(words / 150));
 
       if (wordCountEl) wordCountEl.textContent = toBn(words);
       if (charCountEl) charCountEl.textContent = toBn(chars);
+      if (paraCountEl) paraCountEl.textContent = toBn(paras);
       if (readingTimeEl) readingTimeEl.textContent = `${toBn(readingMinutes)} মিনিট`;
     }
 
@@ -313,8 +320,14 @@
 
     if (form) {
       form.addEventListener('submit', (e) => {
+        if (window.activePayastiSpellChecker) {
+          window.activePayastiSpellChecker.clearHighlights();
+        }
         const text = quill.getText().trim();
-        const html = quill.root.innerHTML;
+        let html = quill.root.innerHTML;
+        if (html) {
+          html = html.replace(/<span class="payasti-spell-error[^"]*"[^>]*>([\s\S]*?)<\/span>/gi, '$1');
+        }
         if (!text || text.length === 0) {
           alert('অনুগ্রহ করে মূল সাহিত্য বা লেখার বিষয়বস্তু লিখুন।');
           e.preventDefault();

@@ -1637,8 +1637,10 @@ textarea.form-control {
 
 /* Paragraph spacing & line break rendering */
 .ql-editor p {
-  margin: 0 0 1em 0 !important;
-  line-height: 1.8 !important;
+  margin-bottom: 18px !important;
+  line-height: 1.85 !important;
+  text-align: justify !important;
+  text-justify: inter-word !important;
 }
 
 .ql-editor p:last-child {

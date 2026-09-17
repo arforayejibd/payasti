@@ -49,21 +49,87 @@
                 this.quill.setSelection(range.index + 1, Quill.sources.SILENT);
                 return false;
               }
+            },
+            preventExtraEnter: {
+              key: 'Enter',
+              shiftKey: false,
+              handler: function(range) {
+                const [line] = this.quill.getLine(range.index);
+                if (line) {
+                  // Check if current line is already an empty paragraph
+                  const text = (line.domNode && line.domNode.innerText) ? line.domNode.innerText.replace(/\uFEFF/g, '').trim() : '';
+                  if (line.length() <= 1 && text === '') {
+                    // Current line is already empty; prevent stacking consecutive blank paragraphs
+                    return false;
+                  }
+                }
+                return true;
+              }
             }
           }
         },
-        clipboard: {
-          matchVisual: false,
-          matchers: [
-            ['BR', function(node, delta) {
-              return new Delta().insert({ softbreak: true });
-            }]
-          ]
+        clipboard: options.clipboard || {
+          matchVisual: false
         }
       }
     });
 
+    // Paste handler to automatically collapse excessive blank lines / enters
+    quill.root.addEventListener('paste', function(e) {
+      const clipboardData = e.clipboardData || window.clipboardData;
+      if (!clipboardData) return;
+      const text = clipboardData.getData('text/plain');
+      const html = clipboardData.getData('text/html');
+
+      if (text && (!html || !/<(table|h[1-6]|img|svg|iframe)\b/i.test(html))) {
+        e.preventDefault();
+        // Collapse multiple enters/consecutive blank lines into single clean paragraph breaks
+        const cleanText = text
+          .replace(/\r\n/g, '\n')
+          .replace(/\r/g, '\n')
+          .replace(/\n\s*\n+/g, '\n')
+          .trim();
+
+        const selection = quill.getSelection(true) || { index: 0, length: 0 };
+        quill.deleteText(selection.index, selection.length, Quill.sources.USER);
+        quill.insertText(selection.index, cleanText, Quill.sources.USER);
+        quill.setSelection(selection.index + cleanText.length, Quill.sources.SILENT);
+      }
+    });
+
     return quill;
+  };
+
+  // Helper to remove consecutive empty paragraphs / extra enters from editor
+  window.removeExtraEntersFromQuill = function(quill) {
+    if (!quill) return;
+    try {
+      const lines = quill.getLines(0, quill.getLength());
+      let lastWasEmpty = false;
+      const toDelete = [];
+
+      lines.forEach(line => {
+        const text = (line.domNode && line.domNode.innerText) ? line.domNode.innerText.replace(/\uFEFF/g, '').trim() : '';
+        const isEmpty = line.length() <= 1 && text === '';
+        if (isEmpty) {
+          if (lastWasEmpty) {
+            toDelete.push({
+              index: quill.getIndex(line),
+              length: line.length()
+            });
+          }
+          lastWasEmpty = true;
+        } else {
+          lastWasEmpty = false;
+        }
+      });
+
+      toDelete.reverse().forEach(item => {
+        quill.deleteText(item.index, item.length, Quill.sources.USER);
+      });
+    } catch (e) {
+      console.warn('Error removing extra enters:', e);
+    }
   };
 
   // Helper to safely clean and prepare HTML for loading into editor
@@ -73,12 +139,14 @@
       .replace(/<!--[\s\S]*?-->/g, '')
       .replace(/\\"/g, '"')
       .replace(/\\'/g, "'")
+      .replace(/(<p>\s*(<br\s*\/?>|&nbsp;|\s)*<\/p>\s*){2,}/gi, '<p><br></p>')
+      .replace(/(<br\s*\/?>\s*){2,}/gi, '<br>')
       .trim();
 
     // If plain text with newlines and no HTML block tags, convert newlines to paragraphs & breaks
     if (!/<(p|br|div|blockquote|h[1-6]|ul|ol|table)\b/i.test(clean)) {
       clean = clean
-        .split(/\r?\n\s*\r?\n/)
+        .split(/\r?\n\s*\r?\n+/)
         .map(para => {
           const lines = para.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
           return lines.length ? '<p>' + lines.join('<br>') + '</p>' : '';
