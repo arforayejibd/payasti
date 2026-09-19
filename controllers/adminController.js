@@ -16,14 +16,16 @@ exports.getDashboard = async (req, res) => {
     const publishedRow = await db.prepare("SELECT COUNT(*) AS total FROM posts WHERE status = 'publish'").get();
     const draftRow = await db.prepare("SELECT COUNT(*) AS total FROM posts WHERE status = 'draft'").get();
     const usersRow = await db.prepare("SELECT COUNT(*) AS total FROM users").get();
-    const booksRow = await db.prepare("SELECT COUNT(*) AS total FROM books").get();
+    const categoriesRow = await db.prepare("SELECT COUNT(*) AS total FROM categories").get();
+    const tagsRow = await db.prepare("SELECT COUNT(*) AS total FROM tags").get();
     const totalViewsRow = await db.prepare("SELECT COALESCE(SUM(views), 0) AS total FROM posts").get();
 
     const pendingPostsCount = pendingRow ? pendingRow.total : 0;
     const publishedPostsCount = publishedRow ? publishedRow.total : 0;
     const draftPostsCount = draftRow ? draftRow.total : 0;
     const usersCount = usersRow ? usersRow.total : 0;
-    const booksCount = booksRow ? booksRow.total : 0;
+    const categoriesCount = categoriesRow ? categoriesRow.total : 0;
+    const tagsCount = tagsRow ? tagsRow.total : 0;
     const totalViews = totalViewsRow ? totalViewsRow.total : 0;
 
     const pendingUsersRow = await db.prepare("SELECT COUNT(1) AS total FROM users WHERE status IN ('pending_approval', 'pending_verification') OR (role = 'author' AND is_approved = 0)").get();
@@ -56,7 +58,7 @@ exports.getDashboard = async (req, res) => {
       ORDER BY id DESC LIMIT 5
     `).all();
 
-    const seo = generateSeoMeta({ title: 'এডমিন ড্যাশবোর্ড ও মডারেশন' });
+    const seo = generateSeoMeta({ title: 'সেরা ১০ অ্যাডমিন ড্যাশবোর্ড' });
 
     res.render('admin/dashboard', {
       user: req.user,
@@ -66,7 +68,8 @@ exports.getDashboard = async (req, res) => {
         drafts: draftPostsCount,
         users: usersCount,
         pendingUsers: pendingUsersCount,
-        books: booksCount,
+        categories: categoriesCount,
+        tags: tagsCount,
         totalViews: totalViews
       },
       recentPending,
@@ -211,17 +214,21 @@ exports.postNewPost = async (req, res) => {
     const categories = await db.prepare('SELECT id, name FROM categories ORDER BY name ASC').all();
     const authors = await db.prepare('SELECT id, display_name, username, role FROM users ORDER BY display_name ASC').all();
 
-    if (!title || !category_id || !content) {
+    if (!title || !title.trim()) {
       return res.render('admin/post_new', {
         user: req.user,
         categories,
         authors,
-        error: 'অনুগ্রহ করে শিরোনাম, বিভাগ এবং মূল লেখা প্রদান করুন।',
+        error: 'অনুগ্রহ করে পোস্টের শিরোনাম প্রদান করুন।',
         activeMenu: 'new_post',
         seo: generateSeoMeta({ title: 'নতুন লেখা যোগ করুন - এডমিন' }),
         toBengaliNumber
       });
     }
+
+    let cleanContent = (content && content.trim()) 
+      ? content.replace(/<span class="payasti-spell-error[^"]*"[^>]*>([\s\S]*?)<\/span>/gi, '$1')
+      : `<p>${title.trim()}</p>`;
 
     let featuredImage = req.body.featured_image || '';
     if (req.file) {
@@ -234,22 +241,31 @@ exports.postNewPost = async (req, res) => {
       slug = `${slug}-${Date.now()}`;
     }
 
-    let cleanContent = (content || '')
-      .replace(/<span class="payasti-spell-error[^"]*"[^>]*>([\s\S]*?)<\/span>/gi, '$1');
-
     let cleanExcerpt = (excerpt || '').trim();
     if (!cleanExcerpt) {
       cleanExcerpt = generateCleanExcerpt(cleanContent, 160);
     }
 
     const postAuthorId = author_id && !isNaN(parseInt(author_id, 10)) ? parseInt(author_id, 10) : req.user.id;
-    const postCategoryId = category_id && !isNaN(parseInt(category_id, 10)) ? parseInt(category_id, 10) : null;
+    let postCategoryId = category_id && !isNaN(parseInt(category_id, 10)) ? parseInt(category_id, 10) : null;
+    if (!postCategoryId && categories && categories.length > 0) {
+      postCategoryId = categories[0].id;
+    }
     const postStatus = status || 'publish';
     const postFeatured = is_featured === '1' ? 1 : 0;
+    
+    // Rating logic
+    const enableRating = req.body.enable_rating === '1';
+    let postRatingScore = 0.00;
+    let postRatingCount = 0;
+    if (enableRating && req.body.rating_score && !isNaN(parseFloat(req.body.rating_score))) {
+      postRatingScore = Math.min(5.0, Math.max(1.0, parseFloat(req.body.rating_score)));
+      postRatingCount = 1;
+    }
 
     await db.prepare(`
-      INSERT INTO posts (author_id, title, slug, content, excerpt, featured_image, category_id, status, views, is_featured, published_at, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, ?, NOW(), NOW(), NOW())
+      INSERT INTO posts (author_id, title, slug, content, excerpt, featured_image, category_id, status, views, is_featured, rating_score, rating_count, published_at, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, NOW(), NOW(), NOW())
     `).run(
       postAuthorId,
       title.trim(),
@@ -259,13 +275,29 @@ exports.postNewPost = async (req, res) => {
       featuredImage,
       postCategoryId,
       postStatus,
-      postFeatured
+      postFeatured,
+      postRatingScore,
+      postRatingCount
     );
 
     res.redirect('/admin/posts');
   } catch (err) {
     console.error('Error in postNewPost:', err);
-    res.redirect('/admin/posts');
+    try {
+      const categories = await db.prepare('SELECT id, name FROM categories ORDER BY name ASC').all();
+      const authors = await db.prepare('SELECT id, display_name, username, role FROM users ORDER BY display_name ASC').all();
+      return res.render('admin/post_new', {
+        user: req.user,
+        categories,
+        authors,
+        error: 'পোস্ট সংরক্ষণ করতে সমস্যা হয়েছে: ' + (err.message || 'অজানা ত্রুটি'),
+        activeMenu: 'new_post',
+        seo: generateSeoMeta({ title: 'নতুন লেখা যোগ করুন - এডমিন' }),
+        toBengaliNumber
+      });
+    } catch (e) {
+      res.redirect('/admin/posts');
+    }
   }
 };
 
@@ -304,7 +336,7 @@ exports.getEditPost = async (req, res) => {
 exports.postEditPost = async (req, res) => {
   try {
     const { id } = req.params;
-    const { title, author_id, category_id, excerpt, content, status, is_featured } = req.body;
+    const { title, author_id, category_id, excerpt, content, status, is_featured, enable_rating, rating_score } = req.body;
 
     const existingPost = await db.prepare('SELECT * FROM posts WHERE id = ?').get(id);
     if (!existingPost) {
@@ -330,6 +362,19 @@ exports.postEditPost = async (req, res) => {
     const postStatus = status || existingPost.status;
     const postFeatured = is_featured === '1' ? 1 : 0;
 
+    // Rating logic
+    const isRatingEnabled = enable_rating === '1';
+    let postRatingScore = 0.00;
+    let postRatingCount = 0;
+    if (isRatingEnabled) {
+      if (rating_score && !isNaN(parseFloat(rating_score))) {
+        postRatingScore = Math.min(5.0, Math.max(1.0, parseFloat(rating_score)));
+      } else {
+        postRatingScore = 4.80;
+      }
+      postRatingCount = existingPost.rating_count > 0 ? existingPost.rating_count : 1;
+    }
+
     // Set published_at if moving to publish for the first time
     let publishedAt = existingPost.published_at;
     if (postStatus === 'publish' && !publishedAt) {
@@ -338,7 +383,7 @@ exports.postEditPost = async (req, res) => {
 
     await db.prepare(`
       UPDATE posts
-      SET title = ?, author_id = ?, category_id = ?, excerpt = ?, content = ?, featured_image = ?, status = ?, is_featured = ?, published_at = ?, updated_at = NOW()
+      SET title = ?, author_id = ?, category_id = ?, excerpt = ?, content = ?, featured_image = ?, status = ?, is_featured = ?, rating_score = ?, rating_count = ?, published_at = ?, updated_at = NOW()
       WHERE id = ?
     `).run(
       postTitle,
@@ -349,6 +394,8 @@ exports.postEditPost = async (req, res) => {
       featuredImage,
       postStatus,
       postFeatured,
+      postRatingScore,
+      postRatingCount,
       publishedAt,
       id
     );
@@ -972,17 +1019,14 @@ exports.deleteComment = async (req, res) => {
 // ==========================================
 exports.getSettings = async (req, res) => {
   try {
-    const settingsRows = await db.prepare('SELECT `key`, `value` FROM settings').all();
-    const settingsMap = {};
-    settingsRows.forEach(row => {
-      settingsMap[row.key] = row.value;
-    });
+    const { getSiteSettings } = require('../services/settingsService');
+    const settingsMap = await getSiteSettings();
 
     const seo = generateSeoMeta({ title: 'সাইট সেটিংস - এডমিন' });
 
     res.render('admin/settings', {
       user: req.user,
-      settings: settingsMap,
+      settings: settingsMap || {},
       success: req.query.saved === '1',
       activeMenu: 'settings',
       seo,
@@ -996,20 +1040,44 @@ exports.getSettings = async (req, res) => {
 
 exports.postSettings = async (req, res) => {
   try {
-    const { site_title, site_tagline, site_description, contact_email, contact_phone, facebook_url } = req.body;
+    const { saveSiteSettings } = require('../services/settingsService');
+    const { 
+      site_title, 
+      site_tagline, 
+      site_description, 
+      site_logo, 
+      site_favicon, 
+      contact_email, 
+      contact_phone, 
+      contact_address,
+      facebook_url,
+      youtube_url,
+      twitter_url,
+      instagram_url,
+      linkedin_url,
+      footer_about_text,
+      footer_affiliate_notice,
+      footer_copyright_text
+    } = req.body;
 
-    const updates = [
-      { key: 'site_title', value: site_title || '' },
-      { key: 'site_tagline', value: site_tagline || '' },
-      { key: 'site_description', value: site_description || '' },
-      { key: 'contact_email', value: contact_email || '' },
-      { key: 'contact_phone', value: contact_phone || '' },
-      { key: 'facebook_url', value: facebook_url || '' }
-    ];
-
-    for (const item of updates) {
-      await db.prepare('REPLACE INTO settings (`key`, `value`) VALUES (?, ?)').run(item.key, item.value.trim());
-    }
+    await saveSiteSettings({
+      site_title: site_title || '',
+      site_tagline: site_tagline || '',
+      site_description: site_description || '',
+      site_logo: site_logo || '',
+      site_favicon: site_favicon || '',
+      contact_email: contact_email || '',
+      contact_phone: contact_phone || '',
+      contact_address: contact_address || '',
+      facebook_url: facebook_url || '',
+      youtube_url: youtube_url || '',
+      twitter_url: twitter_url || '',
+      instagram_url: instagram_url || '',
+      linkedin_url: linkedin_url || '',
+      footer_about_text: footer_about_text || '',
+      footer_affiliate_notice: footer_affiliate_notice || '',
+      footer_copyright_text: footer_copyright_text || ''
+    });
 
     res.redirect('/admin/settings?saved=1');
   } catch (err) {
@@ -1017,3 +1085,69 @@ exports.postSettings = async (req, res) => {
     res.redirect('/admin/settings');
   }
 };
+
+// ==========================================
+// 10. HEADER MENU MANAGEMENT
+// ==========================================
+exports.getMenu = async (req, res) => {
+  try {
+    const { getNavMenu } = require('../services/menuService');
+    const categories = await db.prepare('SELECT id, name, slug, count FROM categories ORDER BY count DESC, name ASC').all();
+    const currentMenu = await getNavMenu();
+
+    const seo = generateSeoMeta({ title: 'হেডার মেনু ব্যবস্থাপনা - এডমিন' });
+
+    res.render('admin/menu', {
+      user: req.user,
+      categories: categories || [],
+      currentMenu: currentMenu || [],
+      success: req.query.saved === '1',
+      activeMenu: 'menu',
+      seo,
+      toBengaliNumber
+    });
+  } catch (err) {
+    console.error('Error in getMenu:', err);
+    res.redirect('/admin');
+  }
+};
+
+exports.postMenu = async (req, res) => {
+  try {
+    const { saveNavMenu } = require('../services/menuService');
+    let menuItems = [];
+
+    if (req.body.menu_json !== undefined) {
+      try {
+        menuItems = typeof req.body.menu_json === 'string' ? JSON.parse(req.body.menu_json) : req.body.menu_json;
+      } catch (e) {
+        console.error('Error parsing menu_json:', e);
+        menuItems = [];
+      }
+    } else if (req.body.categories) {
+      // Fallback if simple checkbox array is submitted
+      const selectedSlugs = Array.isArray(req.body.categories) ? req.body.categories : [req.body.categories];
+      const categories = await db.prepare('SELECT id, name, slug FROM categories').all();
+      const catMap = {};
+      categories.forEach(c => { catMap[c.slug] = c; });
+
+      menuItems.push({ title: 'হোম', url: '/' });
+      selectedSlugs.forEach(slug => {
+        if (catMap[slug]) {
+          menuItems.push({
+            title: catMap[slug].name,
+            url: `/category/${catMap[slug].slug}`,
+            slug: catMap[slug].slug
+          });
+        }
+      });
+    }
+
+    await saveNavMenu(menuItems);
+    res.redirect('/admin/menu?saved=1');
+  } catch (err) {
+    console.error('Error in postMenu:', err);
+    res.redirect('/admin/menu');
+  }
+};
+

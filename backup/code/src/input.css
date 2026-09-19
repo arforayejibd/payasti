@@ -1,0 +1,9 @@
+@import "tailwindcss";
+
+@theme {
+  --color-payasti-green: #068200;
+  --color-payasti-green-dark: #056a00;
+  --color-payasti-cream: #fbf7ee;
+  --font-payasti: 'payasti_uni', serif;
+  --font-hind: 'Hind Siliguri', sans-serif;
+}

@@ -63,37 +63,21 @@ function formatDuration(startDateInput) {
   return `${bnYears} বছর ${bnMonths} মাস ${bnDays} দিন`;
 }
 
-/**
- * Format card excerpt preserving poetry line breaks (<br>) and removing &nbsp;/nbsp;
- * Rules:
- * 1. Maximum maxLines (default 4 lines).
- * 2. Maximum maxWords (default 26 words for prose).
- * 3. Whichever limit is hit first stops the excerpt, appending '...'.
- */
-function formatCardExcerpt(rawContent, maxWords = 26, maxLines = 4) {
+function formatCardExcerpt(rawContent, maxWords = 24, maxLines = 3) {
   if (!rawContent) return '';
 
   let text = String(rawContent)
-    // Remove Gutenberg block comments
     .replace(/<!--[\s\S]*?-->/g, '')
-    // Remove non-breaking spaces and entity garbage
     .replace(/&nbsp;/gi, ' ')
     .replace(/&amp;nbsp;/gi, ' ')
     .replace(/\bnbsp;?/gi, ' ')
     .replace(/&#160;/g, ' ')
     .replace(/&zwnj;/g, '')
-    .replace(/&zwj;/g, '');
-
-  // Convert break and block tags to newline
-  text = text
+    .replace(/&zwj;/g, '')
     .replace(/<br\s*\/?>/gi, '\n')
     .replace(/<\/(p|div|h[1-6]|li|blockquote|section|article|tr)>/gi, '\n')
     .replace(/<(p|div|h[1-6]|li|blockquote|section|article|tr)[^>]*>/gi, '\n')
-    // Strip all other HTML tags
-    .replace(/<[^>]+>/g, '');
-
-  // Decode common HTML entities
-  text = text
+    .replace(/<[^>]+>/g, '')
     .replace(/&amp;/g, '&')
     .replace(/&lt;/g, '<')
     .replace(/&gt;/g, '>')
@@ -109,7 +93,6 @@ function formatCardExcerpt(rawContent, maxWords = 26, maxLines = 4) {
   for (let line of rawLines) {
     if (trimmedLines.length >= maxLines || totalWords >= maxWords) break;
 
-    // Clean multiple spaces within the line
     line = line.trim().replace(/[ \t]+/g, ' ');
     if (line === '') continue;
 
@@ -143,9 +126,51 @@ function formatCardExcerpt(rawContent, maxWords = 26, maxLines = 4) {
 }
 
 /**
- * Format article content for single post view:
- * Cleans Gutenberg comments, escaped quotes, and &nbsp; artifacts
+ * Automatically extracts Table of Contents (TOC) from H2 & H3 tags and injects IDs
  */
+function generateTableOfContents(htmlContent) {
+  if (!htmlContent) return { toc: [], content: '' };
+
+  const toc = [];
+  let headingIndex = 0;
+
+  let clean = String(htmlContent)
+    .replace(/<!--[\s\S]*?-->/g, '')
+    .replace(/\\"/g, '"')
+    .replace(/\\'/g, "'")
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&amp;nbsp;/gi, ' ')
+    .replace(/\bnbsp;?/gi, ' ')
+    .trim();
+
+  // Replace H2 and H3 tags with IDs
+  const contentWithIds = clean.replace(/<(h[23])([^>]*)>([\s\S]*?)<\/\1>/gi, (match, tag, attrs, text) => {
+    headingIndex++;
+    const plainText = text.replace(/<[^>]+>/g, '').trim();
+    if (!plainText) return match;
+
+    const slugId = `section-${headingIndex}-${plainText
+      .toLowerCase()
+      .replace(/[^a-z0-9\u0980-\u09FF]+/g, '-')
+      .replace(/^-+|-+$/g, '') || headingIndex}`;
+
+    toc.push({
+      id: slugId,
+      text: plainText,
+      level: tag.toLowerCase() === 'h2' ? 2 : 3
+    });
+
+    // Check if ID already exists
+    if (/id=["'][^"']*["']/i.test(attrs)) {
+      return match;
+    }
+
+    return `<${tag}${attrs} id="${slugId}">${text}</${tag}>`;
+  });
+
+  return { toc, content: contentWithIds };
+}
+
 function renderArticleContent(content) {
   if (!content) return '';
 
@@ -158,19 +183,9 @@ function renderArticleContent(content) {
     .replace(/\bnbsp;?/gi, ' ')
     .trim();
 
-  // If content has HTML tags, return it clean
-  if (/<(p|br|div|blockquote|h[1-6]|ul|ol|table)\b/i.test(clean)) {
-    return clean;
-  }
-
-  // Plain text fallback: convert newlines to <br>
-  return clean.replace(/\r\n|\r|\n/g, '<br>');
+  return clean;
 }
 
-/**
- * Calculate estimated reading time for article content in Bengali
- * Average reading speed for Bengali text: ~160-180 words per minute
- */
 function calculateReadingTime(content) {
   if (!content) return '১ মিনিটের পাঠ';
   const plainText = String(content)
@@ -182,35 +197,19 @@ function calculateReadingTime(content) {
   return `${toBengaliNumber(minutes)} মিনিটের পাঠ`;
 }
 
-function generateCleanExcerpt(content, maxChars = 200) {
+function generateCleanExcerpt(content, maxChars = 160) {
   if (!content) return '';
-  let text = String(content)
+  const plainText = String(content)
     .replace(/<!--[\s\S]*?-->/g, '')
+    .replace(/<[^>]+>/g, ' ')
     .replace(/&nbsp;/gi, ' ')
-    .replace(/&amp;nbsp;/gi, ' ')
-    .replace(/\bnbsp;?/gi, ' ')
-    .replace(/&#160;/g, ' ')
-    .replace(/&zwnj;/g, '')
-    .replace(/&zwj;/g, '')
-    .replace(/<br\s*\/?>/gi, '\n')
-    .replace(/<\/(p|div|h[1-6]|li|blockquote|section|article|tr)>/gi, '\n')
-    .replace(/<(p|div|h[1-6]|li|blockquote|section|article|tr)[^>]*>/gi, '\n')
-    .replace(/<[^>]+>/g, '')
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"')
-    .replace(/&#039;/g, "'")
-    .replace(/&rsquo;/g, "'")
-    .replace(/&lsquo;/g, "'");
-
-  const lines = text.split(/\r\n|\r|\n/)
-    .map(l => l.trim().replace(/[ \t]+/g, ' '))
-    .filter(l => l.length > 0);
-
-  const result = lines.join('\n');
-  if (result.length <= maxChars) return result;
-  return result.substring(0, maxChars) + '...';
+    .replace(/&amp;/gi, '&')
+    .replace(/&quot;/gi, '"')
+    .replace(/&#039;/gi, "'")
+    .replace(/\s+/g, ' ')
+    .trim();
+  if (plainText.length <= maxChars) return plainText;
+  return plainText.substring(0, maxChars).trim() + '...';
 }
 
 module.exports = {
@@ -220,5 +219,6 @@ module.exports = {
   formatCardExcerpt,
   generateCleanExcerpt,
   renderArticleContent,
+  generateTableOfContents,
   calculateReadingTime
 };

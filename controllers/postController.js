@@ -1,7 +1,7 @@
 const crypto = require('crypto');
 const db = require('../config/database');
 const { generateSeoMeta, getArticleSchema, getBreadcrumbSchema } = require('../middleware/seo');
-const { toBengaliNumber, formatBengaliDate, calculateReadingTime } = require('../middleware/banglaDate');
+const { toBengaliNumber, formatBengaliDate, formatCardExcerpt, calculateReadingTime, generateTableOfContents } = require('../middleware/banglaDate');
 const { SITE_NAME, TAGLINE, NAV_MENU, EDITORIAL_BOARD, CONTACT, CATEGORY_SLUG_MAP } = require('../config/constants');
 
 // Single Post Page
@@ -23,7 +23,6 @@ exports.getSinglePost = async (req, res) => {
         title: 'লেখাটি পাওয়া যায়নি',
         message: 'আপনি যে লেখাটি খুঁজছেন তা মুছে ফেলা হয়েছে বা স্থানান্তরিত হয়েছে।',
         seo: generateSeoMeta({ title: 'লেখাটি পাওয়া যায়নি' }),
-        navMenu: NAV_MENU,
         editorialBoard: EDITORIAL_BOARD,
         contact: CONTACT
       });
@@ -48,7 +47,8 @@ exports.getSinglePost = async (req, res) => {
 
     // Fetch Related Posts (same category)
     const relatedPosts = await db.prepare(`
-      SELECT p.id, p.title, p.slug, p.excerpt, p.content, p.published_at, p.views, p.category_id, p.subcategory_id,
+      SELECT p.id, p.title, p.slug, p.excerpt, p.content, p.featured_image, p.published_at, p.views, 
+             p.rating_score, p.rating_count, p.category_id, p.subcategory_id,
              u.display_name AS author_name, u.nicename AS author_slug, u.avatar AS author_avatar,
              c.name AS category_name, c.slug AS category_slug
       FROM posts p
@@ -59,29 +59,20 @@ exports.getSinglePost = async (req, res) => {
       LIMIT 4
     `).all(post.category_id, post.id);
 
-    // Resolve Author Avatar
-    let authorAvatar = post.author_avatar;
-    if (!authorAvatar && post.author_email) {
-      const hash = crypto.createHash('sha256').update(post.author_email.toLowerCase().trim()).digest('hex');
-      authorAvatar = `https://secure.gravatar.com/avatar/${hash}?s=150&d=mm&r=g`;
-    }
+    // Fetch Trending Reviews for Sidebar Widget
+    const trendingPosts = await db.prepare(`
+      SELECT p.id, p.title, p.slug, p.featured_image, p.rating_score, p.views, p.published_at,
+             c.name AS category_name, c.slug AS category_slug
+      FROM posts p
+      LEFT JOIN categories c ON p.category_id = c.id
+      WHERE p.status = 'publish' AND p.id != ?
+      ORDER BY p.views DESC, p.published_at DESC
+      LIMIT 5
+    `).all(post.id);
 
-    // Resolve Related Posts Avatars
-    relatedPosts.forEach(rp => {
-      if (!rp.author_avatar && rp.author_email) {
-        const hash = crypto.createHash('sha256').update(rp.author_email.toLowerCase().trim()).digest('hex');
-        rp.author_avatar = `https://secure.gravatar.com/avatar/${hash}?s=150&d=mm&r=g`;
-      }
-    });
-
-    // Author details
     const author = {
-      id: post.author_id,
-      display_name: post.author_name,
-      username: post.author_slug,
-      nicename: post.author_slug,
-      avatar: authorAvatar,
-      bio: post.author_bio
+      display_name: post.author_name || SITE_NAME,
+      username: 'editor'
     };
 
     const category = {
@@ -97,12 +88,12 @@ exports.getSinglePost = async (req, res) => {
     ];
 
     const seo = generateSeoMeta({
-      title: `${post.title} - ${post.author_name}`,
+      title: `${post.title} | ${SITE_NAME}`,
       description: post.excerpt || post.content.substring(0, 160),
       image: post.featured_image,
       url: `/post/${post.slug}`,
       type: 'article',
-      author: post.author_name,
+      author: post.author_name || SITE_NAME,
       publishedTime: post.published_at,
       schema: {
         '@context': 'https://schema.org',
@@ -130,19 +121,24 @@ exports.getSinglePost = async (req, res) => {
       // ignore
     }
 
+    // Generate Table of Contents (TOC) for Review Articles
+    const { toc, content: contentWithToc } = generateTableOfContents(post.content);
+    post.contentWithToc = contentWithToc;
+
     res.render('single_post', {
       post,
-      author,
       tags,
       comments,
       userRating,
       relatedPosts,
+      trendingPosts,
+      toc,
       readingTime: calculateReadingTime(post.content),
       calculateReadingTime,
       seo,
       toBengaliNumber,
       formatBengaliDate,
-      navMenu: NAV_MENU,
+      formatCardExcerpt,
       editorialBoard: EDITORIAL_BOARD,
       contact: CONTACT
     });
@@ -152,7 +148,6 @@ exports.getSinglePost = async (req, res) => {
       title: 'সার্ভার ত্রুটি',
       message: 'লেখাটি লোড করা যায়নি।',
       seo: generateSeoMeta({ title: 'সার্ভার ত্রুটি' }),
-      navMenu: NAV_MENU,
       editorialBoard: EDITORIAL_BOARD,
       contact: CONTACT
     });
@@ -191,13 +186,29 @@ exports.getCategoryPage = async (req, res) => {
       category = await db.prepare('SELECT * FROM categories WHERE slug LIKE ? OR name LIKE ?').get(`%${resolvedSlug}%`, `%${resolvedSlug}%`);
     }
 
-    if (!category) {
+    if (category) {
+      if (category.description) {
+        category.description = category.description
+          .replace(/\\"/g, '"')
+          .replace(/\\'/g, "'")
+          .replace(/<[^>]*>/g, ' ')
+          .replace(/\\r|\\n|\\t/g, ' ')
+          .replace(/&amp;/g, '&')
+          .replace(/&quot;/g, '"')
+          .replace(/&#039;/g, "'")
+          .replace(/&lt;/g, '<')
+          .replace(/&gt;/g, '>')
+          .replace(/[\r\n\t]+/g, ' ')
+          .replace(/\s{2,}/g, ' ')
+          .trim();
+      }
+    } else {
       // Fallback default category object
       category = {
         id: 0,
         name: resolvedSlug,
         slug: resolvedSlug,
-        description: `${resolvedSlug} বিষয়ক সাহিত্যের সংকলন`
+        description: `${resolvedSlug} বিষয়ক সেরা ১০ তালিকা ও রিভিউ`
       };
     }
 
@@ -248,7 +259,8 @@ exports.getCategoryPage = async (req, res) => {
       WHERE p.status = 'publish'
     `;
     let postsQuery = `
-      SELECT DISTINCT p.id, p.title, p.slug, p.excerpt, p.content, p.published_at, p.views, p.category_id, p.subcategory_id,
+      SELECT DISTINCT p.id, p.title, p.slug, p.excerpt, p.content, p.featured_image, p.published_at, p.views, 
+             p.rating_score, p.rating_count, p.category_id, p.subcategory_id, p.is_featured,
              u.display_name AS author_name, u.nicename AS author_slug, u.avatar AS author_avatar,
              c.name AS category_name, c.slug AS category_slug,
              sc.name AS subcategory_name, sc.slug AS subcategory_slug
@@ -277,10 +289,29 @@ exports.getCategoryPage = async (req, res) => {
     const totalPosts = totalPostsRow ? totalPostsRow.total : 0;
     const totalPages = Math.ceil(totalPosts / limit);
 
-    postsQuery += " ORDER BY p.published_at DESC LIMIT ? OFFSET ?";
+    // Sorting support
+    const sort = req.query.sort || 'latest';
+    if (sort === 'popular') {
+      postsQuery += " ORDER BY p.views DESC, p.published_at DESC LIMIT ? OFFSET ?";
+    } else if (sort === 'rating') {
+      postsQuery += " ORDER BY p.rating_score DESC, p.published_at DESC LIMIT ? OFFSET ?";
+    } else if (sort === 'oldest') {
+      postsQuery += " ORDER BY p.published_at ASC LIMIT ? OFFSET ?";
+    } else {
+      postsQuery += " ORDER BY p.published_at DESC, p.id DESC LIMIT ? OFFSET ?";
+    }
     params.push(limit, offset);
 
     const posts = await db.prepare(postsQuery).all(...params);
+
+    // Fetch popular categories for quick navigation
+    const popularCategories = await db.prepare(`
+      SELECT id, name, slug, count 
+      FROM categories 
+      WHERE count > 0 AND slug != 'uncategorized'
+      ORDER BY count DESC 
+      LIMIT 10
+    `).all();
 
     // SEO & Breadcrumb
     const breadcrumbs = [
@@ -288,15 +319,15 @@ exports.getCategoryPage = async (req, res) => {
     ];
 
     if (parentCategory && parentCategory.id !== category.id) {
-      breadcrumbs.push({ name: parentCategory.name, url: `/section/${encodeURIComponent(parentCategory.slug)}` });
+      breadcrumbs.push({ name: parentCategory.name, url: `/category/${encodeURIComponent(parentCategory.slug)}` });
     }
     if (activeSubCategory) {
       if (!parentCategory || parentCategory.id === category.id) {
-        breadcrumbs.push({ name: category.name, url: `/section/${encodeURIComponent(category.slug)}` });
+        breadcrumbs.push({ name: category.name, url: `/category/${encodeURIComponent(category.slug)}` });
       }
-      breadcrumbs.push({ name: activeSubCategory.name, url: `/section/${encodeURIComponent((parentCategory || category).slug)}/${encodeURIComponent(activeSubCategory.slug)}` });
+      breadcrumbs.push({ name: activeSubCategory.name, url: `/category/${encodeURIComponent((parentCategory || category).slug)}/${encodeURIComponent(activeSubCategory.slug)}` });
     } else {
-      breadcrumbs.push({ name: category.name, url: `/section/${encodeURIComponent(category.slug)}` });
+      breadcrumbs.push({ name: category.name, url: `/category/${encodeURIComponent(category.slug)}` });
     }
 
     const pageTitle = activeSubCategory 
@@ -304,19 +335,19 @@ exports.getCategoryPage = async (req, res) => {
       : `${category.name} | ${SITE_NAME}`;
 
     const currentCanonicalUrl = activeSubCategory 
-      ? `/section/${encodeURIComponent((parentCategory || category).slug)}/${encodeURIComponent(activeSubCategory.slug)}`
-      : `/section/${encodeURIComponent(category.slug)}`;
+      ? `/category/${encodeURIComponent((parentCategory || category).slug)}/${encodeURIComponent(activeSubCategory.slug)}`
+      : `/category/${encodeURIComponent(category.slug)}`;
 
     const seo = generateSeoMeta({
       title: pageTitle,
-      description: (activeSubCategory && activeSubCategory.description) || category.description || `${category.name} বিভাগের সকল সাহিত্য, কবিতা, প্রবন্ধ ও গল্প সংকলন।`,
+      description: (activeSubCategory && activeSubCategory.description) || category.description || `${category.name} বিভাগের সকল সেরা তালিকা ও যাচাইকৃত রিভিউ।`,
       url: currentCanonicalUrl,
       schema: getBreadcrumbSchema(breadcrumbs)
     });
 
     const paginationBasePath = activeSubCategory 
-      ? `/section/${encodeURIComponent((parentCategory || category).slug)}/${encodeURIComponent(activeSubCategory.slug)}`
-      : `/section/${encodeURIComponent(category.slug)}`;
+      ? `/category/${encodeURIComponent((parentCategory || category).slug)}/${encodeURIComponent(activeSubCategory.slug)}${sort !== 'latest' ? '?sort=' + sort : ''}`
+      : `/category/${encodeURIComponent(category.slug)}${sort !== 'latest' ? '?sort=' + sort : ''}`;
 
     res.render('category', {
       category,
@@ -324,7 +355,9 @@ exports.getCategoryPage = async (req, res) => {
       activeSubCategory,
       subcategories,
       activeSubSlug,
+      popularCategories,
       posts,
+      sort,
       pagination: {
         currentPage: page,
         totalPages: totalPages,
@@ -335,7 +368,7 @@ exports.getCategoryPage = async (req, res) => {
       currentPath: req.originalUrl,
       toBengaliNumber,
       formatBengaliDate,
-      navMenu: NAV_MENU,
+      formatCardExcerpt,
       editorialBoard: EDITORIAL_BOARD,
       contact: CONTACT
     });
@@ -345,7 +378,6 @@ exports.getCategoryPage = async (req, res) => {
       title: 'সার্ভার ত্রুটি',
       message: 'বিভাগের লেখা লোড করা যায়নি।',
       seo: generateSeoMeta({ title: 'সার্ভার ত্রুটি' }),
-      navMenu: NAV_MENU,
       editorialBoard: EDITORIAL_BOARD,
       contact: CONTACT
     });
@@ -406,7 +438,6 @@ exports.searchPosts = async (req, res) => {
       seo,
       toBengaliNumber,
       formatBengaliDate,
-      navMenu: NAV_MENU,
       editorialBoard: EDITORIAL_BOARD,
       contact: CONTACT
     });
@@ -449,36 +480,55 @@ exports.apiSearch = async (req, res) => {
   }
 };
 
-// Comment submission (Requires logged-in user)
+// Comment submission (Supports both guests and logged-in users with AJAX)
 exports.postComment = async (req, res) => {
   try {
     const { slug } = req.params;
+    const { content, author_name, author_email } = req.body;
 
-    if (!req.user) {
-      return res.redirect(`/login?redirect=${encodeURIComponent(`/post/${slug}#comments`)}`);
+    const name = (author_name || (req.user && req.user.display_name) || (req.user && req.user.username) || 'পাঠক').trim();
+    const email = (author_email || (req.user && req.user.email) || '').trim();
+    const commentText = (content || '').trim();
+
+    if (!commentText) {
+      if (req.xhr || req.headers.accept?.includes('json')) {
+        return res.status(400).json({ success: false, error: 'অনুগ্রহ করে আপনার মন্তব্য লিখুন।' });
+      }
+      return res.redirect(`/post/${encodeURIComponent(slug)}#comments`);
     }
-
-    const { content } = req.body;
-    const author_name = req.body.author_name || req.user.display_name || req.user.username;
-    const author_email = req.body.author_email || req.user.email || '';
 
     const post = await db.prepare('SELECT id FROM posts WHERE slug = ?').get(slug);
     if (!post) {
+      if (req.xhr || req.headers.accept?.includes('json')) {
+        return res.status(404).json({ success: false, error: 'পোস্টটি পাওয়া যায়নি।' });
+      }
       return res.status(404).send('Post not found');
     }
 
-    if (!content || !content.trim()) {
-      return res.redirect(`/post/${slug}#comment-form`);
-    }
-
-    await db.prepare(`
+    const result = await db.prepare(`
       INSERT INTO comments (post_id, author_name, author_email, content, status)
       VALUES (?, ?, ?, ?, 'approved')
-    `).run(post.id, author_name.trim(), author_email.trim(), content.trim());
+    `).run(post.id, name, email, commentText);
 
-    res.redirect(`/post/${slug}#comments`);
+    if (req.xhr || req.headers.accept?.includes('json') || req.headers['content-type']?.includes('application/json')) {
+      return res.json({ 
+        success: true, 
+        message: 'আপনার মন্তব্য সফলভাবে প্রকাশিত হয়েছে!',
+        comment: {
+          id: result.insertId,
+          author_name: name,
+          content: commentText,
+          created_at: new Date().toISOString()
+        }
+      });
+    }
+
+    res.redirect(`/post/${encodeURIComponent(slug)}#comments`);
   } catch (err) {
     console.error('Error in postComment:', err);
+    if (req.xhr || req.headers.accept?.includes('json')) {
+      return res.status(500).json({ success: false, error: 'মন্তব্য সংরক্ষণে ত্রুটি হয়েছে।' });
+    }
     res.redirect('back');
   }
 };

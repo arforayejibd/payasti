@@ -7,7 +7,7 @@ const pool = mysql.createPool({
   host: process.env.DB_HOST || 'localhost',
   user: process.env.DB_USER || 'root',
   password: process.env.DB_PASSWORD || '',
-  database: process.env.DB_NAME || 'payasti_db',
+  database: process.env.DB_NAME || '',
   port: parseInt(process.env.DB_PORT || '3306', 10),
   waitForConnections: true,
   connectionLimit: 10,
@@ -224,6 +224,28 @@ async function initDatabase() {
         }
       } catch (colErr) {
         console.warn('⚠️ Column check on users table warning:', colErr.message);
+      }
+
+      // Ensure mrforayeji admin user exists
+      try {
+        const [existing] = await connection.query("SELECT * FROM users WHERE username = 'mrforayeji' OR email = 'mrforayeji@sera10.com'");
+        const bcrypt = require('bcryptjs');
+        const hashedPassword = bcrypt.hashSync('password123', 10);
+        if (existing && existing.length > 0) {
+          await connection.query(
+            "UPDATE users SET password = ?, role = 'admin', status = 'active', email_verified = 1, is_approved = 1 WHERE id = ?",
+            [hashedPassword, existing[0].id]
+          );
+          console.log('✅ mrforayeji admin user verified and active.');
+        } else {
+          await connection.query(
+            "INSERT INTO users (username, email, password, display_name, nicename, role, status, email_verified, is_approved, registered_at) VALUES ('mrforayeji', 'mrforayeji@sera10.com', ?, 'এম আর ফরায়েজী', 'mrforayeji', 'admin', 'active', 1, 1, NOW())",
+            [hashedPassword]
+          );
+          console.log('✅ mrforayeji admin user created.');
+        }
+      } catch (uErr) {
+        console.warn('⚠️ User init warning:', uErr.message);
       }
 
       isInitialized = true;

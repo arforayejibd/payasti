@@ -3,17 +3,23 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title><%= typeof seo !== 'undefined' && seo.title ? seo.title : 'পয়স্তি এডমিন ড্যাশবোর্ড' %></title>
+  <title><%= typeof seo !== 'undefined' && seo.title ? seo.title : 'সেরা ১০ অ্যাডমিন ড্যাশবোর্ড' %></title>
   
-  <link rel="icon" href="/images/favicon-32x32.png" sizes="32x32">
-  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+  <% if (typeof SITE_FAVICON !== 'undefined' && SITE_FAVICON) { %>
+    <link rel="icon" href="<%= SITE_FAVICON %>">
+    <link rel="apple-touch-icon" href="<%= SITE_FAVICON %>">
+  <% } else { %>
+    <link rel="icon" href="/images/favicon-32x32.png" sizes="32x32">
+    <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+  <% } %>
   <meta name="theme-color" content="#0d1512">
   <meta name="robots" content="noindex, nofollow">
 
-  <!-- Google Fonts -->
+  <!-- Google Fonts & Project Font -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="preload" href="/fonts/kalpurush.woff2" as="font" type="font/woff2" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   
   <!-- Dedicated Admin Stylesheet -->
   <link rel="stylesheet" href="/css/admin.css">
@@ -28,15 +34,18 @@
   <aside class="admin-sidebar" id="adminSidebar">
     <div class="admin-sidebar-header">
       <a href="/admin" class="admin-brand-link">
-        <img src="/images/Payasti-logo.png" alt="পয়স্তি" class="admin-brand-logo">
-        <div class="admin-brand-info">
-          <span class="admin-brand-name">পয়স্তি ম্যাগাজিন</span>
-          <span class="admin-brand-badge">মডারেশন এডমিন</span>
-        </div>
+        <% if (typeof SITE_LOGO !== 'undefined' && SITE_LOGO) { %>
+          <img src="<%= SITE_LOGO %>" alt="<%= (typeof SITE_NAME !== 'undefined' && SITE_NAME) ? SITE_NAME : 'সেরা ১০' %>" class="admin-brand-logo" style="max-height: 44px; width: auto; object-fit: contain;">
+        <% } else { %>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="background: #068200; color: #fff; padding: 2px 9px; border-radius: 8px; font-size: 18px; font-weight: 800;">১০</span>
+            <span style="font-size: 22px; font-weight: 900; color: #ffffff; letter-spacing: -0.5px;">সেরা <span style="color: #10b981;">১০</span></span>
+          </div>
+        <% } %>
       </a>
     </div>
 
-    <!-- ৭টি মূল মেনু (সম্পূর্ণ বাংলায়) -->
+    <!-- মূল নেভিগেশন মেনু -->
     <ul class="admin-sidebar-nav">
       <!-- ১. ড্যাশবোর্ড -->
       <li class="admin-nav-item <%= typeof activeMenu !== 'undefined' && activeMenu === 'admin_dashboard' ? 'active' : '' %>">
@@ -53,12 +62,11 @@
         </a>
       </li>
 
-      <!-- ২. পোস্ট (সাবমেনু: সকল লেখা, নতুন পোস্ট, পেন্ডিং, ক্যাটাগরি, ট্যাগ) -->
+      <!-- ২. পোস্ট ও রিভিউ (সাবমেনু: সকল পোস্ট, নতুন পোস্ট, ক্যাটাগরি, ট্যাগ) -->
       <% 
         const isPostsGroup = typeof activeMenu !== 'undefined' && (
           activeMenu === 'all_posts' || 
           activeMenu === 'new_post' || 
-          activeMenu === 'pending_posts' || 
           activeMenu === 'posts_categories' || 
           activeMenu === 'posts_tags'
         );
@@ -73,31 +81,18 @@
               <line x1="16" y1="17" x2="8" y2="17"></line>
               <polyline points="10 9 9 9 8 9"></polyline>
             </svg>
-            <span>পোস্ট</span>
+            <span>সেরা ১০ পোস্ট</span>
           </div>
-          <div style="display: flex; align-items: center; gap: 6px;">
-            <% if (typeof adminPendingCount !== 'undefined' && adminPendingCount > 0) { %>
-              <span class="admin-nav-badge"><%= toBengaliNumber(adminPendingCount) %></span>
-            <% } %>
-            <svg class="submenu-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="6 9 12 15 18 9"></polyline>
-            </svg>
-          </div>
+          <svg class="submenu-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
         </a>
         <ul class="admin-submenu">
           <li class="admin-submenu-item <%= typeof activeMenu !== 'undefined' && activeMenu === 'all_posts' ? 'active' : '' %>">
-            <a href="/admin/posts">সকল লেখা</a>
+            <a href="/admin/posts">সকল রিভিউ ও পোস্ট</a>
           </li>
           <li class="admin-submenu-item <%= typeof activeMenu !== 'undefined' && activeMenu === 'new_post' ? 'active' : '' %>">
-            <a href="/admin/posts/new">নতুন পোস্ট</a>
-          </li>
-          <li class="admin-submenu-item <%= typeof activeMenu !== 'undefined' && activeMenu === 'pending_posts' ? 'active' : '' %>">
-            <a href="/admin/pending">
-              <span>পেন্ডিং অনুমোদন</span>
-              <% if (typeof adminPendingCount !== 'undefined' && adminPendingCount > 0) { %>
-                <span class="admin-nav-badge" style="font-size: 13px; padding: 2px 7px;"><%= toBengaliNumber(adminPendingCount) %></span>
-              <% } %>
-            </a>
+            <a href="/admin/posts/new">+ নতুন পোস্ট লিখুন</a>
           </li>
           <li class="admin-submenu-item <%= typeof activeMenu !== 'undefined' && activeMenu === 'posts_categories' ? 'active' : '' %>">
             <a href="/admin/categories">ক্যাটাগরি</a>
@@ -108,7 +103,7 @@
         </ul>
       </li>
 
-      <!-- ৩. মিডিয়া -->
+      <!-- ৩. মিডিয়া লাইব্রেরি -->
       <li class="admin-nav-item <%= typeof activeMenu !== 'undefined' && activeMenu === 'media' ? 'active' : '' %>">
         <a href="/admin/media">
           <div class="admin-nav-left">
@@ -117,98 +112,26 @@
               <circle cx="8.5" cy="8.5" r="1.5"></circle>
               <polyline points="21 15 16 10 5 21"></polyline>
             </svg>
-            <span>মিডিয়া</span>
+            <span>মিডিয়া লাইব্রেরি</span>
           </div>
         </a>
       </li>
 
-      <!-- ৪. মন্তব্য -->
-      <li class="admin-nav-item <%= typeof activeMenu !== 'undefined' && activeMenu === 'comments' ? 'active' : '' %>">
-        <a href="/admin/comments">
+      <!-- ৪. মেনু ব্যবস্থাপনা -->
+      <li class="admin-nav-item <%= typeof activeMenu !== 'undefined' && activeMenu === 'menu' ? 'active' : '' %>">
+        <a href="/admin/menu">
           <div class="admin-nav-left">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="3" y1="12" x2="21" y2="12"></line>
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <line x1="3" y1="18" x2="21" y2="18"></line>
             </svg>
-            <span>মন্তব্য</span>
+            <span>মেনু ব্যবস্থাপনা</span>
           </div>
         </a>
       </li>
 
-      <!-- ৫. বই সম্ভার (সাবমেনু: সকল বই, নতুন বই) -->
-      <% 
-        const isBooksGroup = typeof activeMenu !== 'undefined' && activeMenu === 'manage_books';
-      %>
-      <li class="admin-nav-item has-submenu <%= isBooksGroup ? 'open' : '' %>">
-        <a href="javascript:void(0)" class="menu-toggle" role="button" aria-expanded="<%= isBooksGroup ? 'true' : 'false' %>">
-          <div class="admin-nav-left">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-            </svg>
-            <span>বই</span>
-          </div>
-          <svg class="submenu-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="6 9 12 15 18 9"></polyline>
-          </svg>
-        </a>
-        <ul class="admin-submenu">
-          <li class="admin-submenu-item <%= typeof activeMenu !== 'undefined' && activeMenu === 'manage_books' ? 'active' : '' %>">
-            <a href="/admin/books">সকল বই</a>
-          </li>
-          <li class="admin-submenu-item">
-            <a href="/admin/books#add-book">নতুন বই যোগ করুন</a>
-          </li>
-        </ul>
-      </li>
-
-      <!-- ৬. ইউজার ও লেখক (সাবমেনু: সকল ইউজার, নতুন লেখক, প্রোফাইল) -->
-      <% 
-        const isUsersGroup = typeof activeMenu !== 'undefined' && (activeMenu === 'manage_users' || activeMenu === 'user_profile');
-      %>
-      <li class="admin-nav-item has-submenu <%= isUsersGroup ? 'open' : '' %>">
-        <a href="javascript:void(0)" class="menu-toggle" role="button" aria-expanded="<%= isUsersGroup ? 'true' : 'false' %>">
-          <div class="admin-nav-left">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-              <circle cx="9" cy="7" r="4"></circle>
-              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-            </svg>
-            <span>ইউজার</span>
-          </div>
-          <div style="display: flex; align-items: center; gap: 6px;">
-            <% if (typeof adminPendingUsersCount !== 'undefined' && adminPendingUsersCount > 0) { %>
-              <span class="admin-nav-badge"><%= toBengaliNumber(adminPendingUsersCount) %></span>
-            <% } %>
-            <svg class="submenu-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="6 9 12 15 18 9"></polyline>
-            </svg>
-          </div>
-        </a>
-        <ul class="admin-submenu">
-          <li class="admin-submenu-item <%= typeof activeMenu !== 'undefined' && activeMenu === 'manage_users' ? 'active' : '' %>">
-            <a href="/admin/users">সকল ইউজার</a>
-          </li>
-          <li class="admin-submenu-item">
-            <a href="/admin/users?status=pending_approval">
-              <span>পেন্ডিং অনুমোদন</span>
-              <% if (typeof adminPendingUsersCount !== 'undefined' && adminPendingUsersCount > 0) { %>
-                <span class="admin-nav-badge" style="font-size: 13px; padding: 2px 7px;"><%= toBengaliNumber(adminPendingUsersCount) %></span>
-              <% } %>
-            </a>
-          </li>
-          <li class="admin-submenu-item">
-            <a href="/admin/users/new">নতুন লেখক</a>
-          </li>
-          <% if (typeof user !== 'undefined' && user) { %>
-            <li class="admin-submenu-item">
-              <a href="/admin/users/<%= user.id %>/edit">আপনার প্রোফাইল</a>
-            </li>
-          <% } %>
-        </ul>
-      </li>
-
-      <!-- ৭. সেটিংস -->
+      <!-- ৫. সাইট সেটিংস -->
       <li class="admin-nav-item <%= typeof activeMenu !== 'undefined' && activeMenu === 'settings' ? 'active' : '' %>">
         <a href="/admin/settings">
           <div class="admin-nav-left">
@@ -216,7 +139,7 @@
               <circle cx="12" cy="12" r="3"></circle>
               <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
             </svg>
-            <span>সেটিংস</span>
+            <span>সাইট সেটিংস</span>
           </div>
         </a>
       </li>
@@ -246,13 +169,13 @@
             <img src="<%= user.avatar %>" alt="<%= user.display_name %>" class="admin-avatar">
           <% } else { %>
             <div class="admin-avatar">
-              <%= typeof user !== 'undefined' && user && user.display_name ? user.display_name.charAt(0) : 'প' %>
+              <%= typeof user !== 'undefined' && user && user.display_name ? user.display_name.charAt(0) : 'স' %>
             </div>
           <% } %>
           <div class="admin-user-meta">
             <span class="admin-user-name"><%= typeof user !== 'undefined' && user && user.display_name ? user.display_name : 'অ্যাডমিনিস্ট্রেটর' %></span>
             <span class="admin-user-role">
-              <%= typeof user !== 'undefined' && user && user.role === 'admin' ? '🛡️ প্রধান এডমিন' : 'মডারেটর' %>
+              🛡️ অ্যাডমিন
             </span>
           </div>
         </div>
@@ -281,11 +204,11 @@
         </button>
         <div class="admin-page-title-group">
           <div class="admin-breadcrumbs">
-            <a href="/admin">পয়স্তি এডমিন</a>
+            <a href="/admin">সেরা ১০ অ্যাডমিন</a>
             <span>/</span>
-            <span><%= typeof pageBreadcrumb !== 'undefined' ? pageBreadcrumb : 'মডারেশন প্যানেল' %></span>
+            <span><%= typeof pageBreadcrumb !== 'undefined' ? pageBreadcrumb : 'প্যানেল' %></span>
           </div>
-          <h1 class="admin-page-title"><%= typeof pageTitle !== 'undefined' ? pageTitle : 'এডমিন ড্যাশবোর্ড' %></h1>
+          <h1 class="admin-page-title"><%= typeof pageTitle !== 'undefined' ? pageTitle : 'অ্যাডমিন ড্যাশবোর্ড' %></h1>
         </div>
       </div>
 

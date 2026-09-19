@@ -8,15 +8,21 @@
   <meta name="theme-color" content="#068200">
 
   <!-- Favicons -->
-  <link rel="icon" href="/images/favicon-32x32.png" sizes="32x32">
-  <link rel="icon" href="/images/favicon-192x192.png" sizes="192x192">
-  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
-  <meta name="msapplication-TileImage" content="/images/favicon-192x192.png">
+  <% if (typeof SITE_FAVICON !== 'undefined' && SITE_FAVICON) { %>
+    <link rel="icon" href="<%= SITE_FAVICON %>">
+    <link rel="apple-touch-icon" href="<%= SITE_FAVICON %>">
+    <meta name="msapplication-TileImage" content="<%= SITE_FAVICON %>">
+  <% } else { %>
+    <link rel="icon" href="/images/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" href="/images/favicon-192x192.png" sizes="192x192">
+    <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+    <meta name="msapplication-TileImage" content="/images/favicon-192x192.png">
+  <% } %>
 
   <!-- Dynamic SEO Meta Tags -->
   <title><%= seo.title %></title>
   <meta name="description" content="<%= seo.description %>">
-  <meta name="keywords" content="<%= (seo && seo.keywords) ? (Array.isArray(seo.keywords) ? seo.keywords.join(', ') : seo.keywords) : 'পয়স্তি ম্যাগাজিন, বাংলা সাহিত্য, কবিতা, গল্প, বই' %>">
+  <meta name="keywords" content="<%= (seo && seo.keywords) ? (Array.isArray(seo.keywords) ? seo.keywords.join(', ') : seo.keywords) : 'সেরা ১০, সেরা প্রোডাক্ট রিভিউ, সেরা ১০ তালিকা, টপ ১০ প্রোডাক্ট, নির্ভরযোগ্য রিভিউ' %>">
   <link rel="canonical" href="<%= seo.canonical %>">
   <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
 
@@ -28,7 +34,9 @@
   <meta property="og:site_name" content="<%= seo.og.site_name %>">
   <meta property="og:locale" content="<%= seo.og.locale %>">
   <meta property="og:image" content="<%= seo.og.image %>">
-  <meta property="fb:app_id" content="560602190786845">
+  <% if (typeof FB_APP_ID !== 'undefined' && FB_APP_ID) { %>
+    <meta property="fb:app_id" content="<%= FB_APP_ID %>">
+  <% } %>
 
   <!-- Twitter Cards -->
   <meta name="twitter:card" content="<%= seo.twitter.card %>">
@@ -51,11 +59,11 @@
   <!-- Performance Resource Hints & Font Preloads -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="preload" href="/fonts/8029Payasti_uni.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/fonts/kalpurush.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap">
 
   <link rel="stylesheet" href="/css/tailwind.css">
-  <link rel="stylesheet" href="/css/style.css?v=3.5">
+  <link rel="stylesheet" href="/css/style.css?v=4.2">
   <% if (typeof isDashboard !== 'undefined' && isDashboard) { %>
     <link rel="stylesheet" href="/css/dashboard.css">
   <% } %>
@@ -114,8 +122,15 @@
   <div class="site-container header-inner">
     <div class="header-nav-group">
       <!-- Site Brand / Logo -->
-      <a class="header-logo-link" href="/" title="পয়স্তি">
-        <img alt="পয়স্তি" src="/images/Payasti-logo.png" class="header-logo-img">
+      <a class="header-logo-link flex items-center gap-2" href="/" title="<%= (typeof SITE_NAME !== 'undefined') ? SITE_NAME : 'সেরা ১০' %>">
+        <% if (typeof SITE_LOGO !== 'undefined' && SITE_LOGO) { %>
+          <img src="<%= SITE_LOGO %>" alt="<%= (typeof SITE_NAME !== 'undefined') ? SITE_NAME : 'সেরা ১০' %>" class="header-logo-img" style="max-height: 46px; width: auto; object-fit: contain;">
+        <% } else { %>
+          <div class="flex items-center gap-1.5 font-bold">
+            <span class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-600 text-white font-black text-base shadow-sm">১০</span>
+            <span class="text-xl md:text-2xl font-black tracking-tight text-slate-900 dark:text-white">সেরা <span class="text-emerald-600 dark:text-emerald-400">১০</span></span>
+          </div>
+        <% } %>
       </a>
 
       <!-- Navigation Menu -->
@@ -146,11 +161,6 @@
             <% } %>
           <% }) %>
         <% } %>
-
-        <!-- Author Panel Button -->
-        <a href="<%= (typeof user !== 'undefined' && user) ? '/author/dashboard' : '/login' %>" class="btn-author-panel">
-          লেখক প্যানেল
-        </a>
       </nav>
     </div>
 
@@ -206,7 +216,7 @@
           name="q" 
           id="liveSearchInput" 
           class="search-input-field" 
-          placeholder="কবিতা, গল্প, প্রবন্ধ কিংবা যে লেখা খুঁজতে চাচ্ছেন সে লেখার শিরোনাম লিখুন..." 
+          placeholder="সেরা ১০ গ্যাজেট, বই, পণ্য বা রিভিউ খুঁজুন..." 
           autocomplete="off"
         >
         <button type="submit" class="search-submit-btn">খুঁজুন</button>

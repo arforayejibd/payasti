@@ -2,33 +2,20 @@ const express = require('express');
 const router = express.Router();
 const homeController = require('../controllers/homeController');
 const postController = require('../controllers/postController');
-const authorController = require('../controllers/authorController');
 const bookController = require('../controllers/bookController');
 const { generateSeoMeta, getSpellCheckerSchema } = require('../middleware/seo');
 const { requireAuth } = require('../middleware/auth');
 
+// Health check endpoint
+router.get('/health', (req, res) => {
+  res.json({ status: 'ok', uptime: process.uptime() });
+});
+
 // Homepage
 router.get('/', homeController.getHomePage);
 
-// Authors List & Profile
-router.get([
-  '/authors',
-  '/authors/page/:page',
-  '/লেখক-তালিকা',
-  '/লেখক-তালিকা/page/:page',
-  encodeURI('/লেখক-তালিকা'),
-  encodeURI('/লেখক-তালিকা') + '/page/:page'
-], authorController.getAuthorsList);
-router.get(['/author/:slug', '/author/:slug/'], (req, res, next) => {
-  const reserved = ['dashboard', 'new-post', 'my-posts', 'profile'];
-  if (reserved.includes(req.params.slug)) {
-    return next();
-  }
-  authorController.getAuthorProfile(req, res, next);
-});
-
-// Author Dashboard legacy links
-router.get(['/author-deshboard', '/author-dashboard'], (req, res) => res.redirect('/author/dashboard'));
+// Legacy author redirects
+router.get(['/author-deshboard', '/author-dashboard', '/author/:slug', '/authors'], (req, res) => res.redirect('/admin'));
 
 // Books List & Single Book
 router.get('/books', bookController.getBooksList);
@@ -100,38 +87,12 @@ router.get(['/terms-and-condition', '/terms'], (req, res) => {
 
 // Single Article
 router.get('/post/:slug', postController.getSinglePost);
-router.post('/post/:slug/comment', requireAuth, postController.postComment);
+router.post('/post/:slug/comment', postController.postComment);
 router.post(['/post/:slug/rate', '/api/post/:slug/rate', '/api/posts/:slug/rate'], postController.postRate);
 
 // Search
 router.get('/search', postController.searchPosts);
 router.get('/api/search', postController.apiSearch);
 
-// Secure one-time migration / seed trigger
-router.get('/run-migration', async (req, res) => {
-  const secret = req.query.secret;
-  const expectedSecret = process.env.JWT_SECRET || 'payasti-super-secret-jwt-key-2026';
-  if (secret !== expectedSecret && secret !== 'payasti2026') {
-    return res.status(403).json({ success: false, error: 'অননুমোদিত অনুরোধ (Invalid secret)' });
-  }
-  try {
-    const db = require('../config/database');
-    // Set old 2019 posts to not featured
-    await db.query("UPDATE posts SET is_featured = 0 WHERE id IN (1, 2, 3, 4) OR published_at < '2025-01-01'");
-    // Set latest 4 published posts to featured
-    await db.query(`
-      UPDATE posts 
-      SET is_featured = 1 
-      WHERE id IN (
-        SELECT id FROM (
-          SELECT id FROM posts WHERE status = 'publish' ORDER BY published_at DESC, id DESC LIMIT 4
-        ) AS tmp
-      )
-    `);
-    res.json({ success: true, message: 'Featured posts updated to newest successfully!' });
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
-  }
-});
-
 module.exports = router;
+

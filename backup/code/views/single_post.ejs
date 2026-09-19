@@ -1,0 +1,285 @@
+<%- include('partials/header') %>
+
+<main class="page-main-content single-post-page py-6 sm:py-8">
+  <div class="site-container">
+    
+    <!-- 1. Breadcrumb Navigation -->
+    <nav class="archive-breadcrumb" aria-label="ব্রেডক্রাম্ব" style="margin-bottom: 16px;">
+      <a href="/">প্রচ্ছদ</a>
+      <span class="breadcrumb-sep">/</span>
+      <% if (post.category_name) { %>
+        <a href="/category/<%= encodeURIComponent(post.category_slug || '') %>"><%= post.category_name %></a>
+        <span class="breadcrumb-sep">/</span>
+      <% } %>
+      <span class="breadcrumb-current" style="max-width: 450px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: inline-block; vertical-align: middle;">
+        <%= post.title %>
+      </span>
+    </nav>
+
+    <div class="article-layout-grid">
+      <!-- Main Article Column (70%) -->
+      <article class="article-main">
+        <!-- Article Header -->
+        <header class="article-header">
+          <div class="article-meta-top" style="flex-wrap: wrap; gap: 8px; margin-bottom: 14px;">
+            <% if (post.category_name) { %>
+              <a href="/category/<%= encodeURIComponent(post.category_slug || '') %>" class="inline-flex items-center gap-1 bg-emerald-100 dark:bg-emerald-950/70 text-emerald-800 dark:text-emerald-300 text-xs font-bold px-3 py-1 rounded-full">
+                <span>📂</span>
+                <span><%= post.category_name %></span>
+              </a>
+            <% } %>
+
+            <span class="article-reading-time" title="আনুমানিক পাঠের সময়">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+              <%= typeof readingTime !== 'undefined' ? readingTime : calculateReadingTime(post.content) %>
+            </span>
+
+            <% if (Number(post.rating_score || 0) > 0) { %>
+              <span class="header-meta-sep">•</span>
+
+              <span class="article-meta-rating" title="যাচাইকৃত রেটিং" id="topRatingMeta">
+                ⭐ <strong id="topRatingScore"><%= toBengaliNumber(parseFloat(post.rating_score).toFixed(1)) %></strong>
+                <span class="top-rating-count" id="topRatingCount">/৫</span>
+              </span>
+            <% } %>
+
+            <span class="header-meta-sep">•</span>
+
+            <span style="font-size: 14px; color: var(--text-muted); display: inline-flex; align-items: center; gap: 4px;">
+              👁️ <%= toBengaliNumber(post.views || 1) %> বার পঠিত
+            </span>
+          </div>
+
+          <h1 class="article-title">
+            <%= post.title %>
+          </h1>
+
+          <div style="font-size: 13.5px; color: var(--text-light); margin-bottom: 16px;">
+            📅 সর্বশেষ আপডেট: <strong><%= formatBengaliDate(post.published_at || post.created_at) %></strong>
+          </div>
+        </header>
+
+
+        <!-- Featured Image -->
+        <% if (post.featured_image) { %>
+          <div class="article-featured-image-wrap my-5" style="border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.06);">
+            <img 
+              src="<%= post.featured_image %>" 
+              alt="<%= post.title %>" 
+              class="article-featured-img" 
+              style="width: 100%; max-height: 480px; object-fit: cover;"
+              loading="eager"
+            >
+          </div>
+        <% } %>
+
+        <!-- Social Share Bar (Below Featured Image) -->
+        <div class="article-share-strip" style="margin: 16px 0 24px;">
+          <div class="article-share-left">
+            <span>📢 শেয়ার করুন:</span>
+          </div>
+          <div class="article-share-btns">
+            <!-- Facebook -->
+            <a href="https://www.facebook.com/sharer/sharer.php?u=<%= encodeURIComponent(seo.canonical) %>" target="_blank" rel="noopener noreferrer" class="btn-social-share btn-share-fb" title="ফেসবুকে শেয়ার করুন" aria-label="Facebook">
+              <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+            </a>
+
+            <!-- WhatsApp -->
+            <a href="https://api.whatsapp.com/send?text=<%= encodeURIComponent(post.title + ' ' + seo.canonical) %>" target="_blank" rel="noopener noreferrer" class="btn-social-share btn-share-wa" title="হোয়াটসঅ্যাপে শেয়ার করুন" aria-label="WhatsApp">
+              <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+            </a>
+
+            <!-- Pinterest -->
+            <% const postImgUrl = (post.featured_image && post.featured_image.startsWith('http')) ? post.featured_image : ((typeof SITE_URL !== 'undefined' ? SITE_URL : 'https://sera10.com') + (post.featured_image || '')); %>
+            <a href="https://pinterest.com/pin/create/button/?url=<%= encodeURIComponent(seo.canonical) %>&media=<%= encodeURIComponent(postImgUrl) %>&description=<%= encodeURIComponent(post.title) %>" target="_blank" rel="noopener noreferrer" class="btn-social-share btn-share-pin" title="পিন্টারেস্টে শেয়ার করুন" aria-label="Pinterest">
+              <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.373 0 0 5.372 0 12c0 5.084 3.163 9.426 7.627 11.174-.105-.949-.2-2.405.042-3.441.218-.937 1.407-5.965 1.407-5.965s-.359-.719-.359-1.782c0-1.668.967-2.914 2.171-2.914 1.023 0 1.518.769 1.518 1.69 0 1.029-.655 2.568-.994 3.995-.283 1.194.599 2.169 1.777 2.169 2.133 0 3.772-2.249 3.772-5.495 0-2.873-2.064-4.882-5.012-4.882-3.414 0-5.418 2.561-5.418 5.207 0 1.031.397 2.138.893 2.738.098.119.112.224.083.345-.09.375-.293 1.199-.334 1.363-.053.225-.172.271-.401.165-1.495-.69-2.433-2.878-2.433-4.646 0-3.776 2.748-7.252 7.92-7.252 4.158 0 7.392 2.967 7.392 6.923 0 4.135-2.607 7.462-6.233 7.462-1.214 0-2.354-.629-2.758-1.379l-.749 2.848c-.269 1.045-1.004 2.352-1.498 3.146 1.123.345 2.306.535 3.55.535 6.627 0 12-5.373 12-12 0-6.628-5.373-12-12-12z"/></svg>
+            </a>
+
+            <!-- LinkedIn -->
+            <a href="https://www.linkedin.com/sharing/share-offsite/?url=<%= encodeURIComponent(seo.canonical) %>" target="_blank" rel="noopener noreferrer" class="btn-social-share btn-share-li" title="লিঙ্কডইনে শেয়ার করুন" aria-label="LinkedIn">
+              <svg width="17" height="17" fill="currentColor" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+            </a>
+
+            <!-- Twitter / X -->
+            <a href="https://twitter.com/intent/tweet?text=<%= encodeURIComponent(post.title) %>&url=<%= encodeURIComponent(seo.canonical) %>" target="_blank" rel="noopener noreferrer" class="btn-social-share btn-share-x" title="টুইটার / X এ শেয়ার করুন" aria-label="Twitter">
+              <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+            </a>
+
+            <!-- Telegram -->
+            <a href="https://t.me/share/url?url=<%= encodeURIComponent(seo.canonical) %>&text=<%= encodeURIComponent(post.title) %>" target="_blank" rel="noopener noreferrer" class="btn-social-share btn-share-tg" title="টেলিগ্রামে শেয়ার করুন" aria-label="Telegram">
+              <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.121l-6.871 4.326-2.962-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.832.942z"/></svg>
+            </a>
+
+            <!-- Copy Link -->
+            <button type="button" class="btn-social-share btn-share-copy" id="shareCopyBtn" onclick="if(navigator.clipboard){navigator.clipboard.writeText(window.location.href); this.classList.add('copied'); const origTitle = this.getAttribute('title'); this.setAttribute('title', 'কপি হয়েছে!'); setTimeout(() => { this.classList.remove('copied'); this.setAttribute('title', origTitle); }, 2000);}" title="লিঙ্ক কপি করুন" aria-label="Copy Link">
+              <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Table of Contents (TOC) -->
+        <% if (typeof toc !== 'undefined' && toc && toc.length > 1) { %>
+          <div style="background: var(--bg-muted); border: 1px solid var(--border-color); border-radius: 16px; padding: 18px 20px; margin: 24px 0;">
+            <div style="font-weight: 800; font-size: 16px; color: var(--text-heading); display: flex; align-items: center; justify-content: space-between; cursor: pointer;" onclick="var el = document.getElementById('tocList'); el.style.display = (el.style.display === 'none' ? 'block' : 'none');">
+              <span style="display: flex; align-items: center; gap: 8px;">
+                <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 18px; height: 18px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"></path></svg>
+                এই আর্টিকেলের সূচিপত্র (Table of Contents)
+              </span>
+              <span style="font-size: 13px; color: var(--brand-primary); font-weight: 700;">[টগল করুন]</span>
+            </div>
+            <ul style="margin: 12px 0 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px;" id="tocList">
+              <% toc.forEach((item, index) => { %>
+                <li style="<%= item.level === 3 ? 'margin-left: 20px;' : 'font-weight: 600;' %> font-size: 15px;">
+                  <a href="#<%= item.id %>" style="color: var(--text-main); text-decoration: none; display: inline-flex; align-items: center; gap: 6px; transition: color 0.15s ease;">
+                    <span style="color: var(--brand-primary); font-weight: 800;">•</span>
+                    <%= item.text %>
+                  </a>
+                </li>
+              <% }) %>
+            </ul>
+          </div>
+        <% } %>
+
+        <!-- Article Body Text -->
+        <div class="article-content-body single-article-content-body">
+          <%- renderArticleContent(post.contentWithToc || post.content) %>
+        </div>
+
+        <!-- Tags Bar -->
+        <% if (typeof tags !== 'undefined' && tags && tags.length) { %>
+          <div style="margin-top: 32px; padding-top: 20px; border-top: 1px solid var(--border-color); display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
+            <span style="font-size: 14px; font-weight: 700; color: var(--text-muted);">ট্যাগ:</span>
+            <% tags.forEach(tag => { %>
+              <a href="/search?q=<%= encodeURIComponent(tag.name) %>" style="font-size: 13px; font-weight: 600; padding: 4px 12px; border-radius: 9999px; background: var(--bg-muted); border: 1px solid var(--border-color); color: var(--text-main); text-decoration: none;">
+                #<%= tag.name %>
+              </a>
+            <% }) %>
+          </div>
+        <% } %>
+
+
+        <!-- Facebook Comments Area -->
+        <section class="article-comments-area" id="comments" style="margin-top: 40px; padding-top: 30px; border-top: 1px solid var(--border-color);">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+            <h3 style="font-size: 20px; font-weight: 800; color: var(--text-heading); display: flex; align-items: center; gap: 10px; margin: 0;">
+              <svg width="22" height="22" fill="#1877f2" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+              <span>পাঠক মন্তব্য ও মতামত (Facebook Comments)</span>
+            </h3>
+            <span style="font-size: 13px; color: var(--text-muted);">আপনার ফেসবুক অ্যাকাউন্ট দিয়ে সরাসরি মন্তব্য করুন</span>
+          </div>
+
+          <div class="fb-comments-box-wrapper" style="background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 16px; padding: 18px 20px; box-shadow: var(--shadow-sm); min-height: 160px; overflow-x: auto;">
+            <!-- Facebook SDK -->
+            <div id="fb-root"></div>
+            <script async defer crossorigin="anonymous" src="https://connect.facebook.net/bn_IN/sdk.js#xfbml=1&version=v19.0"></script>
+            
+            <div class="fb-comments" 
+                 data-href="<%= (typeof seo !== 'undefined' && seo.canonical) ? seo.canonical : ((typeof SITE_URL !== 'undefined' ? SITE_URL : 'https://sera10.com') + '/post/' + post.slug) %>" 
+                 data-width="100%" 
+                 data-numposts="10" 
+                 data-order-by="reverse_time">
+            </div>
+          </div>
+        </section>
+      </article>
+
+      <!-- Sidebar Column (30%) -->
+      <aside class="article-sidebar">
+        <!-- 1. Trending / Most Popular Reviews Widget -->
+        <% if (typeof trendingPosts !== 'undefined' && trendingPosts && trendingPosts.length) { %>
+          <div class="sidebar-card-widget sidebar-trending-widget">
+            <h3 class="sidebar-widget-title">
+              <span>🔥</span>
+              <span>জনপ্রিয় সেরা ১০ রিভিউ</span>
+            </h3>
+
+            <div class="sidebar-trending-list">
+              <% trendingPosts.forEach(tp => { %>
+                <a href="/post/<%= encodeURIComponent(tp.slug || '') %>" class="sidebar-trending-item">
+                  <% if (tp.featured_image) { %>
+                    <img src="<%= tp.featured_image %>" alt="<%= tp.title %>" class="sidebar-trending-thumb" loading="lazy">
+                  <% } else { %>
+                    <div class="sidebar-trending-thumb" style="background: var(--brand-light); display: flex; align-items: center; justify-content: center; font-size: 20px;">
+                      🏆
+                    </div>
+                  <% } %>
+                  <div class="sidebar-trending-info">
+                    <h4 class="sidebar-trending-item-title"><%= tp.title %></h4>
+                    <div class="sidebar-trending-meta">
+                      <% if (Number(tp.rating_score || 0) > 0) { %>
+                        <span style="color: #f59e0b; font-weight: 700;">★ <%= toBengaliNumber(parseFloat(tp.rating_score).toFixed(1)) %></span>
+                        <span>•</span>
+                      <% } %>
+                      <span><%= toBengaliNumber(tp.views || 1) %> ভিউ</span>
+                    </div>
+                  </div>
+                </a>
+              <% }) %>
+            </div>
+          </div>
+        <% } %>
+
+        <!-- 2. Trust Assurance Guarantee Box -->
+        <div class="sidebar-card-widget">
+          <h3 class="sidebar-widget-title">
+            <span>🛡️</span>
+            <span>সেরা ১০ নিরপেক্ষতা নিশ্চয়তা</span>
+          </h3>
+          <ul style="padding: 0; margin: 0; list-style: none; display: flex; flex-direction: column; gap: 10px; font-size: 14px; color: var(--text-muted);">
+            <li style="display: flex; align-items: flex-start; gap: 8px;">
+              <span style="color: var(--brand-primary); font-weight: 800;">✓</span>
+              <span>শত শত বাস্তব ব্যবহারকারীর পর্যালোচনা যাচাই</span>
+            </li>
+            <li style="display: flex; align-items: flex-start; gap: 8px;">
+              <span style="color: var(--brand-primary); font-weight: 800;">✓</span>
+              <span>কোনো পেইড বা পক্ষপাতমূলক রিভিউ নয়</span>
+            </li>
+            <li style="display: flex; align-items: flex-start; gap: 8px;">
+              <span style="color: var(--brand-primary); font-weight: 800;">✓</span>
+              <span>বাংলাদেশে পণ্যের সঠিক প্রাপ্যতা ও দাম বিশ্লেষণ</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- 3. Category Quick Navigation -->
+        <% if (post.category_name) { %>
+          <div class="sidebar-card-widget">
+            <h3 class="sidebar-widget-title">
+              <span>📂</span>
+              <span>সম্পর্কিত বিভাগ</span>
+            </h3>
+            <a href="/category/<%= encodeURIComponent(post.category_slug || '') %>" style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: rgba(6, 130, 0, 0.08); border: 1px solid rgba(6, 130, 0, 0.2); border-radius: 12px; text-decoration: none; color: var(--brand-primary); font-weight: 700; font-size: 15px;">
+              <span>সকল <%= post.category_name %> দেখুন</span>
+              <span>&raquo;</span>
+            </a>
+          </div>
+        <% } %>
+      </aside>
+    </div>
+
+    <!-- 4. Related Posts Section (Bottom) -->
+    <% if (relatedPosts && relatedPosts.length) { %>
+      <section style="margin-top: 60px;">
+        <div class="review-section-header" style="margin-bottom: 24px;">
+          <div class="section-title-wrap">
+            <span class="section-title-indicator"></span>
+            <h2 class="section-heading">একই বিভাগের আরও সেরা রিভিউ ও তালিকা</h2>
+          </div>
+          <a href="/category/<%= encodeURIComponent(post.category_slug || '') %>" style="font-size: 14px; font-weight: 700; color: var(--brand-primary); text-decoration: none;">
+            সবগুলো দেখুন &raquo;
+          </a>
+        </div>
+
+        <div class="affiliate-grid-4">
+          <% relatedPosts.forEach(rPost => { %>
+            <%- include('partials/post_card', { post: rPost }) %>
+          <% }) %>
+        </div>
+      </section>
+    <% } %>
+
+  </div>
+</main>
+
+<script src="/js/main.js?v=3.6"></script>
+<%- include('partials/footer') %>

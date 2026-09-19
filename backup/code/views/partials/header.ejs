@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <!-- Theme Color -->
+  <meta name="theme-color" content="#068200">
+
+  <!-- Favicons -->
+  <% if (typeof SITE_FAVICON !== 'undefined' && SITE_FAVICON) { %>
+    <link rel="icon" href="<%= SITE_FAVICON %>">
+    <link rel="apple-touch-icon" href="<%= SITE_FAVICON %>">
+    <meta name="msapplication-TileImage" content="<%= SITE_FAVICON %>">
+  <% } else { %>
+    <link rel="icon" href="/images/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" href="/images/favicon-192x192.png" sizes="192x192">
+    <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+    <meta name="msapplication-TileImage" content="/images/favicon-192x192.png">
+  <% } %>
+
+  <!-- Dynamic SEO Meta Tags -->
+  <title><%= seo.title %></title>
+  <meta name="description" content="<%= seo.description %>">
+  <meta name="keywords" content="<%= (seo && seo.keywords) ? (Array.isArray(seo.keywords) ? seo.keywords.join(', ') : seo.keywords) : 'পয়স্তি ম্যাগাজিন, বাংলা সাহিত্য, কবিতা, গল্প, বই' %>">
+  <link rel="canonical" href="<%= seo.canonical %>">
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="<%= seo.og.type %>">
+  <meta property="og:title" content="<%= seo.og.title %>">
+  <meta property="og:description" content="<%= seo.og.description %>">
+  <meta property="og:url" content="<%= seo.og.url %>">
+  <meta property="og:site_name" content="<%= seo.og.site_name %>">
+  <meta property="og:locale" content="<%= seo.og.locale %>">
+  <meta property="og:image" content="<%= seo.og.image %>">
+  <meta property="fb:app_id" content="560602190786845">
+
+  <!-- Twitter Cards -->
+  <meta name="twitter:card" content="<%= seo.twitter.card %>">
+  <meta name="twitter:title" content="<%= seo.twitter.title %>">
+  <meta name="twitter:description" content="<%= seo.twitter.description %>">
+  <meta name="twitter:image" content="<%= seo.twitter.image %>">
+
+  <% if (seo.articleMeta) { %>
+    <meta property="article:author" content="<%= seo.articleMeta.author %>">
+    <meta property="article:published_time" content="<%= seo.articleMeta.publishedTime %>">
+  <% } %>
+
+  <!-- Google Schema.org JSON-LD Structured Data -->
+  <% if (seo.schemaJson) { %>
+    <script type="application/ld+json">
+      <%- seo.schemaJson %>
+    </script>
+  <% } %>
+
+  <!-- Performance Resource Hints & Font Preloads -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preload" href="/fonts/kalpurush.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap">
+
+  <link rel="stylesheet" href="/css/tailwind.css">
+  <link rel="stylesheet" href="/css/style.css?v=4.2">
+  <% if (typeof isDashboard !== 'undefined' && isDashboard) { %>
+    <link rel="stylesheet" href="/css/dashboard.css">
+  <% } %>
+
+  <!-- Immediate Global Site Theme Engine (No FOUC, Instant Toggle) -->
+  <script>
+    function applyThemeToDOM(theme) {
+      document.documentElement.classList.remove('theme-sepia', 'theme-dark');
+      if (document.body) {
+        document.body.classList.remove('theme-sepia', 'theme-dark');
+      }
+      if (theme === 'sepia') {
+        document.documentElement.classList.add('theme-sepia');
+        if (document.body) document.body.classList.add('theme-sepia');
+      } else if (theme === 'dark') {
+        document.documentElement.classList.add('theme-dark');
+        if (document.body) document.body.classList.add('theme-dark');
+      }
+
+      var def = document.querySelector('.theme-icon-default');
+      var sep = document.querySelector('.theme-icon-sepia');
+      var dar = document.querySelector('.theme-icon-dark');
+      if (def) def.style.display = (theme === 'default') ? 'inline-flex' : 'none';
+      if (sep) sep.style.display = (theme === 'sepia') ? 'inline-flex' : 'none';
+      if (dar) dar.style.display = (theme === 'dark') ? 'inline-flex' : 'none';
+    }
+
+    (function() {
+      try {
+        var theme = localStorage.getItem('payasti_site_theme') || 'default';
+        if (theme === 'sepia') document.documentElement.classList.add('theme-sepia');
+        else if (theme === 'dark') document.documentElement.classList.add('theme-dark');
+      } catch (e) {}
+    })();
+
+    function toggleSiteTheme() {
+      var themes = ['default', 'sepia', 'dark'];
+      var current = 'default';
+      if (document.documentElement.classList.contains('theme-sepia')) current = 'sepia';
+      else if (document.documentElement.classList.contains('theme-dark')) current = 'dark';
+
+      var next = themes[(themes.indexOf(current) + 1) % themes.length];
+      applyThemeToDOM(next);
+      try { localStorage.setItem('payasti_site_theme', next); } catch (e) {}
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      var theme = localStorage.getItem('payasti_site_theme') || 'default';
+      applyThemeToDOM(theme);
+    });
+  </script>
+</head>
+<body class="site-body">
+
+<header class="site-header">
+  <div class="site-container header-inner">
+    <div class="header-nav-group">
+      <!-- Site Brand / Logo -->
+      <a class="header-logo-link flex items-center gap-2" href="/" title="<%= (typeof SITE_NAME !== 'undefined') ? SITE_NAME : 'সেরা ১০' %>">
+        <% if (typeof SITE_LOGO !== 'undefined' && SITE_LOGO) { %>
+          <img src="<%= SITE_LOGO %>" alt="<%= (typeof SITE_NAME !== 'undefined') ? SITE_NAME : 'সেরা ১০' %>" class="header-logo-img" style="max-height: 46px; width: auto; object-fit: contain;">
+        <% } else { %>
+          <div class="flex items-center gap-1.5 font-bold">
+            <span class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-600 text-white font-black text-base shadow-sm">১০</span>
+            <span class="text-xl md:text-2xl font-black tracking-tight text-slate-900 dark:text-white">সেরা <span class="text-emerald-600 dark:text-emerald-400">১০</span></span>
+          </div>
+        <% } %>
+      </a>
+
+      <!-- Navigation Menu -->
+      <nav class="main-nav-menu" id="mainNav">
+        <% if (navMenu && navMenu.length) { %>
+          <% navMenu.forEach(item => { %>
+            <% if (item.subcategories && item.subcategories.length) { %>
+              <div class="nav-item-dropdown">
+                <a href="<%= item.url %>" class="nav-menu-item dropdown-toggle <%= (typeof currentPath !== 'undefined' && (currentPath === item.url || currentPath.startsWith(item.url + '/') || (item.slug && currentPath.includes(item.slug)))) ? 'current-menu-item' : '' %>">
+                  <span><%= item.title %></span>
+                  <svg class="dropdown-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg>
+                </a>
+                <div class="nav-dropdown-menu">
+                  <a href="<%= item.url %>" class="dropdown-item dropdown-item-all <%= (typeof currentPath !== 'undefined' && currentPath === item.url) ? 'active' : '' %>">
+                    সকল <%= item.title %>
+                  </a>
+                  <% item.subcategories.forEach(sub => { %>
+                    <a href="<%= sub.url %>" class="dropdown-item <%= (typeof currentPath !== 'undefined' && (currentPath === sub.url || (sub.slug && currentPath.includes(sub.slug)))) ? 'active' : '' %>">
+                      <%= sub.title %>
+                    </a>
+                  <% }) %>
+                </div>
+              </div>
+            <% } else { %>
+              <a href="<%= item.url %>" class="nav-menu-item <%= (typeof currentPath !== 'undefined' && currentPath === item.url) ? 'current-menu-item' : '' %>"><%= item.title %></a>
+            <% } %>
+          <% }) %>
+        <% } %>
+      </nav>
+    </div>
+
+    <!-- Header Actions (Theme Toggle & Search) -->
+    <div class="header-action-group">
+      <!-- Theme Switcher Icon Button (Cycles: Default -> Sepia -> Dark) -->
+      <button class="header-theme-toggle-btn" id="globalThemeToggleBtn" type="button" onclick="toggleSiteTheme()" aria-label="মোড পরিবর্তন (সাধারণ / সেপিয়া / ডার্ক)" title="মোড পরিবর্তন (সাধারণ / সেপিয়া / ডার্ক)">
+        <!-- Default (Light / Sun) -->
+        <span class="theme-icon theme-icon-default" title="বর্তমান: সাধারণ মোড">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+        </span>
+        <!-- Sepia (Book / Scroll) -->
+        <span class="theme-icon theme-icon-sepia" style="display: none;" title="বর্তমান: সেপিয়া মোড">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+        </span>
+        <!-- Dark (Moon) -->
+        <span class="theme-icon theme-icon-dark" style="display: none;" title="বর্তমান: ডার্ক মোড">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+        </span>
+      </button>
+
+      <!-- Search Button -->
+      <div class="header-search-box">
+        <button class="header-search-btn" id="searchToggleBtn" type="button" aria-label="অনুসন্ধান" title="অনুসন্ধান">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile Hamburger Toggle -->
+    <button class="mobile-nav-toggle" id="mobileMenuToggle" type="button" aria-label="মেনু খুলুন">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+  </div>
+</header>
+
+<!-- Search Overlay Modal -->
+<div class="search-modal-overlay" id="searchModal">
+  <div class="search-modal-content">
+    <div class="search-modal-header">
+      <span class="search-modal-title">অনুসন্ধান করুন</span>
+      <button class="search-modal-close" id="closeSearchBtn" type="button" aria-label="বন্ধ করুন">&times;</button>
+    </div>
+    <form action="/search" method="GET" class="search-form-wrap">
+      <div class="search-input-group">
+        <input 
+          type="text" 
+          name="q" 
+          id="liveSearchInput" 
+          class="search-input-field" 
+          placeholder="সেরা ১০ গ্যাজেট, বই, পণ্য বা রিভিউ খুঁজুন..." 
+          autocomplete="off"
+        >
+        <button type="submit" class="search-submit-btn">খুঁজুন</button>
+      </div>
+    </form>
+    <div class="search-results-dropdown" id="searchResultsContainer" style="display: none;"></div>
+  </div>
+</div>

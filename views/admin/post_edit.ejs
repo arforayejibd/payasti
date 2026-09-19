@@ -1,12 +1,16 @@
 <%- include('partials/admin_layout_start', { 
-  pageTitle: 'লেখা সম্পাদনা', 
-  pageBreadcrumb: 'লেখা এডিট',
-  topbarButton: { text: 'সকল লেখায় ফিরে যান', url: '/admin/posts' }
+  pageTitle: 'পোস্ট সম্পাদনা: ' + post.title, 
+  pageBreadcrumb: 'পোস্ট সম্পাদনা',
+  activeMenu: 'posts',
+  topbarButton: { text: 'সকল পোস্টে ফিরে যান', url: '/admin/posts' }
 }) %>
 
-<!-- Quill Editor CSS -->
-<link rel="stylesheet" href="/vendor/quill/quill.snow.css">
-<link rel="stylesheet" href="/css/payasti-spellchecker.css?v=5.5">
+<!-- Official WordPress Gutenberg Core Styles -->
+<link rel="stylesheet" href="/vendor/gutenberg/components.css">
+<link rel="stylesheet" href="/vendor/gutenberg/block-editor.css">
+<link rel="stylesheet" href="/vendor/gutenberg/core.css">
+<link rel="stylesheet" href="/vendor/gutenberg/isolated-block-editor.css">
+<link rel="stylesheet" href="/css/wp-gutenberg-editor.css?v=3.0">
 
 <% if (typeof error !== 'undefined' && error) { %>
   <div style="background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; padding: 14px 18px; border-radius: 10px; margin-bottom: 24px; font-size: 16px;">
@@ -14,129 +18,163 @@
   </div>
 <% } %>
 
-<form id="postEditForm" action="/admin/posts/<%= post.id %>/edit" method="POST" enctype="multipart/form-data">
-  <div class="admin-editor-layout">
-    <!-- বাম পাশের প্রধান কলাম (শিরোনাম ও মূল লেখা) -->
-    <div class="admin-editor-main">
-      <!-- শিরোনাম -->
-      <div class="admin-card" style="margin-bottom: 0;">
-        <div class="admin-card-header">
-          <div class="admin-card-title">
-            <span>লেখার শিরোনাম *</span>
-          </div>
-          <div>
-            <% if (post.status === 'publish') { %>
-              <a href="/<%= post.category_slug || 'literature' %>/<%= post.slug %>" target="_blank" class="btn-view-site" style="padding: 4px 10px; font-size: 13px;">
-                লাইভ প্রিভিউ &nearr;
-              </a>
-            <% } %>
-          </div>
-        </div>
-        <div class="admin-card-body">
-          <input 
-            type="text" 
-            name="title" 
-            value="<%= post.title %>" 
-            class="admin-form-input" 
-            required 
-            placeholder="লেখার শিরোনাম দিন..." 
-            style="font-size: 20px; font-weight: 600; padding: 12px 16px;"
-          >
-        </div>
+<form id="postEditForm" action="/admin/posts/<%= post.id %>/edit" method="POST" enctype="multipart/form-data" class="wp-gutenberg-container">
+  
+  <!-- 1. Sticky WordPress Top Header Bar -->
+  <div class="wp-editor-top-bar">
+    <div class="wp-top-left">
+      <div id="wpGutenbergToolsSlot">
+        <!-- Gutenberg Inserter (+), Undo, Redo tools dock here -->
       </div>
 
-      <!-- মূল লেখা (WYSIWYG রিচ টেক্সট এডিটর) -->
-      <div class="admin-card" style="margin-bottom: 0;">
-        <div class="admin-card-header">
-          <div class="admin-card-title">
-            <span>মূল সাহিত্য / লেখা *</span>
-          </div>
+      <!-- Quick Review Inserters Toolbar -->
+      <div class="wp-review-quick-tools">
+        <button type="button" class="wp-tool-btn" onclick="window.insertProsConsBlock();" title="সুবিধা ও অসুবিধা বক্স যোগ করুন">
+          <span>⚖️ সুবিধা/অসুবিধা</span>
+        </button>
+        <button type="button" class="wp-tool-btn" onclick="window.insertProductCardBlock();" title="প্রোডাক্ট রিভিউ কার্ড যোগ করুন">
+          <span>📦 প্রোডাক্ট বক্স</span>
+        </button>
+        <button type="button" class="wp-tool-btn" onclick="window.insertRatingBlock();" title="স্টার রেটিং স্কোর যোগ করুন">
+          <span>⭐ রেটিং</span>
+        </button>
+        <button type="button" class="wp-tool-btn" onclick="window.insertComparisonTableBlock();" title="তুলনামূলক টেবিল যোগ করুন">
+          <span>📊 টেবিল</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="wp-top-right">
+      <% if (post.status === 'publish') { %>
+        <a href="/post/<%= encodeURIComponent(post.slug) %>" target="_blank" class="wp-btn-secondary" style="padding: 7px 12px; font-size: 13px;">
+          লাইভ দেখুন &nearr;
+        </a>
+      <% } %>
+
+      <button type="button" class="wp-btn-secondary" id="btnSaveDraftEdit" onclick="window.saveAsDraftEdit();">
+        ড্রাফট করুন
+      </button>
+
+      <button type="submit" class="wp-btn-publish" id="btnUpdatePost">
+        <span>আপডেট সংরক্ষণ করুন</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- 2. Main 2-Column Layout (Canvas + Sidebar) -->
+  <div class="wp-editor-grid">
+    
+    <!-- Left Column: Document Canvas -->
+    <div class="wp-canvas-card">
+      <!-- Large WordPress Title -->
+      <input 
+        type="text" 
+        name="title" 
+        id="postTitleInput"
+        value="<%= post.title %>"
+        class="wp-title-input" 
+        required 
+        placeholder="পোস্টের শিরোনাম লিখুন বা পেস্ট করুন..." 
+        autocomplete="off"
+      >
+
+      <!-- Live Permalink Preview -->
+      <div class="wp-permalink-preview">
+        <span>স্থায়ী লিংক (Permalink):</span>
+        <span class="wp-permalink-url" id="wpPermalinkUrl">/post/<%= post.slug %></span>
+      </div>
+
+      <!-- Gutenberg Writing Flow -->
+      <div class="gutenberg-mount-container">
+        <textarea name="content" id="postContentInput" style="display: none;"><%- post.content || '' %></textarea>
+      </div>
+
+      <!-- Realtime Word Count & Status Footer -->
+      <div class="wp-editor-footer-status">
+        <div class="wp-status-stats">
+          <span class="wp-status-stat-item">📝 মোট শব্দ: <strong id="wpWordCount">০</strong></span>
+          <span class="wp-status-stat-item">⏱️ পড়ার সময়: <strong id="wpReadingTime">১</strong> মিনিট</span>
         </div>
-        <div class="admin-card-body" style="padding: 16px;">
-          <div class="payasti-editor-wrapper">
-            <div id="quillEditor"></div>
-          </div>
-          <!-- Live Word Count & Paragraph Stats -->
-          <div class="writing-stats-bar" style="margin-top: 10px; display: flex; gap: 16px; align-items: center; background: #f8fafc; padding: 7px 16px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; color: #64748b;">
-            <div>শব্দ: <strong id="statWordCount" style="color: #0f172a;">০</strong></div>
-            <div>অক্ষর: <strong id="statCharCount" style="color: #0f172a;">০</strong></div>
-            <div>অনুচ্ছেদ: <strong id="statParaCount" style="color: #0f172a;">০</strong></div>
-          </div>
-          <!-- Safe JSON data block for raw content initialization -->
-          <script type="application/json" id="rawPostContentJson"><%- JSON.stringify(post.content || '') %></script>
-          <!-- Hidden textarea holding the HTML content for form submission -->
-          <textarea name="content" id="postContentInput" style="display: none;"></textarea>
+        <div>
+          <span style="color: #059669; font-weight: 600;">⚡ WordPress Gutenberg Canvas</span>
         </div>
       </div>
     </div>
 
-    <!-- ডান পাশের সাইডবার কলাম (মেটাডাটা ও অ্যাকশন বক্স) -->
-    <div class="admin-editor-sidebar">
-      <!-- প্রকাশনা নিয়ন্ত্রণ বক্স -->
-      <div class="admin-card" style="margin-bottom: 0;">
-        <div class="admin-card-header">
-          <div class="admin-card-title">
-            <span>প্রকাশনা নিয়ন্ত্রণ</span>
-          </div>
-          <div>
-            <% if (post.status === 'publish') { %>
-              <span class="status-badge published">প্রকাশিত</span>
-            <% } else if (post.status === 'pending') { %>
-              <span class="status-badge pending">পেন্ডিং</span>
-            <% } else { %>
-              <span class="status-badge" style="background: #f1f5f9; color: #475569;">ড্রাফট</span>
-            <% } %>
-          </div>
+    <!-- Right Column: Document Settings Sidebar -->
+    <div class="wp-inspector-sidebar">
+      
+      <!-- Panel 1: স্ট্যাটাস ও দৃশ্যমানতা -->
+      <div class="wp-inspector-card">
+        <div class="wp-inspector-header">
+          <span>স্ট্যাটাস ও দৃশ্যমানতা</span>
         </div>
-        <div class="admin-card-body" style="display: flex; flex-direction: column; gap: 16px;">
-          <div class="admin-form-group" style="margin-bottom: 0;">
-            <label class="admin-form-label">স্ট্যাটাস</label>
-            <select name="status" class="admin-form-select" required>
-              <option value="publish" <%= post.status === 'publish' ? 'selected' : '' %>>প্রকাশিত (Publish)</option>
-              <option value="pending" <%= post.status === 'pending' ? 'selected' : '' %>>পেন্ডিং (Pending Review)</option>
+        <div class="wp-inspector-body">
+          <div class="wp-form-group">
+            <label class="wp-label">প্রকাশনা স্ট্যাটাস</label>
+            <select name="status" id="statusSelect" class="wp-select">
+              <option value="publish" <%= post.status === 'publish' ? 'selected' : '' %>>সরাসরি প্রকাশিত (Publish)</option>
               <option value="draft" <%= post.status === 'draft' ? 'selected' : '' %>>ড্রাফট (Draft)</option>
+              <option value="pending" <%= post.status === 'pending' ? 'selected' : '' %>>রিভিউ পেন্ডিং (Pending)</option>
             </select>
           </div>
 
-          <div style="padding: 10px 0; border-top: 1px solid var(--admin-border); border-bottom: 1px solid var(--admin-border);">
-            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 16px; font-weight: 500;">
-              <input type="checkbox" name="is_featured" value="1" <%= post.is_featured ? 'checked' : '' %> style="width: 20px; height: 20px; accent-color: var(--admin-primary);">
-              <span>প্রধান ফিচারে প্রদর্শন করুন</span>
+          <!-- Author Selector -->
+          <% if (typeof authors !== 'undefined' && authors && authors.length) { %>
+            <div class="wp-form-group">
+              <label class="wp-label">পোস্টের লেখক</label>
+              <select name="author_id" class="wp-select">
+                <% authors.forEach(a => { %>
+                  <option value="<%= a.id %>" <%= (post.author_id === a.id) ? 'selected' : '' %>>
+                    <%= a.display_name || a.username %> (<%= a.role %>)
+                  </option>
+                <% }); %>
+              </select>
+            </div>
+          <% } %>
+
+          <% const hasRating = Number(post.rating_score || 0) > 0; %>
+          <!-- Rating Enable / Disable Option -->
+          <div class="wp-form-group">
+            <label class="wp-checkbox-label" style="margin-bottom: 6px;">
+              <input type="checkbox" name="enable_rating" id="enableRatingCheckbox" value="1" <%= hasRating ? 'checked' : '' %> onchange="document.getElementById('ratingScoreFieldWrap').style.display = this.checked ? 'block' : 'none';">
+              <span>⭐ এই পোস্টে রেটিং যুক্ত করুন</span>
             </label>
+            <div id="ratingScoreFieldWrap" style="display: <%= hasRating ? 'block' : 'none' %>; margin-top: 8px; padding: 10px 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;">
+              <label class="wp-label" style="font-size: 13px; margin-bottom: 4px;">রেটিং স্কোর (১.০ - ৫.০)</label>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 18px; color: #f59e0b;">★</span>
+                <input type="number" name="rating_score" id="ratingScoreInput" class="wp-input" step="0.1" min="1.0" max="5.0" value="<%= hasRating ? parseFloat(post.rating_score).toFixed(1) : '4.8' %>" placeholder="যেমন: 4.8" style="font-weight: 700; width: 110px;">
+                <span style="font-size: 13px; color: #64748b;">/ ৫.০</span>
+              </div>
+              <span style="font-size: 11.5px; color: #64748b; margin-top: 4px; display: block;">পোস্টে প্রদর্শিত সামগ্রিক রিভিউ রেটিং স্কোর।</span>
+            </div>
           </div>
 
-          <div style="display: flex; flex-direction: column; gap: 10px; padding-top: 4px;">
-            <button type="submit" class="btn-new-action" style="width: 100%; justify-content: center; padding: 12px; font-size: 17px;">
-              পরিবর্তন সংরক্ষণ করুন
-            </button>
-            <a href="/admin/posts" class="btn-view-site" style="width: 100%; justify-content: center; padding: 10px; font-size: 16px;">
-              বাতিল করুন
-            </a>
+          <div class="wp-form-group">
+            <label class="wp-checkbox-label">
+              <input type="checkbox" name="is_featured" value="1" <%= post.is_featured ? 'checked' : '' %>>
+              <span>প্রধান ফিচারে প্রদর্শন করুন</span>
+            </label>
           </div>
         </div>
       </div>
 
-      <!-- সাহিত্য বিভাগ -->
-      <div class="admin-card" style="margin-bottom: 0;">
-        <div class="admin-card-header">
-          <div class="admin-card-title">
-            <span>সাহিত্য বিভাগ *</span>
-          </div>
+      <!-- Panel 2: ক্যাটাগরি -->
+      <div class="wp-inspector-card">
+        <div class="wp-inspector-header">
+          <span>ক্যাটাগরি / বিভাগ *</span>
         </div>
-        <div class="admin-card-body">
-          <select name="category_id" class="admin-form-select" required style="width: 100%;">
+        <div class="wp-inspector-body">
+          <select name="category_id" id="categorySelect" class="wp-select" required>
             <% if (categories && categories.length) { 
                  const rootCats = categories.filter(c => !c.parent_id || c.parent_id === 0);
                  rootCats.forEach(c => {
                    const children = categories.filter(child => child.parent_id === c.id);
             %>
-              <option value="<%= c.id %>" <%= post.category_id == c.id ? 'selected' : '' %> style="font-weight: 700;">
-                <%= c.name %>
-              </option>
+              <option value="<%= c.id %>" <%= post.category_id === c.id ? 'selected' : '' %> style="font-weight: 700;"><%= c.name %></option>
               <% children.forEach(child => { %>
-                <option value="<%= child.id %>" <%= (post.category_id == child.id || post.subcategory_id == child.id) ? 'selected' : '' %>>
-                  &nbsp;&nbsp;&nbsp;— <%= child.name %>
-                </option>
+                <option value="<%= child.id %>" <%= post.category_id === child.id ? 'selected' : '' %>>&nbsp;&nbsp;— <%= child.name %></option>
               <% }) %>
             <%   });
                } %>
@@ -144,129 +182,185 @@
         </div>
       </div>
 
-      <!-- লেখক নির্বাচন -->
-      <div class="admin-card" style="margin-bottom: 0;">
-        <div class="admin-card-header">
-          <div class="admin-card-title">
-            <span>লেখক নির্বাচন *</span>
-          </div>
+      <!-- Panel 3: ফিচার্ড ছবি -->
+      <div class="wp-inspector-card">
+        <div class="wp-inspector-header">
+          <span>ফিচার্ড ছবি</span>
         </div>
-        <div class="admin-card-body">
-          <select name="author_id" class="admin-form-select" required style="width: 100%;">
-            <% if (authors && authors.length) { %>
-              <% authors.forEach(a => { %>
-                <option value="<%= a.id %>" <%= post.author_id == a.id ? 'selected' : '' %>>
-                  <%= a.display_name %> (@<%= a.username %>)
-                </option>
-              <% }) %>
-            <% } %>
-          </select>
-        </div>
-      </div>
-
-      <!-- ফিচার্ড ছবি -->
-      <div class="admin-card" style="margin-bottom: 0;">
-        <div class="admin-card-header">
-          <div class="admin-card-title">
-            <span>ফিচার্ড ছবি</span>
-          </div>
-        </div>
-        <div class="admin-card-body">
+        <div class="wp-inspector-body">
           <div class="payasti-image-dropzone" data-name="featured_image" data-initial-url="<%= post.featured_image || '' %>" data-prompt="ফিচার্ড ছবি ড্র্যাগ করে ছাড়ুন অথবা ক্লিক করুন" data-hint="ক্লিক করে মিডিয়া লাইব্রেরি থেকে ছবি বাছুন"></div>
         </div>
       </div>
+
+      <!-- Panel 4: সারাংশ -->
+      <div class="wp-inspector-card">
+        <div class="wp-inspector-header">
+          <span>উদ্ধৃতি / সারাংশ</span>
+        </div>
+        <div class="wp-inspector-body">
+          <textarea name="excerpt" class="wp-input" rows="3" placeholder="পোস্টের সংক্ষিপ্ত সারাংশ লিখুন..." style="resize: vertical;"><%= post.excerpt || '' %></textarea>
+        </div>
+      </div>
+
     </div>
   </div>
+
 </form>
 
-<!-- Quill Editor JS & Initialization -->
-<script src="/vendor/quill/quill.min.js"></script>
-<script src="/js/payasti-quill.js?v=2.6"></script>
-<script src="/js/payasti-spellchecker.js?v=5.5"></script>
+<!-- Official WordPress Gutenberg JS Dependencies (Local Fast Loading) -->
+<script src="/vendor/gutenberg/react.min.js"></script>
+<script src="/vendor/gutenberg/react-dom.min.js"></script>
+<script src="/vendor/gutenberg/isolated-block-editor.js"></script>
+<script src="/js/wp-smart-clipboard.js?v=2.5"></script>
+
 <script>
-  document.addEventListener('DOMContentLoaded', function() {
-    const quill = window.createPayastiEditor('#quillEditor', {
-      placeholder: 'সম্পূর্ণ সাহিত্যকর্ম, কবিতা, প্রবন্ধ বা গল্প এখানে লিখুন...'
-    });
+  // Robust Content Sync Helper across Gutenberg isolated and core stores
+  function syncGutenbergContent() {
+    const textarea = document.getElementById('postContentInput');
+    if (!textarea) return '';
 
-    const contentInput = document.getElementById('postContentInput');
-    const wordCountEl = document.getElementById('statWordCount');
-    const charCountEl = document.getElementById('statCharCount');
-    const paraCountEl = document.getElementById('statParaCount');
+    let syncedContent = '';
 
-    function toBn(num) {
-      const bnDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
-      return String(num).replace(/\d/g, d => bnDigits[d]);
-    }
-
-    function getSanitizedHtml() {
-      let html = quill.root.innerHTML;
-      if (html) {
-        html = html.replace(/<span class="payasti-spell-error[^"]*"[^>]*>([\s\S]*?)<\/span>/gi, '$1');
-      }
-      return html;
-    }
-
-    function syncToInput() {
-      if (contentInput) {
-        contentInput.value = getSanitizedHtml();
-      }
-
-      const text = quill.getText().trim();
-      const words = text ? text.split(/\s+/).filter(Boolean).length : 0;
-      const chars = text.length;
-      const paras = text ? text.split(/\n+/).map(p => p.trim()).filter(Boolean).length : 0;
-
-      if (wordCountEl) wordCountEl.textContent = toBn(words);
-      if (charCountEl) charCountEl.textContent = toBn(chars);
-      if (paraCountEl) paraCountEl.textContent = toBn(paras);
-    }
-
-    // Safely load and clean existing content preserving soft line breaks and paragraphs
-    const jsonEl = document.getElementById('rawPostContentJson');
-    const rawEl = document.getElementById('rawPostContent');
-    let rawContent = '';
-    if (jsonEl && jsonEl.textContent) {
+    // 1. Check Gutenberg Isolated Block Editor Store
+    if (window.wp && window.wp.data && window.wp.blocks && typeof window.wp.blocks.serialize === 'function') {
       try {
-        rawContent = JSON.parse(jsonEl.textContent);
+        const isoStore = window.wp.data.select('isolated/editor');
+        if (isoStore && typeof isoStore.getBlocks === 'function') {
+          const isoBlocks = isoStore.getBlocks();
+          if (isoBlocks && isoBlocks.length > 0) {
+            syncedContent = window.wp.blocks.serialize(isoBlocks);
+          }
+        }
       } catch (e) {
-        rawContent = jsonEl.textContent;
+        console.warn('Isolated store serialize warning:', e);
       }
-    } else if (rawEl) {
-      rawContent = rawEl.value;
+
+      // 2. Check Core Block Editor Store
+      if (!syncedContent) {
+        try {
+          const coreStore = window.wp.data.select('core/block-editor');
+          if (coreStore && typeof coreStore.getBlocks === 'function') {
+            const coreBlocks = coreStore.getBlocks();
+            if (coreBlocks && coreBlocks.length > 0) {
+              syncedContent = window.wp.blocks.serialize(coreBlocks);
+            }
+          }
+        } catch (e) {
+          console.warn('Core store serialize warning:', e);
+        }
+      }
     }
 
-    if (rawContent && rawContent.trim()) {
-      const cleanHtml = window.cleanArticleHtmlForEditor(rawContent);
-      quill.root.innerHTML = cleanHtml;
-      syncToInput();
+    // 3. Fallback: Existing textarea value
+    if (!syncedContent && textarea.value && textarea.value.trim().length > 0) {
+      syncedContent = textarea.value.trim();
     }
 
-    // Keep form input synchronized on every change
-    quill.on('text-change', function() {
-      syncToInput();
-    });
-
-    // Attach Bangla Spell Checker Assistant (Live Instant Zero-Lag Mode)
-    if (window.attachPayastiSpellChecker) {
-      window.attachPayastiSpellChecker(quill, { autoScan: true });
+    // 4. Fallback: DOM HTML Extraction if block store was empty
+    if (!syncedContent) {
+      const editorEl = document.querySelector('.block-editor-writing-flow') ||
+                       document.querySelector('.editor-styles-wrapper') ||
+                       document.querySelector('.iso-editor');
+      if (editorEl && editorEl.innerHTML && editorEl.innerText.trim().length > 0) {
+        syncedContent = editorEl.innerHTML;
+      }
     }
 
+    if (syncedContent) {
+      textarea.value = syncedContent;
+    }
+    return syncedContent;
+  }
+
+  // Global draft saving helper for edit
+  window.saveAsDraftEdit = function() {
+    document.getElementById('statusSelect').value = 'draft';
+    syncGutenbergContent();
     const form = document.getElementById('postEditForm');
+    if (form.requestSubmit) {
+      form.requestSubmit();
+    } else {
+      form.submit();
+    }
+  };
+
+  document.addEventListener('DOMContentLoaded', function() {
+    const textarea = document.getElementById('postContentInput');
+    
+    // Initialize Media Library hook
+    if (window.initGutenbergMediaLibrary) {
+      window.initGutenbergMediaLibrary();
+    }
+
+    // Attach Official WordPress Gutenberg Block Editor
+    if (window.wp && window.wp.attachEditor) {
+      window.wp.attachEditor(textarea, {
+        iso: {
+          moreMenu: false,
+          toolbar: {
+            inserter: true,
+            undo: true,
+            inspector: false,
+            navigation: false,
+            documentInspector: false,
+            selectorTool: false
+          }
+        },
+        editor: {
+          hasFixedToolbar: false,
+          hasInlineToolbar: true,
+          mediaUpload: window.handleGutenbergMediaUpload
+        }
+      });
+
+      // Safely dock Gutenberg tools into top header slot
+      let attempts = 0;
+      const dockInterval = setInterval(function() {
+        attempts++;
+        const tools = document.querySelector('.editor-document-tools') || document.querySelector('.edit-post-header__toolbar');
+        const slot = document.getElementById('wpGutenbergToolsSlot');
+        if (tools && slot && !slot.contains(tools)) {
+          slot.appendChild(tools);
+          clearInterval(dockInterval);
+        }
+        if (attempts > 30) clearInterval(dockInterval);
+      }, 50);
+    }
+
+    // Initialize WordPress Smart Paste & Handlers
+    if (window.setupWordPressSmartPaste) {
+      window.setupWordPressSmartPaste('postTitleInput', 'postContentInput');
+    }
+
+    // Form Submission & Content Sync
+    const form = document.getElementById('postEditForm');
+    const submitBtn = document.getElementById('btnUpdatePost');
+    const draftBtn = document.getElementById('btnSaveDraftEdit');
+    
     form.addEventListener('submit', function(e) {
-      if (window.activePayastiSpellChecker) {
-        window.activePayastiSpellChecker.clearHighlights();
-      }
-      syncToInput();
-      const text = quill.getText().trim();
-      if (!text || text.length === 0) {
-        alert('অনুগ্রহ করে মূল সাহিত্য বা লেখার বিষয়বস্তু লিখুন।');
+      const title = document.getElementById('postTitleInput').value.trim();
+      if (!title) {
+        if (window.showToast) {
+          window.showToast('⚠️ অনুগ্রহ করে পোস্টের শিরোনাম যোগ করুন।', 'error');
+        } else {
+          alert('অনুগ্রহ করে পোস্টের শিরোনাম যোগ করুন।');
+        }
+        document.getElementById('postTitleInput').focus();
         e.preventDefault();
         return false;
       }
-    });
 
-    syncToInput();
+      let content = syncGutenbergContent();
+      if (!content || !content.trim()) {
+        if (textarea && !textarea.value) textarea.value = '<p>' + title + '</p>';
+      }
+
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span>আপডেট হচ্ছে... ⏳</span>';
+      }
+      if (draftBtn) draftBtn.disabled = true;
+    });
   });
 </script>
 

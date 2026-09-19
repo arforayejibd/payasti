@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= seo && seo.title ? seo.title : 'লেখক ও এডমিন লগইন | পয়স্তি ম্যাগাজিন' %></title>
+  
+  <link rel="icon" href="/images/favicon-32x32.png" sizes="32x32">
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+  <meta name="theme-color" content="#075603">
+  <meta name="robots" content="noindex, nofollow">
+
+  <!-- Google Fonts & Custom Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    @font-face {
+      font-family: 'Kalpurush';
+      src: url('/fonts/kalpurush.woff2') format('woff2');
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'payasti_uni';
+      src: url('/fonts/kalpurush.woff2') format('woff2');
+      font-display: swap;
+    }
+
+    :root {
+      --primary: #068200;
+      --primary-hover: #056800;
+      --primary-light: #f0ffef;
+      --accent: #068200;
+      --text-main: #1f2937;
+      --text-muted: #6b7280;
+      --border-color: #e5e7eb;
+      --card-bg: #ffffff;
+      --font-family: 'Kalpurush', 'payasti_uni', 'Hind Siliguri', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: var(--font-family);
+      font-feature-settings: "ss01" 1;
+      -webkit-font-feature-settings: "ss01" 1;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at 10% 20%, #f0f7ef 0%, #fcfdfc 45%, #eaf4e9 95%);
+      color: var(--text-main);
+      padding: 24px 16px;
+      position: relative;
+      overflow-x: hidden;
+      font-size: 18px;
+    }
+
+    /* Ambient literary background accents */
+    body::before {
+      content: '';
+      position: absolute;
+      width: 450px;
+      height: 450px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(7, 86, 3, 0.07) 0%, rgba(255,255,255,0) 70%);
+      top: -100px;
+      right: -100px;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    body::after {
+      content: '';
+      position: absolute;
+      width: 400px;
+      height: 400px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(6, 130, 0, 0.05) 0%, rgba(255,255,255,0) 70%);
+      bottom: -100px;
+      left: -100px;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .auth-container {
+      width: 100%;
+      max-width: 460px;
+      position: relative;
+      z-index: 1;
+      animation: fadeIn 0.4s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .brand-header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .brand-logo-link {
+      display: inline-block;
+      transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .brand-logo-link:hover {
+      transform: scale(1.04);
+    }
+
+    .brand-logo {
+      height: 66px;
+      width: auto;
+      margin: 0 auto 12px;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.05));
+    }
+
+    .brand-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 16px;
+      background: var(--primary-light);
+      color: var(--primary);
+      border-radius: 9999px;
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+      border: 1px solid rgba(7, 86, 3, 0.15);
+    }
+
+    .auth-card {
+      background: var(--card-bg);
+      border-radius: 18px;
+      border: 1px solid rgba(7, 86, 3, 0.12);
+      box-shadow: 0 16px 36px -8px rgba(7, 86, 3, 0.09), 0 4px 12px rgba(0, 0, 0, 0.03);
+      padding: 38px 34px;
+      backdrop-filter: blur(8px);
+    }
+
+    .card-title-group {
+      text-align: center;
+      margin-bottom: 26px;
+    }
+
+    .card-title {
+      font-size: 28px;
+      font-weight: 700;
+      color: #111827;
+      margin-bottom: 8px;
+      letter-spacing: -0.3px;
+    }
+
+    .card-subtitle {
+      font-size: 18px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .alert-error {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #b91c1c;
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-size: 17px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      line-height: 1.4;
+    }
+
+    .alert-error svg {
+      flex-shrink: 0;
+      width: 18px;
+      height: 18px;
+    }
+
+    .alert-success {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      color: #15803d;
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-size: 17px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      line-height: 1.4;
+    }
+
+    .alert-success svg {
+      flex-shrink: 0;
+      width: 18px;
+      height: 18px;
+    }
+
+    .form-group {
+      margin-bottom: 22px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 18px;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 8px;
+    }
+
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .input-icon {
+      position: absolute;
+      left: 14px;
+      width: 20px;
+      height: 20px;
+      color: #9ca3af;
+      pointer-events: none;
+      transition: color 0.2s;
+    }
+
+    .form-control {
+      width: 100%;
+      height: 50px;
+      padding: 10px 14px 10px 44px;
+      border: 1.5px solid var(--border-color);
+      border-radius: 10px;
+      font-size: 18px;
+      color: #111827;
+      background: #fafafa;
+      transition: all 0.2s ease;
+      outline: none;
+    }
+
+    .form-control:focus {
+      background: #ffffff;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px rgba(6, 130, 0, 0.12);
+    }
+
+    .form-control:focus + .input-icon,
+    .input-wrapper:focus-within .input-icon {
+      color: var(--accent);
+    }
+
+    .password-toggle {
+      position: absolute;
+      right: 12px;
+      background: transparent;
+      border: none;
+      color: #9ca3af;
+      cursor: pointer;
+      padding: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      transition: color 0.2s;
+    }
+
+    .password-toggle:hover {
+      color: #4b5563;
+    }
+
+    .form-extra {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      font-size: 16px;
+    }
+
+    .remember-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #4b5563;
+      cursor: pointer;
+      user-select: none;
+      font-size: 16px;
+    }
+
+    .remember-label input[type="checkbox"] {
+      accent-color: var(--primary);
+      width: 17px;
+      height: 17px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .forgot-password-link {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 16px;
+      transition: color 0.2s, text-decoration 0.2s;
+    }
+
+    .forgot-password-link:hover {
+      color: var(--accent);
+      text-decoration: underline;
+    }
+
+    .btn-submit {
+      width: 100%;
+      height: 50px;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+      color: #ffffff;
+      border: none;
+      border-radius: 10px;
+      font-size: 19px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 4px 14px rgba(7, 86, 3, 0.25);
+      transition: all 0.25s ease;
+    }
+
+    .btn-submit:hover {
+      background: linear-gradient(135deg, var(--primary-hover) 0%, #056a00 100%);
+      box-shadow: 0 6px 18px rgba(7, 86, 3, 0.35);
+      transform: translateY(-1px);
+    }
+
+    .btn-submit:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 8px rgba(7, 86, 3, 0.2);
+    }
+
+    .btn-submit svg {
+      width: 20px;
+      height: 20px;
+      transition: transform 0.2s;
+    }
+
+    .btn-submit:hover svg {
+      transform: translateX(3px);
+    }
+
+    .auth-card-footer {
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid #f3f4f6;
+      text-align: center;
+      font-size: 17px;
+      color: var(--text-muted);
+    }
+
+    .auth-card-footer a {
+      color: var(--primary);
+      font-weight: 600;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .auth-card-footer a:hover {
+      color: var(--accent);
+      text-decoration: underline;
+    }
+
+    .back-home-wrap {
+      text-align: center;
+      margin-top: 24px;
+    }
+
+    .back-home-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: #4b5563;
+      font-size: 16px;
+      text-decoration: none;
+      transition: color 0.2s;
+      padding: 6px 12px;
+      border-radius: 8px;
+    }
+
+    .back-home-link:hover {
+      color: var(--primary);
+      background: rgba(7, 86, 3, 0.05);
+    }
+
+    .back-home-link svg {
+      width: 18px;
+      height: 18px;
+      transition: transform 0.2s;
+    }
+
+    .back-home-link:hover svg {
+      transform: translateX(-3px);
+    }
+
+    .copyright-note {
+      text-align: center;
+      margin-top: 28px;
+      font-size: 15px;
+      color: #9ca3af;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 480px) {
+      .auth-card {
+        padding: 28px 20px;
+        border-radius: 14px;
+      }
+      .brand-logo {
+        height: 54px;
+      }
+      .card-title {
+        font-size: 24px;
+      }
+      .card-subtitle {
+        font-size: 16px;
+      }
+      .form-label {
+        font-size: 17px;
+      }
+      .form-control {
+        font-size: 17px;
+      }
+      .btn-submit {
+        font-size: 18px;
+      }
+        <!-- Brand Header -->
+    <div class="brand-header">
+      <a href="/" class="brand-logo-link" title="সেরা ১০ হোমপেজ">
+        <span style="font-size: 32px; font-weight: 900; color: #068200; display: inline-flex; align-items: center; gap: 6px;">
+          <span style="background: #068200; color: #fff; padding: 2px 10px; border-radius: 8px; font-size: 20px;">১০</span>
+          সেরা ১০
+        </span>
+      </a>
+      <div style="margin-top: 10px;">
+        <span class="brand-badge">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+          অ্যাডমিন কন্ট্রোল প্যানেল
+        </span>
+      </div>
+    </div>
+
+    <!-- Login Card -->
+    <div class="auth-card">
+      <div class="card-title-group">
+        <h1 class="card-title">অ্যাডমিন লগইন</h1>
+        <p class="card-subtitle">সেরা ১০ পোর্টাল পরিচালনা ও কন্টেন্ট ম্যানেজমেন্টের জন্য লগইন করুন</p>
+      </div>
+
+      <% if (typeof success !== 'undefined' && success) { %>
+        <div class="alert-success" role="alert">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+          </svg>
+          <span><%= success %></span>
+        </div>
+      <% } %>
+
+      <% if (typeof error !== 'undefined' && error) { %>
+        <div class="alert-error" role="alert">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 2px;">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+          <div>
+            <span><%= error %></span>
+          </div>
+        </div>
+      <% } %>
+
+      <form action="/login" method="POST">
+        <input type="hidden" name="redirect" value="<%= redirect %>">
+
+        <div class="form-group">
+          <label class="form-label" for="username">ইউজারনেম বা ইমেইল</label>
+          <div class="input-wrapper">
+            <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+            <input 
+              type="text" 
+              id="username"
+              name="username" 
+              class="form-control" 
+              required 
+              autofocus
+              autocomplete="username"
+              placeholder="ইউজারনেম বা ইমেইল ঠিকানা দিন"
+            >
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="password">পাসওয়ার্ড</label>
+          <div class="input-wrapper">
+            <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+            <input 
+              type="password" 
+              id="password"
+              name="password" 
+              class="form-control" 
+              required 
+              autocomplete="current-password"
+              placeholder="••••••••"
+            >
+            <button type="button" class="password-toggle" id="togglePasswordBtn" aria-label="পাসওয়ার্ড দেখুন বা লুকান">
+              <svg id="eyeIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="form-extra">
+          <label class="remember-label">
+            <input type="checkbox" name="remember" value="1" checked>
+            <span>আমাকে মনে রাখুন</span>
+          </label>
+          <a href="/forgot-password" class="forgot-password-link">পাসওয়ার্ড ভুলে গেছেন?</a>
+        </div>
+
+        <button type="submit" class="btn-submit">
+          <span>লগইন করুন</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+            <polyline points="12 5 19 12 12 19"></polyline>
+          </svg>
+        </button>
+      </form>
+    </div>
+
+    <!-- Back to Website -->
+    <div class="back-home-wrap">
+      <a href="/" class="back-home-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 19"></polyline>
+        </svg>
+        <span>মূল ওয়েবসাইটে ফিরে যান</span>
+      </a>
+    </div>
+
+    <div class="copyright-note">
+      সেরা ১০ (Sera 10) — নির্ভরযোগ্য প্রোডাক্ট রিভিউ ও সেরা ১০ তালিকা
+    </div>
+  </div>ter">নতুন নিবন্ধন করুন</a>
+      </div>
+    </div>
+
+    <!-- Back to Website -->
+    <div class="back-home-wrap">
+      <a href="/" class="back-home-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+        <span>মূল ওয়েবসাইটে ফিরে যান</span>
+      </a>
+    </div>
+
+    <div class="copyright-note">
+      পয়স্তি সাহিত্য ম্যাগাজিন — সাহিত্য ও চিন্তার সম্মিলন
+    </div>
+  </div>
+
+  <script>
+    const toggleBtn = document.getElementById('togglePasswordBtn');
+    const passwordInput = document.getElementById('password');
+    const eyeIcon = document.getElementById('eyeIcon');
+
+    if (toggleBtn && passwordInput) {
+      toggleBtn.addEventListener('click', function() {
+        const isPassword = passwordInput.getAttribute('type') === 'password';
+        passwordInput.setAttribute('type', isPassword ? 'text' : 'password');
+        
+        if (isPassword) {
+          // Cross-eye icon
+          eyeIcon.innerHTML = `
+            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+            <line x1="1" y1="1" x2="23" y2="23"></line>
+          `;
+        } else {
+          // Open eye icon
+          eyeIcon.innerHTML = `
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+            <circle cx="12" cy="12" r="3"></circle>
+          `;
+        }
+      });
+    }
+  </script>
+</body>
+</html>

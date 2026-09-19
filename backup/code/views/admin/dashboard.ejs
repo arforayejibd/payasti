@@ -1,0 +1,210 @@
+<%- include('partials/admin_layout_start', { 
+  pageTitle: 'এডমিন ড্যাশবোর্ড ও মডারেশন', 
+  pageBreadcrumb: 'ড্যাশবোর্ড ওভারভিউ',
+  topbarButton: { text: '+ নতুন বই যুক্ত করুন', url: '/admin/books' }
+}) %>
+
+<!-- KPI Metric Cards Grid -->
+<div class="admin-stats-grid">
+  <!-- Pending Submissions -->
+  <div class="admin-stat-card warning">
+    <div class="stat-info">
+      <span class="stat-label">পেন্ডিং লেখা</span>
+      <span class="stat-number"><%= toBengaliNumber(stats.pending) %></span>
+      <a href="/admin/pending" class="stat-link">
+        লেখাগুলো পর্যালোচনা করুন &rarr;
+      </a>
+    </div>
+    <div class="stat-icon-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"></circle>
+        <polyline points="12 6 12 12 16 14"></polyline>
+      </svg>
+    </div>
+  </div>
+
+  <!-- Published Articles -->
+  <div class="admin-stat-card success">
+    <div class="stat-info">
+      <span class="stat-label">প্রকাশিত সাহিত্য</span>
+      <span class="stat-number"><%= toBengaliNumber(stats.published) %></span>
+      <a href="/" target="_blank" class="stat-link">
+        ওয়েবসাইটে দেখুন &rarr;
+      </a>
+    </div>
+    <div class="stat-icon-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+      </svg>
+    </div>
+  </div>
+
+  <!-- Registered Authors -->
+  <div class="admin-stat-card info">
+    <div class="stat-info">
+      <span class="stat-label">নিবন্ধিত লেখক</span>
+      <span class="stat-number"><%= toBengaliNumber(stats.users) %></span>
+      <a href="/admin/users" class="stat-link">
+        লেখক তালিকা ম্যানেজ করুন &rarr;
+      </a>
+    </div>
+    <div class="stat-icon-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+        <circle cx="9" cy="7" r="4"></circle>
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+      </svg>
+    </div>
+  </div>
+
+  <!-- Pending Authors / Users -->
+  <% if (typeof stats.pendingUsers !== 'undefined' && stats.pendingUsers > 0) { %>
+    <div class="admin-stat-card warning" style="border-left: 4px solid #f59e0b;">
+      <div class="stat-info">
+        <span class="stat-label">পেন্ডিং লেখক অনুমোদন</span>
+        <span class="stat-number" style="color: #b45309;"><%= toBengaliNumber(stats.pendingUsers) %></span>
+        <a href="/admin/users?status=pending_approval" class="stat-link" style="color: #b45309; font-weight: 700;">
+          অনুমোদন করুন &rarr;
+        </a>
+      </div>
+      <div class="stat-icon-wrap" style="background: #fef3c7; color: #b45309;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+          <circle cx="8.5" cy="7" r="4"></circle>
+          <line x1="20" y1="8" x2="20" y2="14"></line>
+          <line x1="23" y1="11" x2="17" y2="11"></line>
+        </svg>
+      </div>
+    </div>
+  <% } %>
+
+  <!-- Books Catalog -->
+  <div class="admin-stat-card purple">
+    <div class="stat-info">
+      <span class="stat-label">প্রকাশিত বই</span>
+      <span class="stat-number"><%= toBengaliNumber(stats.books) %></span>
+      <a href="/admin/books" class="stat-link">
+        বই সম্ভার ম্যানেজ করুন &rarr;
+      </a>
+    </div>
+    <div class="stat-icon-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+      </svg>
+    </div>
+  </div>
+</div>
+
+<!-- Pending Submissions Card -->
+<div class="admin-card">
+  <div class="admin-card-header">
+    <div class="admin-card-title">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--admin-warning);">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+        <polyline points="14 2 14 8 20 8"></polyline>
+        <line x1="16" y1="13" x2="8" y2="13"></line>
+        <line x1="16" y1="17" x2="8" y2="17"></line>
+        <polyline points="10 9 9 9 8 9"></polyline>
+      </svg>
+      <span>অনুমোদনের অপেক্ষায় থাকা সাম্প্রতিক লেখা</span>
+      <span class="admin-card-badge"><%= toBengaliNumber(recentPending.length) %> টি</span>
+    </div>
+    <div>
+      <a href="/admin/pending" class="stat-link" style="color: var(--admin-primary); font-size: 16px;">
+        সকল পেন্ডিং দেখুন &rarr;
+      </a>
+    </div>
+  </div>
+
+  <div class="admin-table-wrap">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>শিরোনাম ও বিবরণ</th>
+          <th>লেখক</th>
+          <th>বিভাগ</th>
+          <th>জমা দেওয়ার তারিখ</th>
+          <th>স্ট্যাটাস</th>
+          <th style="text-align: right;">সিদ্ধান্ত</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (recentPending && recentPending.length > 0) { %>
+          <% recentPending.forEach(p => { %>
+            <tr>
+              <td>
+                <div class="post-title-cell">
+                  <%= p.title %>
+                </div>
+                <% if (p.excerpt) { %>
+                  <div style="font-size: 15px; color: var(--admin-text-sub); margin-top: 4px; max-width: 320px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                    <%= p.excerpt %>
+                  </div>
+                <% } %>
+              </td>
+              <td>
+                <div class="author-cell">
+                  <div class="author-mini-avatar">
+                    <%= p.author_name ? p.author_name.charAt(0) : 'ল' %>
+                  </div>
+                  <div class="author-cell-info">
+                    <span class="author-name"><%= p.author_name || 'লেখক' %></span>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <span class="category-pill"><%= p.category_name || 'অন্য সাহিত্য' %></span>
+              </td>
+              <td style="white-space: nowrap; color: var(--admin-text-muted); font-size: 16px;">
+                <%= formatBengaliDate(p.created_at) %>
+              </td>
+              <td>
+                <span class="status-badge pending">পেন্ডিং</span>
+              </td>
+              <td>
+                <div class="actions-group" style="justify-content: flex-end;">
+                  <form action="/admin/post/<%= p.id %>/approve" method="POST" style="display: inline;" onsubmit="return confirm('লেখাটি অনুমোদন ও পাবলিশ করতে চান?');">
+                    <button type="submit" class="btn-table-action btn-approve" title="এপ্রুভ করুন">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                      </svg>
+                      এপ্রুভ
+                    </button>
+                  </form>
+                  <form action="/admin/post/<%= p.id %>/reject" method="POST" style="display: inline;" onsubmit="return confirm('লেখাটি ড্রাফট / রিজেক্ট করতে চান?');">
+                    <button type="submit" class="btn-table-action btn-reject" title="রিজেক্ট করুন">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                      </svg>
+                      রিজেক্ট
+                    </button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          <% }) %>
+        <% } else { %>
+          <tr>
+            <td colspan="6">
+              <div class="admin-empty-state">
+                <div class="empty-icon">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                </div>
+                <div class="empty-title">বর্তমানে কোনো পেন্ডিং লেখা নেই</div>
+                <div class="empty-desc">সব লেখকের লেখা অনুমোদিত ও নিয়মিত প্রকাশিত অবস্থায় রয়েছে।</div>
+              </div>
+            </td>
+          </tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<%- include('partials/admin_layout_end') %>

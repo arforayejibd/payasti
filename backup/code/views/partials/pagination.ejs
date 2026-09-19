@@ -1,0 +1,48 @@
+<% if (pagination && pagination.totalPages > 1) { %>
+  <nav class="pagination-wrap" aria-label="পেজিনেশন">
+    <% 
+      const current = pagination.currentPage || 1;
+      const total = pagination.totalPages;
+      const basePath = pagination.basePath || '';
+      const base = basePath.includes('?') ? `${basePath}&` : `${basePath}?`;
+      const getPageLink = (p) => typeof pagination.pageUrl === 'function' ? pagination.pageUrl(p) : `${base}page=${p}`;
+      
+      let startPage = Math.max(1, current - 2);
+      let endPage = Math.min(total, current + 2);
+      if (current <= 3) {
+        endPage = Math.min(total, 5);
+      }
+      if (current >= total - 2) {
+        startPage = Math.max(1, total - 4);
+      }
+    %>
+
+    <% if (current > 1) { %>
+      <a href="<%= getPageLink(current - 1) %>" class="page-btn" aria-label="পূর্ববর্তী">পূর্ববর্তী</a>
+    <% } %>
+
+    <% if (startPage > 1) { %>
+      <a href="<%= getPageLink(1) %>" class="page-btn">১</a>
+      <% if (startPage > 2) { %>
+        <span class="page-btn disabled">...</span>
+      <% } %>
+    <% } %>
+
+    <% for (let i = startPage; i <= endPage; i++) { %>
+      <a href="<%= getPageLink(i) %>" class="page-btn <%= current === i ? 'active' : '' %>">
+        <%= toBengaliNumber(i) %>
+      </a>
+    <% } %>
+
+    <% if (endPage < total) { %>
+      <% if (endPage < total - 1) { %>
+        <span class="page-btn disabled">...</span>
+      <% } %>
+      <a href="<%= getPageLink(total) %>" class="page-btn"><%= toBengaliNumber(total) %></a>
+    <% } %>
+
+    <% if (current < total) { %>
+      <a href="<%= getPageLink(current + 1) %>" class="page-btn" aria-label="পরবর্তী">পরবর্তী</a>
+    <% } %>
+  </nav>
+<% } %>

@@ -1,0 +1,1213 @@
+<%- include('partials/header') %>
+
+<!-- Quill Editor CSS & Spellchecker Styles -->
+<link rel="stylesheet" href="/vendor/quill/quill.snow.css">
+<link rel="stylesheet" href="/css/payasti-spellchecker.css?v=5.5">
+
+<style>
+  /* ==========================================================================
+     Full-Width Payasti Spell Checker Workspace
+     ========================================================================== */
+  @font-face {
+    font-family: 'payasti_uni';
+    src: url('/fonts/8029Payasti_uni.woff2') format('woff2');
+    font-weight: 100 900;
+    font-style: normal;
+    font-display: swap;
+  }
+  @font-face {
+    font-family: 'payasti_uni';
+    src: url('/fonts/8029Payasti_uni.woff2') format('woff2');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+  }
+  @font-face {
+    font-family: 'payasti_uni';
+    src: url('/fonts/8029Payasti_uni.woff2') format('woff2');
+    font-weight: bold;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  .sothik-wrapper,
+  .sothik-wrapper *,
+  .sothik-top-nav,
+  .sothik-brand,
+  .sothik-btn,
+  .sothik-container,
+  .sothik-editor-area,
+  .sothik-quill-wrapper,
+  .sothik-quill-wrapper .ql-container,
+  .sothik-quill-wrapper .ql-editor,
+  .sothik-quill-wrapper .ql-editor *,
+  .sothik-quill-wrapper .ql-editor p,
+  .sothik-quill-wrapper .ql-editor span,
+  .sothik-quill-wrapper .ql-editor div,
+  .sothik-quill-wrapper .ql-editor.ql-blank::before,
+  .sothik-sidebar-area,
+  .sothik-sidebar-area *,
+  .sothik-mistake-card,
+  .sothik-mistake-card *,
+  .sothik-rules-section,
+  .sothik-rules-section * {
+    font-family: 'payasti_uni', 'Hind Siliguri', -apple-system, BlinkMacSystemFont, sans-serif !important;
+    font-feature-settings: "ss01" 1 !important;
+    -webkit-font-feature-settings: "ss01" 1 !important;
+  }
+
+  /* Full-Height App View for Bangla Spell Page */
+  html, body {
+    height: 100vh !important;
+    max-height: 100vh !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  .site-header {
+    flex-shrink: 0 !important;
+  }
+
+  .site-footer {
+    display: none !important;
+  }
+
+  .sothik-wrapper {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    height: auto !important;
+    max-height: none !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 auto !important;
+    padding: 10px 20px 12px !important;
+    box-sizing: border-box !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+  }
+
+  /* Top Bar */
+  .sothik-top-nav {
+    flex-shrink: 0 !important;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 8px;
+    padding: 8px 18px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  }
+  .sothik-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 24px;
+    font-weight: 700;
+    color: #0f172a;
+  }
+  .sothik-brand-badge {
+    background: #dcfce7;
+    color: #15803d;
+    font-size: 14px;
+    font-weight: 700;
+    padding: 3px 12px;
+    border-radius: 12px;
+    border: 1px solid #bbf7d0;
+  }
+
+  .sothik-actions-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .sothik-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 16px;
+    font-size: 17.5px;
+    font-weight: 600;
+    border-radius: 8px;
+    border: 1px solid #cbd5e1;
+    background: #ffffff;
+    color: #334155;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    user-select: none;
+  }
+  .sothik-btn:hover {
+    background: #f8fafc;
+    border-color: #94a3b8;
+    color: #0f172a;
+  }
+  .sothik-btn-primary {
+    background: #16a34a;
+    border-color: #15803d;
+    color: #ffffff;
+  }
+  .sothik-btn-primary:hover {
+    background: #15803d;
+    border-color: #166534;
+    color: #ffffff;
+    box-shadow: 0 2px 6px rgba(22, 163, 74, 0.25);
+  }
+
+  /* Main 2-Column Container */
+  .sothik-container {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    height: auto !important;
+    display: flex;
+    position: relative;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+    overflow: hidden !important;
+  }
+
+  /* Left Editor Area */
+  .sothik-editor-area {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    min-width: 0 !important;
+    height: auto !important;
+    display: flex;
+    flex-direction: column;
+    background: #ffffff;
+    position: relative;
+    overflow: hidden !important;
+  }
+  .sothik-quill-wrapper {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    height: auto !important;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden !important;
+  }
+  .sothik-quill-wrapper .ql-container {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    height: 100% !important;
+    position: relative !important;
+    border: none !important;
+    font-family: 'payasti_uni', 'Hind Siliguri', sans-serif !important;
+    font-feature-settings: "ss01" 1 !important;
+    -webkit-font-feature-settings: "ss01" 1 !important;
+  }
+  .sothik-quill-wrapper .ql-editor {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    height: 100% !important;
+    overflow-y: auto !important;
+    font-family: 'payasti_uni', 'Hind Siliguri', sans-serif !important;
+    font-feature-settings: "ss01" 1 !important;
+    -webkit-font-feature-settings: "ss01" 1 !important;
+    font-size: 19.5px !important;
+    font-weight: 400 !important;
+    line-height: 1.85 !important;
+    color: #1e293b !important;
+    padding: 24px 30px !important;
+    box-sizing: border-box !important;
+    letter-spacing: 0.15px !important;
+  }
+  .sothik-quill-wrapper .ql-editor p {
+    font-family: 'payasti_uni', 'Hind Siliguri', sans-serif !important;
+    font-feature-settings: "ss01" 1 !important;
+    -webkit-font-feature-settings: "ss01" 1 !important;
+    font-size: 19.5px !important;
+    line-height: 1.85 !important;
+    margin-bottom: 18px !important;
+    text-align: justify !important;
+    text-justify: inter-word !important;
+  }
+  .sothik-quill-wrapper .ql-editor p:last-child {
+    margin-bottom: 0 !important;
+  }
+  .sothik-quill-wrapper .ql-editor span,
+  .sothik-quill-wrapper .ql-editor div {
+    font-family: 'payasti_uni', 'Hind Siliguri', sans-serif !important;
+    font-feature-settings: "ss01" 1 !important;
+    -webkit-font-feature-settings: "ss01" 1 !important;
+    font-size: inherit !important;
+    line-height: inherit !important;
+  }
+  .sothik-quill-wrapper .ql-editor.ql-blank::before {
+    font-family: 'payasti_uni', 'Hind Siliguri', sans-serif !important;
+    font-feature-settings: "ss01" 1 !important;
+    -webkit-font-feature-settings: "ss01" 1 !important;
+    font-size: 19.5px !important;
+    font-weight: 400 !important;
+    line-height: 1.85 !important;
+    color: #94a3b8 !important;
+    font-style: normal;
+    left: 30px;
+    right: 30px;
+  }
+  .sothik-quill-wrapper .ql-toolbar {
+    display: none !important;
+  }
+
+  /* Custom Slim Scrollbar for Quill Editor */
+  .sothik-quill-wrapper .ql-editor::-webkit-scrollbar {
+    width: 8px;
+  }
+  .sothik-quill-wrapper .ql-editor::-webkit-scrollbar-track {
+    background: #f8fafc;
+  }
+  .sothik-quill-wrapper .ql-editor::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+  }
+  .sothik-quill-wrapper .ql-editor::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+  }
+
+  /* Editor Bottom Status Bar */
+  .sothik-bottom-bar {
+    flex-shrink: 0 !important;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 20px;
+    background: #f8fafc;
+    border-top: 1px solid #e2e8f0;
+    font-size: 14.5px;
+    color: #64748b;
+  }
+  .sothik-stats-group {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+  .sothik-stats-group strong {
+    color: #0f172a;
+    font-size: 16.5px;
+  }
+
+  /* Center Collapse Toggle Arrow */
+  .sothik-toggle-sidebar-btn {
+    position: absolute;
+    top: 50%;
+    right: 380px;
+    transform: translateY(-50%);
+    width: 22px;
+    height: 52px;
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-right: none;
+    border-radius: 8px 0 0 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 20;
+    color: #64748b;
+    font-size: 14px;
+    box-shadow: -2px 0 6px rgba(0, 0, 0, 0.04);
+    transition: all 0.2s ease;
+  }
+  .sothik-toggle-sidebar-btn:hover {
+    background: #f1f5f9;
+    color: #0f172a;
+    width: 26px;
+  }
+  .sothik-container.sidebar-collapsed .sothik-toggle-sidebar-btn {
+    right: 0;
+    border-radius: 8px 0 0 8px;
+    border-right: none;
+    background: #ffffff;
+    box-shadow: -3px 0 8px rgba(0, 0, 0, 0.08);
+  }
+
+  /* Right Sidebar Area */
+  .sothik-sidebar-area {
+    width: 380px !important;
+    flex-shrink: 0 !important;
+    min-height: 0 !important;
+    height: 100% !important;
+    background: #f8fafc;
+    border-left: 1px solid #e2e8f0;
+    display: flex;
+    flex-direction: column;
+    transition: width 0.2s ease, margin-right 0.2s ease;
+    overflow: hidden !important;
+  }
+  .sothik-container.sidebar-collapsed .sothik-sidebar-area {
+    width: 0 !important;
+    margin-right: 0 !important;
+    border-left: none !important;
+  }
+
+  /* Sidebar Header */
+  .sothik-sidebar-header {
+    flex-shrink: 0 !important;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    background: #ffffff;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  .sothik-sidebar-title {
+    font-size: 21px;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+  }
+  .sothik-sidebar-close-btn {
+    background: none;
+    border: none;
+    color: #94a3b8;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+  }
+  .sothik-sidebar-close-btn:hover {
+    background: #f1f5f9;
+    color: #0f172a;
+  }
+  .sothik-badge-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 28px;
+    height: 28px;
+    padding: 0 8px;
+    background: #f97316;
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: 800;
+    border-radius: 14px;
+    transition: all 0.2s ease;
+  }
+  .sothik-badge-count.zero {
+    background: #10b981;
+  }
+
+  /* Sidebar Content & Cards */
+  .sothik-sidebar-content {
+    flex: 1 !important;
+    min-height: 0 !important;
+    height: 100% !important;
+    overflow-y: auto !important;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    box-sizing: border-box;
+  }
+
+  /* Custom Slim Scrollbar for Sidebar */
+  .sothik-sidebar-content::-webkit-scrollbar {
+    width: 7px;
+  }
+  .sothik-sidebar-content::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .sothik-sidebar-content::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+  }
+  .sothik-sidebar-content::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+  }
+
+  /* Minimal Mistake Card matching User Image */
+  .sothik-mistake-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 14px 16px 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+    transition: all 0.15s ease;
+    animation: payastiFadeIn 0.2s ease forwards;
+  }
+  .sothik-mistake-card:hover {
+    border-color: #cbd5e1;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  }
+
+  .sothik-card-main-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .sothik-card-words {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex: 1;
+    min-width: 0;
+    flex-wrap: wrap;
+  }
+  .sothik-wrong-text {
+    font-size: 20px;
+    font-weight: 700;
+    color: #dc2626;
+    text-decoration: underline wavy #e11d48 2px;
+    letter-spacing: -0.2px;
+  }
+  .sothik-card-arrow {
+    font-size: 18px;
+    color: #94a3b8;
+    user-select: none;
+    line-height: 1;
+  }
+  .sothik-suggestions-inline {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .sothik-suggest-link {
+    background: none;
+    border: none;
+    padding: 2px 6px;
+    font-size: 20px;
+    font-weight: 600;
+    color: #0284c7;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.12s ease;
+    text-decoration: none;
+    font-family: inherit;
+  }
+  .sothik-suggest-link:hover {
+    background: #f0f9ff;
+    color: #0369a1;
+    text-decoration: underline;
+  }
+
+  /* Icon Actions */
+  .sothik-card-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+  .sothik-icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    color: #94a3b8;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    padding: 0;
+  }
+  .sothik-icon-btn:hover {
+    background: #f1f5f9;
+    color: #334155;
+  }
+  .sothik-icon-btn.active {
+    background: #e0f2fe;
+    color: #0284c7;
+  }
+
+  /* Expandable Reason */
+  .sothik-card-rule-collapse {
+    margin-top: 10px;
+    padding: 9px 12px;
+    background: #f8fafc;
+    border-left: 3px solid #0284c7;
+    border-top: 1px solid #f1f5f9;
+    border-radius: 0 6px 6px 0;
+    font-size: 15.5px;
+    color: #475569;
+    line-height: 1.5;
+    animation: payastiFadeIn 0.15s ease;
+  }
+
+  /* Empty State when zero errors */
+  .sothik-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 40px 20px;
+    color: #64748b;
+    height: 100%;
+  }
+  .sothik-empty-icon {
+    font-size: 48px;
+    margin-bottom: 12px;
+  }
+  .sothik-empty-text {
+    font-size: 20px;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 6px;
+  }
+  .sothik-empty-sub {
+    font-size: 16px;
+    color: #64748b;
+    line-height: 1.6;
+  }
+
+  /* Toast Notification */
+  #sothikToast {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    background: #0f172a;
+    color: #ffffff;
+    padding: 12px 22px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    z-index: 99999;
+    display: none;
+    animation: payastiFadeIn 0.2s ease forwards;
+  }
+
+  /* Mobile View Segmented Tabs */
+  .sothik-mobile-tabs {
+    display: none;
+    margin-bottom: 8px;
+    background: #e2e8f0;
+    padding: 3px;
+    border-radius: 10px;
+    gap: 4px;
+  }
+  .sothik-mobile-tab {
+    flex: 1;
+    padding: 8px 12px;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 700;
+    color: #475569;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.15s ease;
+  }
+  .sothik-mobile-tab.active {
+    background: #ffffff;
+    color: #0f172a;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Mobile responsiveness */
+  @media (max-width: 900px) {
+    html, body {
+      height: 100vh !important;
+      overflow: hidden !important;
+    }
+
+    .sothik-wrapper {
+      padding: 6px 10px 10px !important;
+    }
+
+    .sothik-mobile-tabs {
+      display: flex !important;
+    }
+
+    .sothik-top-nav {
+      padding: 8px 12px !important;
+      gap: 6px !important;
+      margin-bottom: 6px !important;
+    }
+    .sothik-brand {
+      font-size: 17px !important;
+      gap: 6px !important;
+    }
+    .sothik-brand-badge {
+      font-size: 11px !important;
+      padding: 2px 6px !important;
+    }
+    .sothik-actions-group {
+      gap: 5px !important;
+      width: 100%;
+      justify-content: space-between;
+    }
+    .sothik-btn {
+      font-size: 13.5px !important;
+      padding: 5px 8px !important;
+      gap: 3px !important;
+    }
+
+    .sothik-container {
+      flex: 1 1 auto !important;
+      min-height: 0 !important;
+      height: auto !important;
+    }
+
+    .sothik-toggle-sidebar-btn {
+      display: none !important;
+    }
+
+    /* Tab Switching on Mobile */
+    .sothik-container.mobile-show-mistakes .sothik-editor-area {
+      display: none !important;
+    }
+    .sothik-container.mobile-show-mistakes .sothik-sidebar-area {
+      display: flex !important;
+      width: 100% !important;
+      border-left: none !important;
+    }
+
+    .sothik-container:not(.mobile-show-mistakes) .sothik-editor-area {
+      display: flex !important;
+      width: 100% !important;
+    }
+    .sothik-container:not(.mobile-show-mistakes) .sothik-sidebar-area {
+      display: none !important;
+    }
+
+    .sothik-quill-wrapper .ql-editor {
+      font-size: 17px !important;
+      padding: 14px 16px !important;
+    }
+    .sothik-quill-wrapper .ql-editor.ql-blank::before {
+      font-size: 17px !important;
+      left: 16px !important;
+      right: 16px !important;
+    }
+    .sothik-bottom-bar {
+      padding: 8px 12px !important;
+      font-size: 13px !important;
+    }
+  }
+</style>
+
+<div class="sothik-wrapper">
+
+  <!-- Top Action Navigation Bar -->
+  <div class="sothik-top-nav">
+    <div class="sothik-brand">
+      <h1 class="sothik-brand-title" style="font-size: inherit; font-weight: inherit; margin: 0; display: inline-flex; align-items: center; gap: inherit;">পয়স্তি বাংলা বানান শুদ্ধিকরণ</h1>
+      <span class="sothik-brand-badge">বাংলা একাডেমি প্রমিত</span>
+    </div>
+
+    <!-- Hidden Semantic SEO Section for Search Engine Indexing -->
+    <section class="sr-only" style="position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;" aria-label="SEO Description">
+      <h2>অনলাইন বাংলা বানান সংশোধন ও শুদ্ধিকরণ টুল (Bangla Spell Checker)</h2>
+      <p>পয়স্তি বাংলা বানান শুদ্ধিকরণ ও সংশোধন টুলটি বাংলা একাডেমির আধুনিক প্রমিত বানানরীতি ও ১ লক্ষাধিক শব্দের প্রমিত অভিধান অনুসারে পরিচালিত। যেকোনো বাংলা টেক্সট, সাহিত্যকর্ম, প্রবন্ধ বা সংবাদের ভুল বানান স্বয়ংক্রিয়ভাবে চিহ্নিত ও সংশোধন করুন।</p>
+      <ul>
+        <li>বাংলা বানান সংশোধন (Bangla Banan Songsodhon)</li>
+        <li>বাংলা বানান শুদ্ধিকরণ (Bangla Banan Shuddhikoron)</li>
+        <li>বাংলা স্পেল চেকার (Bangla Spell Checker Online)</li>
+        <li>বাংলা একাডেমি প্রমিত বানানরীতি</li>
+      </ul>
+    </section>
+
+    <div class="sothik-actions-group">
+      <button type="button" class="sothik-btn" id="btnSampleText">
+        <span>💡 নমুনা</span>
+      </button>
+
+      <button type="button" class="sothik-btn" id="btnClearText">
+        <span>🗑️ মুছুন</span>
+      </button>
+
+      <button type="button" class="sothik-btn sothik-btn-primary" id="btnFixAll" style="display: none;">
+        <span>⚡ সব ঠিক</span>
+      </button>
+
+      <button type="button" class="sothik-btn" id="btnCopyText">
+        <span>📋 কপি</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile Tab Switcher (Write vs Mistakes) -->
+  <div class="sothik-mobile-tabs" id="mobileTabs">
+    <button type="button" class="sothik-mobile-tab active" id="tabMobileEditor">
+      ✍️ লিখুন (এডিটর)
+    </button>
+    <button type="button" class="sothik-mobile-tab" id="tabMobileMistakes">
+      🔍 ভুলসমূহ (<span id="mobileMistakesCount">০</span>)
+    </button>
+  </div>
+
+  <!-- 2-Column Sothik Main Workbench -->
+  <div class="sothik-container" id="sothikContainer">
+
+    <!-- Left Main Writing Canvas Area -->
+    <div class="sothik-editor-area">
+      <div class="sothik-quill-wrapper">
+        <div id="publicQuillEditor"></div>
+      </div>
+
+      <!-- Bottom Status Bar -->
+      <div class="sothik-bottom-bar">
+        <div class="sothik-stats-group">
+          <div>শব্দ: <strong id="statWords">০</strong></div>
+          <div>অক্ষর: <strong id="statChars">০</strong></div>
+          <div>অনুচ্ছেদ: <strong id="statParas">০</strong></div>
+        </div>
+
+        <div style="font-size: 12px; color: #64748b;">
+          💡 ভুল বানানের ওপর ক্লিক করে অথবা ডানপাশের তালিকা থেকে সংশোধন করুন।
+        </div>
+      </div>
+    </div>
+
+    <!-- Center Collapse Toggle Button -->
+    <button type="button" class="sothik-toggle-sidebar-btn" id="btnToggleSidebar" title="সাইডবার প্রদর্শন/লুকান">
+      <span id="toggleIcon">❯</span>
+    </button>
+
+    <!-- Right Sidebar Mistakes Inspector -->
+    <div class="sothik-sidebar-area" id="sothikSidebar">
+      <div class="sothik-sidebar-header">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <h3 class="sothik-sidebar-title">ভুলের সংখ্যা</h3>
+          <span class="sothik-badge-count zero" id="sothikBadgeCount">০</span>
+        </div>
+        <button type="button" class="sothik-sidebar-close-btn" id="btnCloseSidebar" title="সাইডবার লুকান">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Mistakes Cards List Container -->
+      <div class="sothik-sidebar-content" id="sidebarMistakesList">
+        <!-- Empty state default -->
+        <div class="sothik-empty-state" id="emptyMistakesState">
+          <div class="sothik-empty-icon">✅</div>
+          <div class="sothik-empty-text">কোনো বানান ভুল নেই</div>
+          <div class="sothik-empty-sub">আপনার লেখার সকল বানান শুদ্ধ রয়েছে অথবা এখানে নতুন লেখা পেস্ট করুন।</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div id="sothikToast"></div>
+
+</div>
+
+<!-- Quill JS & Spellchecker Engine -->
+<script src="/vendor/quill/quill.min.js"></script>
+<script src="/js/payasti-quill.js?v=2.6"></script>
+<script src="/js/payasti-spellchecker.js?v=5.5"></script>
+
+<script>
+  (function () {
+    const quill = window.createPayastiEditor('#publicQuillEditor', {
+      placeholder: 'এখানে আপনার লেখা টাইপ বা পেস্ট করুন...',
+      toolbar: false
+    });
+
+    const checker = window.attachPayastiSpellChecker ? window.attachPayastiSpellChecker(quill, {
+      autoScan: true,
+      onScanComplete: function() {
+        updateStatsAndSidebar();
+      }
+    }) : null;
+
+    const statWords = document.getElementById('statWords');
+    const statChars = document.getElementById('statChars');
+    const statParas = document.getElementById('statParas');
+    const btnSample = document.getElementById('btnSampleText');
+    const btnClear = document.getElementById('btnClearText');
+    const btnCopy = document.getElementById('btnCopyText');
+    const btnFixAll = document.getElementById('btnFixAll');
+    const toast = document.getElementById('sothikToast');
+    const sothikContainer = document.getElementById('sothikContainer');
+    const btnToggleSidebar = document.getElementById('btnToggleSidebar');
+    const toggleIcon = document.getElementById('toggleIcon');
+    const badgeCount = document.getElementById('sothikBadgeCount');
+    const sidebarList = document.getElementById('sidebarMistakesList');
+
+    function toBn(num) {
+      const bnDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+      return String(num).replace(/\d/g, d => bnDigits[d]);
+    }
+
+    function showToast(msg) {
+      if (!toast) return;
+      toast.textContent = msg;
+      toast.style.display = 'block';
+      setTimeout(() => { toast.style.display = 'none'; }, 2500);
+    }
+
+    const btnCloseSidebar = document.getElementById('btnCloseSidebar');
+    const tabMobileEditor = document.getElementById('tabMobileEditor');
+    const tabMobileMistakes = document.getElementById('tabMobileMistakes');
+    const mobileMistakesCount = document.getElementById('mobileMistakesCount');
+
+    function toggleSidebar(forceState) {
+      if (!sothikContainer) return;
+      if (typeof forceState === 'boolean') {
+        if (forceState) sothikContainer.classList.add('sidebar-collapsed');
+        else sothikContainer.classList.remove('sidebar-collapsed');
+      } else {
+        sothikContainer.classList.toggle('sidebar-collapsed');
+      }
+      const isCollapsed = sothikContainer.classList.contains('sidebar-collapsed');
+      if (toggleIcon) {
+        toggleIcon.textContent = isCollapsed ? '❮' : '❯';
+      }
+    }
+
+    // Toggle Sidebar Drawer
+    if (btnToggleSidebar) {
+      btnToggleSidebar.addEventListener('click', () => toggleSidebar());
+    }
+    if (btnCloseSidebar) {
+      btnCloseSidebar.addEventListener('click', () => toggleSidebar(true));
+    }
+
+    // Mobile Tabs Switching
+    if (tabMobileEditor && tabMobileMistakes && sothikContainer) {
+      tabMobileEditor.addEventListener('click', () => {
+        sothikContainer.classList.remove('mobile-show-mistakes');
+        tabMobileEditor.classList.add('active');
+        tabMobileMistakes.classList.remove('active');
+      });
+
+      tabMobileMistakes.addEventListener('click', () => {
+        sothikContainer.classList.add('mobile-show-mistakes');
+        tabMobileMistakes.classList.add('active');
+        tabMobileEditor.classList.remove('active');
+      });
+    }
+
+    // Render Mistakes in Sidebar
+    function renderSidebarMistakes() {
+      if (!checker) return;
+      const allErrors = checker.getFoundErrors ? checker.getFoundErrors() : [];
+      
+      // Group distinct errors by word
+      const distinctMistakes = [];
+      const seen = new Set();
+      allErrors.forEach(err => {
+        if (!seen.has(err.word)) {
+          seen.add(err.word);
+          distinctMistakes.push(err);
+        }
+      });
+
+      // Update Badges
+      const count = allErrors.length;
+      if (badgeCount) {
+        badgeCount.textContent = toBn(count);
+        if (count > 0) {
+          badgeCount.classList.remove('zero');
+        } else {
+          badgeCount.classList.add('zero');
+        }
+      }
+      if (mobileMistakesCount) {
+        mobileMistakesCount.textContent = toBn(count);
+      }
+
+      // Update Fix All button
+      if (btnFixAll) {
+        if (count > 0) {
+          btnFixAll.style.display = 'inline-flex';
+          btnFixAll.innerHTML = `<span>⚡ সব ঠিক করুন (${toBn(count)})</span>`;
+        } else {
+          btnFixAll.style.display = 'none';
+        }
+      }
+
+      // Render Cards
+      if (!sidebarList) return;
+
+      if (count === 0) {
+        sidebarList.innerHTML = `
+          <div class="sothik-empty-state">
+            <div class="sothik-empty-icon">✅</div>
+            <div class="sothik-empty-text">কোনো বানান ভুল নেই</div>
+            <div class="sothik-empty-sub">আপনার লেখার সকল বানান শুদ্ধ রয়েছে অথবা এখানে নতুন লেখা পেস্ট করুন।</div>
+          </div>
+        `;
+        return;
+      }
+
+      let cardsHtml = '';
+      distinctMistakes.forEach((item, index) => {
+        let suggestionsHtml = '';
+        const suggestions = Array.isArray(item.correct) ? item.correct : [item.correct];
+        
+        if (suggestions.length > 0) {
+          suggestions.forEach(corr => {
+            if (corr) {
+              suggestionsHtml += `
+                <button type="button" class="sothik-suggest-link" data-wrong="${item.word}" data-correct="${corr}" title="ক্লিক করে '${corr}' দিয়ে সংশোধন করুন">
+                  ${corr}
+                </button>
+              `;
+            }
+          });
+        } else {
+          suggestionsHtml = `<span style="font-size: 13.5px; color: #94a3b8;">সরাসরি পরামর্শ নেই</span>`;
+        }
+
+        cardsHtml += `
+          <div class="sothik-mistake-card" data-card-word="${item.word}">
+            <div class="sothik-card-main-row">
+              <div class="sothik-card-words">
+                <span class="sothik-wrong-text">${item.word}</span>
+                <span class="sothik-card-arrow">&rarr;</span>
+                <div class="sothik-suggestions-inline">
+                  ${suggestionsHtml}
+                </div>
+              </div>
+              <div class="sothik-card-actions">
+                <button type="button" class="sothik-icon-btn sothik-btn-explain" data-target="explain-${index}" title="নিয়ম ও ব্যাখ্যা দেখুন">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+                    <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+                    <polyline points="17 11 17 6 14 9"></polyline>
+                  </svg>
+                </button>
+              </div>
+            </div>
+            
+            <div class="sothik-card-rule-collapse" id="explain-${index}" style="display: none;">
+              <strong>💡 নিয়ম/ব্যাখ্যা:</strong> ${item.reason || 'বাংলা একাডেমি প্রমিত বানানরীতি অনুসারে সংশোধন প্রযোজ্য।'}
+            </div>
+          </div>
+        `;
+      });
+
+      sidebarList.innerHTML = cardsHtml;
+
+      // Event listener for sidebar suggestion links
+      sidebarList.querySelectorAll('.sothik-suggest-link').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const wrongWord = btn.getAttribute('data-wrong');
+          const correctWord = btn.getAttribute('data-correct');
+          replaceWordInQuill(wrongWord, correctWord);
+        });
+      });
+
+      // Event listener for sidebar explain toggle buttons
+      sidebarList.querySelectorAll('.sothik-btn-explain').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const targetId = btn.getAttribute('data-target');
+          const targetEl = document.getElementById(targetId);
+          if (!targetEl) return;
+          const isHidden = targetEl.style.display === 'none';
+          targetEl.style.display = isHidden ? 'block' : 'none';
+          btn.classList.toggle('active', isHidden);
+        });
+      });
+    }
+
+    // Safe Word replacement helper preserving rich-text & formatting
+    function replaceWordInQuill(wrongWord, correctWord) {
+      if (!wrongWord || !correctWord) return;
+
+      const errorNodes = quill.root.querySelectorAll('.payasti-spell-error');
+      let replaced = false;
+
+      errorNodes.forEach(node => {
+        const dWord = node.getAttribute('data-word') || (node.textContent || '').trim();
+        if (dWord === wrongWord || (node.textContent || '').trim() === wrongWord) {
+          try {
+            const blot = Quill.find(node);
+            if (blot) {
+              const index = quill.getIndex(blot);
+              const length = blot.length();
+              quill.deleteText(index, length, Quill.sources.USER);
+              quill.insertText(index, correctWord, Quill.sources.USER);
+              quill.formatText(index, correctWord.length, 'spellError', false, Quill.sources.SILENT);
+              replaced = true;
+            }
+          } catch (e) {}
+        }
+      });
+
+      if (!replaced) {
+        const contents = quill.getContents();
+        let changed = false;
+        if (contents && contents.ops) {
+          contents.ops.forEach(op => {
+            if (typeof op.insert === 'string' && op.insert.includes(wrongWord)) {
+              op.insert = op.insert.split(wrongWord).join(correctWord);
+              changed = true;
+            }
+          });
+        }
+        if (changed) {
+          quill.setContents(contents, Quill.sources.USER);
+        }
+      }
+
+      showToast(`'${wrongWord}' ➔ '${correctWord}' সংশোধন করা হয়েছে`);
+      if (checker) checker.scheduleScan(100);
+      setTimeout(updateStatsAndSidebar, 200);
+    }
+
+    function updateStatsAndSidebar() {
+      const text = quill.getText().trim();
+      const words = text ? text.split(/\s+/).filter(Boolean).length : 0;
+      const chars = text.length;
+      const paras = text ? text.split(/\n+/).map(p => p.trim()).filter(Boolean).length : 0;
+
+      if (statWords) statWords.textContent = toBn(words);
+      if (statChars) statChars.textContent = toBn(chars);
+      if (statParas) statParas.textContent = toBn(paras);
+
+      renderSidebarMistakes();
+    }
+
+    quill.on('text-change', () => {
+      updateStatsAndSidebar();
+    });
+
+    // Seamless paste handler ensuring 100% of copied text & paragraphs are inserted without truncation
+    quill.root.addEventListener('paste', function(e) {
+      const clipboardData = e.clipboardData || window.clipboardData;
+      if (!clipboardData) return;
+      const text = clipboardData.getData('text/plain');
+      const html = clipboardData.getData('text/html');
+
+      if (text && (!html || !/<(table|h[1-6]|img|svg|iframe)\b/i.test(html))) {
+        e.preventDefault();
+        // Normalize redundant multiple empty lines / excessive enters
+        const cleanText = text
+          .replace(/\r\n/g, '\n')
+          .replace(/\r/g, '\n')
+          .replace(/\n\s*\n+/g, '\n')
+          .trim();
+
+        const selection = quill.getSelection(true) || { index: 0, length: 0 };
+        quill.deleteText(selection.index, selection.length, Quill.sources.USER);
+        quill.insertText(selection.index, cleanText, Quill.sources.USER);
+        quill.setSelection(selection.index + cleanText.length, Quill.sources.SILENT);
+        if (checker) checker.scheduleScan(100);
+        setTimeout(updateStatsAndSidebar, 150);
+      }
+    });
+
+    // Sample Text Button
+    if (btnSample) {
+      btnSample.addEventListener('click', () => {
+        const sampleHtml = '<p>আমাদের দেশে সরকারী বিভিন্ন দপ্তরে পোষ্ট ও চিঠিপত্র পাঠানো হতো। হেডমাষ্টার সাহেব বললেন, নতুন রেজিষ্ট্রেশন ও তথ্যাবলী জমা দিতে হবে। আইনজীবী ও চাকুরীজীবি বন্ধুদের নিয়ে তিনি সূর্য্য ওঠার আগেই রওনা হলেন। দেশী দেশি রবীন্দ্রনাথ রবীন্দ্রনাখ গিতাঘৃহনী</p>';
+        quill.clipboard.dangerouslyPasteHTML(sampleHtml);
+        updateStatsAndSidebar();
+        if (checker) checker.scheduleScan(150);
+      });
+    }
+
+    // Clear Button
+    if (btnClear) {
+      btnClear.addEventListener('click', () => {
+        quill.setText('');
+        if (checker) checker.clearHighlights();
+        updateStatsAndSidebar();
+      });
+    }
+
+    // Copy Clean Text Button
+    if (btnCopy) {
+      btnCopy.addEventListener('click', () => {
+        const text = quill.getText().trim();
+        if (!text) {
+          showToast('কপি করার জন্য কোনো লেখা নেই!');
+          return;
+        }
+        navigator.clipboard.writeText(text).then(() => {
+          showToast('✅ সংশোধিত লেখা কপি করা হয়েছে!');
+        }).catch(() => {
+          showToast('কপি করা সম্ভব হয়নি।');
+        });
+      });
+    }
+
+    // Fix All Button
+    if (btnFixAll) {
+      btnFixAll.addEventListener('click', () => {
+        if (!checker) return;
+        const allErrors = checker.getFoundErrors ? checker.getFoundErrors() : [];
+        if (allErrors.length === 0) return;
+
+        const fixMap = new Map();
+        allErrors.forEach(err => {
+          const wrong = err.word;
+          const suggestions = Array.isArray(err.correct) ? err.correct : [err.correct];
+          const topFix = suggestions[0];
+          if (topFix && !fixMap.has(wrong)) {
+            fixMap.set(wrong, topFix);
+          }
+        });
+
+        if (fixMap.size === 0) return;
+
+        let replacedCount = 0;
+        const errorNodes = quill.root.querySelectorAll('.payasti-spell-error');
+        errorNodes.forEach(node => {
+          const dWord = node.getAttribute('data-word') || (node.textContent || '').trim();
+          if (fixMap.has(dWord)) {
+            const corr = fixMap.get(dWord);
+            try {
+              const blot = Quill.find(node);
+              if (blot) {
+                const index = quill.getIndex(blot);
+                const length = blot.length();
+                quill.deleteText(index, length, Quill.sources.USER);
+                quill.insertText(index, corr, Quill.sources.USER);
+                quill.formatText(index, corr.length, 'spellError', false, Quill.sources.SILENT);
+                replacedCount++;
+              }
+            } catch (e) {}
+          }
+        });
+
+        const contents = quill.getContents();
+        let changed = false;
+        if (contents && contents.ops) {
+          contents.ops.forEach(op => {
+            if (typeof op.insert === 'string') {
+              for (const [wrong, corr] of fixMap.entries()) {
+                if (op.insert.includes(wrong)) {
+                  op.insert = op.insert.split(wrong).join(corr);
+                  changed = true;
+                  replacedCount++;
+                }
+              }
+            }
+          });
+        }
+        if (changed) {
+          quill.setContents(contents, Quill.sources.USER);
+        }
+
+        if (replacedCount > 0) {
+          showToast('✨ সকল বানান সফলভাবে শুদ্ধ করা হয়েছে!');
+          if (checker) checker.scheduleScan(100);
+          setTimeout(updateStatsAndSidebar, 200);
+        }
+      });
+    }
+
+    // Initial load
+    setTimeout(updateStatsAndSidebar, 400);
+    setTimeout(updateStatsAndSidebar, 1000);
+
+  })();
+</script>
+
+<%- include('partials/footer') %>

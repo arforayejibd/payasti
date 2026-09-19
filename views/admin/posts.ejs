@@ -50,12 +50,12 @@
           name="q" 
           value="<%= searchQuery %>" 
           class="admin-form-input" 
-          placeholder="শিরোনাম বা লেখক খুঁজুন..." 
-          style="width: 220px; padding: 8px 14px; font-size: 16px;"
+          placeholder="শিরোনাম দিয়ে খুঁজুন..." 
+          style="width: 220px; padding: 8px 14px; font-size: 15px;"
         >
-        <button type="submit" class="btn-view-site" style="padding: 8px 16px; font-size: 16px;">অনুসন্ধান</button>
+        <button type="submit" class="btn-view-site" style="padding: 8px 16px; font-size: 15px;">অনুসন্ধান</button>
         <% if (searchQuery || categoryFilter !== 'all' || statusFilter !== 'all') { %>
-          <a href="/admin/posts" class="btn-view-site" style="padding: 8px 14px; color: #dc2626; font-size: 16px;" title="ফিল্টার রিসেট">✕</a>
+          <a href="/admin/posts" class="btn-view-site" style="padding: 8px 14px; color: #dc2626; font-size: 15px;" title="ফিল্টার রিসেট">✕</a>
         <% } %>
       </div>
     </form>
@@ -66,7 +66,7 @@
 <div class="admin-card">
   <div class="admin-card-header">
     <div class="admin-card-title">
-      <span>লেখার তালিকা</span>
+      <span>পোস্ট ও রিভিউ তালিকা</span>
       <span class="admin-card-badge">মোট <%= toBengaliNumber(totalFiltered) %> টি</span>
     </div>
   </div>
@@ -77,9 +77,9 @@
         <tr>
           <th style="width: 50px;">ছবি</th>
           <th>শিরোনাম ও সারসংক্ষেপ</th>
-          <th>লেখক</th>
-          <th>বিভাগ</th>
-          <th>পাঠক</th>
+          <th>পোস্টার/টিম</th>
+          <th>ক্যাটাগরি</th>
+          <th>ভিউ</th>
           <th>স্ট্যাটাস</th>
           <th>তারিখ</th>
           <th style="text-align: right; min-width: 140px;">অ্যাকশন</th>
@@ -105,7 +105,7 @@
                   </a>
                 </div>
                 <% if (p.excerpt) { %>
-                  <div style="font-size: 15px; color: var(--admin-text-sub); margin-top: 4px; max-width: 320px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                  <div style="font-size: 14px; color: var(--admin-text-sub); margin-top: 4px; max-width: 320px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                     <%= p.excerpt %>
                   </div>
                 <% } %>
@@ -113,18 +113,18 @@
               <td>
                 <div class="author-cell">
                   <div class="author-mini-avatar">
-                    <%= p.author_name ? p.author_name.charAt(0) : 'ল' %>
+                    <%= p.author_name ? p.author_name.charAt(0) : 'স' %>
                   </div>
                   <div class="author-cell-info">
-                    <span class="author-name"><%= p.author_name || 'লেখক' %></span>
-                    <span class="author-email">@<%= p.author_username || 'user' %></span>
+                    <span class="author-name"><%= p.author_name || 'সেরা ১০ টিম' %></span>
+                    <span class="author-email">@<%= p.author_username || 'admin' %></span>
                   </div>
                 </div>
               </td>
               <td>
-                <span class="category-pill"><%= p.category_name || 'অন্যান্য' %></span>
+                <span class="category-pill"><%= p.category_name || 'সাধারণ' %></span>
               </td>
-              <td style="font-weight: 600; color: var(--admin-text-muted);">
+              <td style="font-weight: 700; color: #068200;">
                 <%= toBengaliNumber(p.views || 0) %>
               </td>
               <td>

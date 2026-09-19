@@ -14,22 +14,22 @@
     <div class="admin-card-body">
       <form action="/admin/categories/add" method="POST">
         <div class="admin-form-group">
-          <label class="admin-form-label">বিভাগের নাম *</label>
-          <input type="text" name="name" class="admin-form-input" required placeholder="যেমন: ছোটগল্প, কবিতা">
+          <label class="admin-form-label">ক্যাটাগরির নাম *</label>
+          <input type="text" name="name" class="admin-form-input" required placeholder="যেমন: টেকনোলজি, লাইফস্টাইল, হোম অ্যাপ্লায়েন্স">
         </div>
 
         <div class="admin-form-group">
           <label class="admin-form-label">স্লাগ (Slug - ইংরেজিতে ঐচ্ছিক)</label>
-          <input type="text" name="slug" class="admin-form-input" placeholder="যেমন: short-story">
+          <input type="text" name="slug" class="admin-form-input" placeholder="যেমন: technology, gadgets">
           <span style="font-size: 14px; color: var(--admin-text-sub);">খালি রাখলে স্বয়ংক্রিয় তৈরি হবে।</span>
         </div>
 
         <div class="admin-form-group">
           <label class="admin-form-label">বিবরণ (ঐচ্ছিক)</label>
-          <textarea name="description" class="admin-form-textarea" rows="3" placeholder="বিভাগের বিবরণ..."></textarea>
+          <textarea name="description" class="admin-form-textarea" rows="3" placeholder="ক্যাটাগরির বিবরণ..."></textarea>
         </div>
 
-        <button type="submit" class="btn-new-action" style="width: 100%; justify-content: center; padding: 12px; font-size: 17px;">
+        <button type="submit" class="btn-new-action" style="width: 100%; justify-content: center; padding: 12px; font-size: 16px;">
           ক্যাটাগরি যুক্ত করুন
         </button>
       </form>
@@ -40,7 +40,7 @@
   <div class="admin-card">
     <div class="admin-card-header">
       <div class="admin-card-title">
-        <span>সকল সাহিত্য বিভাগ</span>
+        <span>সকল রিভিউ ক্যাটাগরি</span>
         <span class="admin-card-badge"><%= toBengaliNumber(categories.length) %> টি</span>
       </div>
     </div>

@@ -3,35 +3,51 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title><%= seo && seo.title ? seo.title : 'লেখক ও এডমিন লগইন | পয়স্তি ম্যাগাজিন' %></title>
+  <title><%= (typeof seo !== 'undefined' && seo && seo.title) ? seo.title : 'লেখক লগইন | সেরা ১০ - নির্ভরযোগ্য প্রোডাক্ট রিভিউ ও সেরা ১০ তালিকা' %></title>
   
-  <link rel="icon" href="/images/favicon-32x32.png" sizes="32x32">
-  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
-  <meta name="theme-color" content="#075603">
+  <% if (typeof SITE_FAVICON !== 'undefined' && SITE_FAVICON) { %>
+    <link rel="icon" href="<%= SITE_FAVICON %>">
+    <link rel="apple-touch-icon" href="<%= SITE_FAVICON %>">
+  <% } else { %>
+    <link rel="icon" href="/images/favicon-32x32.png" sizes="32x32">
+    <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+  <% } %>
+  <meta name="theme-color" content="#068200">
   <meta name="robots" content="noindex, nofollow">
 
-  <!-- Google Fonts & Custom Font -->
+  <!-- Project Typography & Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="preload" href="/fonts/kalpurush.woff2" as="font" type="font/woff2" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   
   <style>
     @font-face {
+      font-family: 'Kalpurush';
+      src: url('/fonts/kalpurush.woff2') format('woff2');
+      font-weight: 100 900;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    @font-face {
       font-family: 'payasti_uni';
-      src: url('/fonts/8029Payasti_uni.woff2') format('woff2');
+      src: url('/fonts/kalpurush.woff2') format('woff2');
+      font-weight: 100 900;
+      font-style: normal;
       font-display: swap;
     }
 
     :root {
-      --primary: #075603;
-      --primary-hover: #054002;
-      --primary-light: #e8f5e7;
-      --accent: #068200;
-      --text-main: #1f2937;
-      --text-muted: #6b7280;
-      --border-color: #e5e7eb;
+      --primary: #068200;
+      --primary-hover: #056800;
+      --primary-light: #eefbee;
+      --primary-border: rgba(6, 130, 0, 0.2);
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --border-color: #e2e8f0;
       --card-bg: #ffffff;
-      --font-family: 'payasti_uni', 'Hind Siliguri', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-family: 'Kalpurush', 'payasti_uni', 'Hind Siliguri', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     }
 
     * {
@@ -39,8 +55,6 @@
       margin: 0;
       padding: 0;
       font-family: var(--font-family);
-      font-feature-settings: "ss01" 1;
-      -webkit-font-feature-settings: "ss01" 1;
     }
 
     body {
@@ -49,24 +63,23 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      background: radial-gradient(circle at 10% 20%, #f0f7ef 0%, #fcfdfc 45%, #eaf4e9 95%);
+      background: radial-gradient(circle at 10% 20%, #f0fdf4 0%, #f8fafc 50%, #eefbf1 100%);
       color: var(--text-main);
       padding: 24px 16px;
       position: relative;
       overflow-x: hidden;
-      font-size: 18px;
+      font-size: 17px;
     }
 
-    /* Ambient literary background accents */
     body::before {
       content: '';
       position: absolute;
-      width: 450px;
-      height: 450px;
+      width: 500px;
+      height: 500px;
       border-radius: 50%;
-      background: radial-gradient(circle, rgba(7, 86, 3, 0.07) 0%, rgba(255,255,255,0) 70%);
-      top: -100px;
-      right: -100px;
+      background: radial-gradient(circle, rgba(6, 130, 0, 0.08) 0%, rgba(255,255,255,0) 70%);
+      top: -120px;
+      right: -120px;
       z-index: 0;
       pointer-events: none;
     }
@@ -74,10 +87,10 @@
     body::after {
       content: '';
       position: absolute;
-      width: 400px;
-      height: 400px;
+      width: 450px;
+      height: 450px;
       border-radius: 50%;
-      background: radial-gradient(circle, rgba(6, 130, 0, 0.05) 0%, rgba(255,255,255,0) 70%);
+      background: radial-gradient(circle, rgba(6, 130, 0, 0.06) 0%, rgba(255,255,255,0) 70%);
       bottom: -100px;
       left: -100px;
       z-index: 0;
@@ -89,7 +102,7 @@
       max-width: 460px;
       position: relative;
       z-index: 1;
-      animation: fadeIn 0.4s ease-out;
+      animation: fadeIn 0.35s ease-out;
     }
 
     @keyframes fadeIn {
@@ -109,19 +122,23 @@
     }
 
     .brand-logo-link {
-      display: inline-block;
-      transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      text-decoration: none;
+      transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
 
     .brand-logo-link:hover {
-      transform: scale(1.04);
+      transform: scale(1.03);
     }
 
-    .brand-logo {
-      height: 66px;
+    .brand-logo-img {
+      max-height: 56px;
       width: auto;
-      margin: 0 auto 12px;
-      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.05));
+      object-fit: contain;
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.05));
     }
 
     .brand-badge {
@@ -132,36 +149,35 @@
       background: var(--primary-light);
       color: var(--primary);
       border-radius: 9999px;
-      font-size: 16px;
-      font-weight: 600;
-      letter-spacing: 0.3px;
-      border: 1px solid rgba(7, 86, 3, 0.15);
+      font-size: 14px;
+      font-weight: 700;
+      border: 1px solid var(--primary-border);
+      margin-top: 10px;
     }
 
     .auth-card {
       background: var(--card-bg);
-      border-radius: 18px;
-      border: 1px solid rgba(7, 86, 3, 0.12);
-      box-shadow: 0 16px 36px -8px rgba(7, 86, 3, 0.09), 0 4px 12px rgba(0, 0, 0, 0.03);
-      padding: 38px 34px;
-      backdrop-filter: blur(8px);
+      border-radius: 20px;
+      border: 1px solid rgba(6, 130, 0, 0.12);
+      box-shadow: 0 20px 40px -12px rgba(6, 130, 0, 0.08), 0 4px 16px rgba(0, 0, 0, 0.03);
+      padding: 36px 32px;
     }
 
     .card-title-group {
       text-align: center;
-      margin-bottom: 26px;
+      margin-bottom: 24px;
     }
 
     .card-title {
-      font-size: 28px;
-      font-weight: 700;
-      color: #111827;
-      margin-bottom: 8px;
+      font-size: 26px;
+      font-weight: 800;
+      color: #0f172a;
+      margin-bottom: 6px;
       letter-spacing: -0.3px;
     }
 
     .card-subtitle {
-      font-size: 18px;
+      font-size: 15px;
       color: var(--text-muted);
       line-height: 1.5;
     }
@@ -171,8 +187,8 @@
       border: 1px solid #fecaca;
       color: #b91c1c;
       padding: 12px 16px;
-      border-radius: 10px;
-      font-size: 17px;
+      border-radius: 12px;
+      font-size: 15px;
       margin-bottom: 20px;
       display: flex;
       align-items: center;
@@ -182,8 +198,8 @@
 
     .alert-error svg {
       flex-shrink: 0;
-      width: 18px;
-      height: 18px;
+      width: 20px;
+      height: 20px;
     }
 
     .alert-success {
@@ -191,8 +207,8 @@
       border: 1px solid #bbf7d0;
       color: #15803d;
       padding: 12px 16px;
-      border-radius: 10px;
-      font-size: 17px;
+      border-radius: 12px;
+      font-size: 15px;
       margin-bottom: 20px;
       display: flex;
       align-items: center;
@@ -202,19 +218,19 @@
 
     .alert-success svg {
       flex-shrink: 0;
-      width: 18px;
-      height: 18px;
+      width: 20px;
+      height: 20px;
     }
 
     .form-group {
-      margin-bottom: 22px;
+      margin-bottom: 20px;
     }
 
     .form-label {
       display: block;
-      font-size: 18px;
-      font-weight: 600;
-      color: #374151;
+      font-size: 16px;
+      font-weight: 700;
+      color: #334155;
       margin-bottom: 8px;
     }
 
@@ -227,35 +243,34 @@
     .input-icon {
       position: absolute;
       left: 14px;
-      width: 20px;
-      height: 20px;
-      color: #9ca3af;
+      width: 18px;
+      height: 18px;
+      color: #94a3b8;
       pointer-events: none;
       transition: color 0.2s;
     }
 
     .form-control {
       width: 100%;
-      height: 50px;
-      padding: 10px 14px 10px 44px;
+      height: 48px;
+      padding: 10px 14px 10px 42px;
       border: 1.5px solid var(--border-color);
-      border-radius: 10px;
-      font-size: 18px;
-      color: #111827;
-      background: #fafafa;
+      border-radius: 12px;
+      font-size: 16px;
+      color: #0f172a;
+      background: #f8fafc;
       transition: all 0.2s ease;
       outline: none;
     }
 
     .form-control:focus {
       background: #ffffff;
-      border-color: var(--accent);
-      box-shadow: 0 0 0 4px rgba(6, 130, 0, 0.12);
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(6, 130, 0, 0.12);
     }
 
-    .form-control:focus + .input-icon,
     .input-wrapper:focus-within .input-icon {
-      color: var(--accent);
+      color: var(--primary);
     }
 
     .password-toggle {
@@ -263,7 +278,7 @@
       right: 12px;
       background: transparent;
       border: none;
-      color: #9ca3af;
+      color: #94a3b8;
       cursor: pointer;
       padding: 6px;
       display: flex;
@@ -274,31 +289,32 @@
     }
 
     .password-toggle:hover {
-      color: #4b5563;
+      color: #475569;
     }
 
     .form-extra {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 24px;
-      font-size: 16px;
+      margin-bottom: 22px;
+      font-size: 15px;
     }
 
     .remember-label {
       display: flex;
       align-items: center;
       gap: 8px;
-      color: #4b5563;
+      color: #475569;
       cursor: pointer;
       user-select: none;
-      font-size: 16px;
+      font-size: 15px;
+      font-weight: 500;
     }
 
     .remember-label input[type="checkbox"] {
       accent-color: var(--primary);
-      width: 17px;
-      height: 17px;
+      width: 16px;
+      height: 16px;
       border-radius: 4px;
       cursor: pointer;
     }
@@ -307,86 +323,60 @@
       color: var(--primary);
       text-decoration: none;
       font-weight: 600;
-      font-size: 16px;
-      transition: color 0.2s, text-decoration 0.2s;
+      font-size: 15px;
+      transition: color 0.2s;
     }
 
     .forgot-password-link:hover {
-      color: var(--accent);
+      color: var(--primary-hover);
       text-decoration: underline;
     }
 
     .btn-submit {
       width: 100%;
-      height: 50px;
-      background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+      height: 48px;
+      background: linear-gradient(135deg, var(--primary) 0%, #056800 100%);
       color: #ffffff;
       border: none;
-      border-radius: 10px;
-      font-size: 19px;
-      font-weight: 600;
+      border-radius: 12px;
+      font-size: 17px;
+      font-weight: 700;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 8px;
-      box-shadow: 0 4px 14px rgba(7, 86, 3, 0.25);
-      transition: all 0.25s ease;
+      box-shadow: 0 4px 14px rgba(6, 130, 0, 0.25);
+      transition: all 0.2s ease;
     }
 
     .btn-submit:hover {
-      background: linear-gradient(135deg, var(--primary-hover) 0%, #056a00 100%);
-      box-shadow: 0 6px 18px rgba(7, 86, 3, 0.35);
+      background: linear-gradient(135deg, #056800 0%, #045200 100%);
+      box-shadow: 0 6px 18px rgba(6, 130, 0, 0.32);
       transform: translateY(-1px);
     }
 
     .btn-submit:active {
       transform: translateY(0);
-      box-shadow: 0 2px 8px rgba(7, 86, 3, 0.2);
     }
 
     .btn-submit svg {
-      width: 20px;
-      height: 20px;
-      transition: transform 0.2s;
-    }
-
-    .btn-submit:hover svg {
-      transform: translateX(3px);
-    }
-
-    .auth-card-footer {
-      margin-top: 24px;
-      padding-top: 20px;
-      border-top: 1px solid #f3f4f6;
-      text-align: center;
-      font-size: 17px;
-      color: var(--text-muted);
-    }
-
-    .auth-card-footer a {
-      color: var(--primary);
-      font-weight: 600;
-      text-decoration: none;
-      transition: color 0.2s;
-    }
-
-    .auth-card-footer a:hover {
-      color: var(--accent);
-      text-decoration: underline;
+      width: 18px;
+      height: 18px;
     }
 
     .back-home-wrap {
       text-align: center;
-      margin-top: 24px;
+      margin-top: 22px;
     }
 
     .back-home-link {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      color: #4b5563;
-      font-size: 16px;
+      color: #64748b;
+      font-size: 15px;
+      font-weight: 600;
       text-decoration: none;
       transition: color 0.2s;
       padding: 6px 12px;
@@ -395,12 +385,12 @@
 
     .back-home-link:hover {
       color: var(--primary);
-      background: rgba(7, 86, 3, 0.05);
+      background: rgba(6, 130, 0, 0.05);
     }
 
     .back-home-link svg {
-      width: 18px;
-      height: 18px;
+      width: 16px;
+      height: 16px;
       transition: transform 0.2s;
     }
 
@@ -410,52 +400,46 @@
 
     .copyright-note {
       text-align: center;
-      margin-top: 28px;
-      font-size: 15px;
-      color: #9ca3af;
+      margin-top: 24px;
+      font-size: 14px;
+      color: #94a3b8;
       line-height: 1.5;
     }
 
     @media (max-width: 480px) {
       .auth-card {
-        padding: 28px 20px;
-        border-radius: 14px;
-      }
-      .brand-logo {
-        height: 54px;
+        padding: 26px 20px;
+        border-radius: 16px;
       }
       .card-title {
-        font-size: 24px;
+        font-size: 22px;
       }
       .card-subtitle {
-        font-size: 16px;
-      }
-      .form-label {
-        font-size: 17px;
-      }
-      .form-control {
-        font-size: 17px;
-      }
-      .btn-submit {
-        font-size: 18px;
+        font-size: 14px;
       }
     }
   </style>
 </head>
 <body>
-
   <div class="auth-container">
-    <!-- Brand Header -->
+    <!-- Brand Header with Dynamic Logo -->
     <div class="brand-header">
-      <a href="/" class="brand-logo-link" title="পয়স্তি হোমপেজ">
-        <img src="/images/Payasti-logo.png" alt="পয়স্তি ম্যাগাজিন" class="brand-logo">
+      <a href="/" class="brand-logo-link" title="<%= (typeof SITE_NAME !== 'undefined' && SITE_NAME) ? SITE_NAME : 'সেরা ১০' %>">
+        <% if (typeof SITE_LOGO !== 'undefined' && SITE_LOGO) { %>
+          <img src="<%= SITE_LOGO %>" alt="<%= (typeof SITE_NAME !== 'undefined' && SITE_NAME) ? SITE_NAME : 'সেরা ১০' %>" class="brand-logo-img">
+        <% } else { %>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="background: #068200; color: #fff; padding: 3px 12px; border-radius: 10px; font-size: 22px; font-weight: 800; box-shadow: 0 2px 6px rgba(6, 130, 0, 0.25);">১০</span>
+            <span style="font-size: 30px; font-weight: 900; color: #0f172a; letter-spacing: -0.5px;">সেরা <span style="color: #068200;">১০</span></span>
+          </div>
+        <% } %>
       </a>
       <div>
         <span class="brand-badge">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
           </svg>
-          লেখক ও সম্পাদক পোর্টাল
+          অ্যাডমিন ও কনটেন্ট প্যানেল
         </span>
       </div>
     </div>
@@ -463,8 +447,8 @@
     <!-- Login Card -->
     <div class="auth-card">
       <div class="card-title-group">
-        <h1 class="card-title">অ্যাকাউন্টে প্রবেশ করুন</h1>
-        <p class="card-subtitle">আপনার লেখা প্রকাশ ও পরিচালনার জন্য তথ্য দিন</p>
+        <h1 class="card-title">অ্যাডমিন লগইন</h1>
+        <p class="card-subtitle">সেরা ১০ পোর্টাল পরিচালনা ও পোস্ট ব্যবস্থাপনার জন্য লগইন করুন</p>
       </div>
 
       <% if (typeof success !== 'undefined' && success) { %>
@@ -479,29 +463,19 @@
 
       <% if (typeof error !== 'undefined' && error) { %>
         <div class="alert-error" role="alert">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 2px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="10"></circle>
             <line x1="12" y1="8" x2="12" y2="12"></line>
             <line x1="12" y1="16" x2="12.01" y2="16"></line>
           </svg>
           <div>
             <span><%= error %></span>
-            <% if (typeof resendEmail !== 'undefined' && resendEmail) { %>
-              <div style="margin-top: 6px;">
-                <form action="/resend-verification" method="POST" style="display: inline;">
-                  <input type="hidden" name="email" value="<%= resendEmail %>">
-                  <button type="submit" style="background: none; border: none; padding: 0; color: #991b1b; text-decoration: underline; font-weight: 700; cursor: pointer; font-size: 14px; font-family: inherit;">
-                    → নতুন ভেরিফিকেশন লিঙ্ক পাঠান
-                  </button>
-                </form>
-              </div>
-            <% } %>
           </div>
         </div>
       <% } %>
 
       <form action="/login" method="POST">
-        <input type="hidden" name="redirect" value="<%= redirect %>">
+        <input type="hidden" name="redirect" value="<%= (typeof redirect !== 'undefined' && redirect) ? redirect : '/author/dashboard' %>">
 
         <div class="form-group">
           <label class="form-label" for="username">ইউজারনেম বা ইমেইল</label>
@@ -564,11 +538,6 @@
           </svg>
         </button>
       </form>
-
-      <div class="auth-card-footer">
-        এখনও লেখক অ্যাকাউন্ট নেই? 
-        <a href="/register">নতুন নিবন্ধন করুন</a>
-      </div>
     </div>
 
     <!-- Back to Website -->
@@ -576,14 +545,14 @@
       <a href="/" class="back-home-link">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <line x1="19" y1="12" x2="5" y2="12"></line>
-          <polyline points="12 19 5 12 12 5"></polyline>
+          <polyline points="12 19 5 12 12 19"></polyline>
         </svg>
         <span>মূল ওয়েবসাইটে ফিরে যান</span>
       </a>
     </div>
 
     <div class="copyright-note">
-      পয়স্তি সাহিত্য ম্যাগাজিন — সাহিত্য ও চিন্তার সম্মিলন
+      <%= (typeof SITE_NAME !== 'undefined' && SITE_NAME) ? SITE_NAME : 'সেরা ১০ (Sera 10)' %> — নির্ভরযোগ্য প্রোডাক্ট রিভিউ ও সেরা ১০ তালিকা
     </div>
   </div>
 
