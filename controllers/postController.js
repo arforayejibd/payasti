@@ -681,3 +681,127 @@ exports.postRate = async (req, res) => {
     return res.status(500).json({ success: false, message: 'রেটিং সংরক্ষণ করা সম্ভব হয়নি।' });
   }
 };
+
+// Tag Archive Page (/tag/:slug)
+exports.getTagPage = async (req, res) => {
+  try {
+    const slug = req.params.slug;
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = 20;
+    const offset = (page - 1) * limit;
+
+    const rawSlug = String(slug).trim();
+    const decodedSlug = decodeURIComponent(rawSlug).normalize('NFC');
+
+    // Find tag by exact slug or name
+    let tag = await db.prepare('SELECT * FROM tags WHERE slug = ? OR slug = ? OR name = ? OR name = ? LIMIT 1')
+      .get(rawSlug, decodedSlug, rawSlug, decodedSlug);
+
+    if (!tag) {
+      tag = await db.prepare('SELECT * FROM tags WHERE slug LIKE ? OR name LIKE ? LIMIT 1')
+        .get(`%${decodedSlug}%`, `%${decodedSlug}%`);
+    }
+
+    if (!tag) {
+      return res.status(404).render('error', {
+        title: 'ট্যাগ পাওয়া যায়নি',
+        message: 'দুঃখিত, এই ট্যাগে কোনো পোস্ট পাওয়া যায়নি।',
+        seo: generateSeoMeta({ title: 'ট্যাগ পাওয়া যায়নি' }),
+        editorialBoard: EDITORIAL_BOARD,
+        contact: CONTACT
+      });
+    }
+
+    // Build query for posts with this tag
+    const countRow = await db.prepare(`
+      SELECT COUNT(DISTINCT p.id) AS total
+      FROM posts p
+      JOIN post_tags pt ON pt.post_id = p.id
+      WHERE pt.tag_id = ? AND p.status = 'publish'
+    `).get(tag.id);
+
+    const totalPosts = countRow ? countRow.total : 0;
+    const totalPages = Math.ceil(totalPosts / limit) || 1;
+
+    const sort = req.query.sort || 'latest';
+    let sortClause = 'ORDER BY p.published_at DESC, p.id DESC';
+    if (sort === 'popular') sortClause = 'ORDER BY p.views DESC, p.published_at DESC';
+    else if (sort === 'rating') sortClause = 'ORDER BY p.rating_score DESC, p.published_at DESC';
+    else if (sort === 'oldest') sortClause = 'ORDER BY p.published_at ASC';
+
+    const posts = await db.prepare(`
+      SELECT DISTINCT p.id, p.title, p.slug, p.excerpt, p.content, p.featured_image, p.published_at, p.views, 
+             p.rating_score, p.rating_count, p.category_id, p.subcategory_id, p.is_featured,
+             u.display_name AS author_name, u.nicename AS author_slug, u.avatar AS author_avatar,
+             c.name AS category_name, c.slug AS category_slug,
+             sc.name AS subcategory_name, sc.slug AS subcategory_slug
+      FROM posts p
+      JOIN post_tags pt ON pt.post_id = p.id
+      LEFT JOIN users u ON p.author_id = u.id
+      LEFT JOIN categories c ON p.category_id = c.id
+      LEFT JOIN categories sc ON p.subcategory_id = sc.id
+      WHERE pt.tag_id = ? AND p.status = 'publish'
+      ${sortClause}
+      LIMIT ? OFFSET ?
+    `).all(tag.id, limit, offset);
+
+    const popularCategories = await db.prepare(`
+      SELECT id, name, slug, count 
+      FROM categories 
+      WHERE count > 0 AND slug != 'uncategorized'
+      ORDER BY count DESC 
+      LIMIT 10
+    `).all();
+
+    const breadcrumbs = [
+      { name: 'প্রচ্ছদ', url: '/' },
+      { name: `ট্যাগ: ${tag.name}`, url: `/tag/${encodeURIComponent(tag.slug)}` }
+    ];
+
+    const seo = generateSeoMeta({
+      title: `${tag.name} - ট্যাগ আর্কাইভ | ${SITE_NAME}`,
+      description: `"${tag.name}" ট্যাগযুক্ত সকল সেরা ১০ প্রোডাক্ট রিভিউ, রেটিং ও বিশেষ তালিকা।`,
+      url: `/tag/${encodeURIComponent(tag.slug)}`,
+      schema: getBreadcrumbSchema(breadcrumbs)
+    });
+
+    res.render('category', {
+      category: {
+        id: tag.id,
+        name: `# ${tag.name}`,
+        slug: tag.slug,
+        description: `"${tag.name}" বিষয়ভিত্তিক সেরা ১০ রিভিউ, তালিকা ও ক্রেতা গাইড।`
+      },
+      parentCategory: null,
+      activeSubCategory: null,
+      subcategories: [],
+      activeSubSlug: null,
+      popularCategories,
+      posts,
+      sort,
+      pagination: {
+        currentPage: page,
+        totalPages,
+        totalItems: totalPosts,
+        basePath: `/tag/${encodeURIComponent(tag.slug)}${sort !== 'latest' ? '?sort=' + sort : ''}`
+      },
+      seo,
+      currentPath: req.originalUrl,
+      toBengaliNumber,
+      formatBengaliDate,
+      formatCardExcerpt,
+      editorialBoard: EDITORIAL_BOARD,
+      contact: CONTACT
+    });
+  } catch (err) {
+    console.error('Error in getTagPage:', err);
+    res.status(500).render('error', {
+      title: 'সার্ভার ত্রুটি',
+      message: 'ট্যাগের লেখা লোড করা যায়নি।',
+      seo: generateSeoMeta({ title: 'সার্ভার ত্রুটি' }),
+      editorialBoard: EDITORIAL_BOARD,
+      contact: CONTACT
+    });
+  }
+};
+

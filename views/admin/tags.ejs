@@ -1,92 +1,776 @@
 <%- include('partials/admin_layout_start', { 
-  pageTitle: 'ট্যাগ (Tags) ব্যবস্থাপনা', 
+  pageTitle: 'ট্যাগ সমূহ - এডমিন', 
   pageBreadcrumb: 'Tags'
 }) %>
 
-<div class="admin-two-col-grid">
-  <!-- Add New Tag Form (Left) -->
-  <div class="admin-card">
-    <div class="admin-card-header">
-      <div class="admin-card-title">
-        <span>+ নতুন ট্যাগ তৈরি</span>
-      </div>
+<%
+  const bnNum = (typeof toBengaliNumber === 'function') ? toBengaliNumber : (n => n);
+  const currentSearch = search || '';
+  const currentSort = sort || 'popular';
+  const currentPage = pagination ? pagination.page : 1;
+  const totalPages = pagination ? pagination.totalPages : 1;
+  const totalItems = pagination ? pagination.totalItems : tags.length;
+  const limit = pagination ? pagination.limit : 80;
+  const startItem = totalItems > 0 ? (currentPage - 1) * limit + 1 : 0;
+  const endItem = Math.min(currentPage * limit, totalItems);
+
+  // Helper to build query URL
+  function buildUrl(newPage, newSort, newSearch, newLimit) {
+    const p = newPage !== undefined ? newPage : currentPage;
+    const s = newSort !== undefined ? newSort : currentSort;
+    const q = newSearch !== undefined ? newSearch : currentSearch;
+    const l = newLimit !== undefined ? newLimit : limit;
+    const params = new URLSearchParams();
+    if (p > 1) params.set('page', p);
+    if (s && s !== 'popular') params.set('sort', s);
+    if (q) params.set('search', q);
+    if (l && l !== 80) params.set('limit', l);
+    const qs = params.toString();
+    return '/admin/tags' + (qs ? '?' + qs : '');
+  }
+%>
+
+<!-- 1. Top Controls Bar: Header, Filters, Live Search & Add Tag Action -->
+<div class="admin-card" style="margin-bottom: 20px;">
+  <div class="admin-card-header" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; padding: 14px 20px;">
+    
+    <!-- Title & Stats Badge -->
+    <div class="admin-card-title" style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+      <span style="font-weight: 800; font-size: 19px; color: #0f172a;">ট্যাগ সমূহ</span>
+      <span class="admin-card-badge" style="background: #eaf5e9; color: #075603; font-weight: 700; padding: 4px 12px; border-radius: 20px; font-size: 13.5px;">
+        মোট <%= bnNum(totalItems) %>টি ট্যাগ
+      </span>
+      <% if (currentSearch) { %>
+        <span style="font-size: 13px; font-weight: 600; color: #075603; background: #eaf5e9; padding: 3px 10px; border-radius: 12px; border: 1px solid rgba(7, 86, 3, 0.2);">
+          খোঁজা হয়েছে: "<%= currentSearch %>" (<%= bnNum(totalItems) %>টি ফলাফল)
+          <a href="<%= buildUrl(1, currentSort, '', limit) %>" style="color: #dc2626; margin-left: 4px; text-decoration: none; font-weight: 700;" title="সার্চ বাতিল করুন">&times;</a>
+        </span>
+      <% } %>
     </div>
-    <div class="admin-card-body">
-      <form action="/admin/tags/add" method="POST">
-        <div class="admin-form-group">
-          <label class="admin-form-label">ট্যাগের নাম *</label>
-          <input type="text" name="name" class="admin-form-input" required placeholder="যেমন: স্মার্টফোন, ল্যাপটপ, ব্লুটুথ স্পিকার">
-        </div>
 
-        <div class="admin-form-group">
-          <label class="admin-form-label">স্লাগ (Slug - ঐচ্ছিক)</label>
-          <input type="text" name="slug" class="admin-form-input" placeholder="যেমন: smartphone, best-laptop">
-        </div>
-
-        <button type="submit" class="btn-new-action" style="width: 100%; justify-content: center; padding: 12px; font-size: 17px;">
-          ট্যাগ যুক্ত করুন
-        </button>
-      </form>
+    <!-- Quick Sort Tabs -->
+    <div class="cat-filter-tabs" style="display: flex; align-items: center; gap: 6px; background: #f1f5f9; padding: 4px; border-radius: 8px;">
+      <a 
+        href="<%= buildUrl(1, 'popular') %>" 
+        class="cat-filter-btn <%= currentSort === 'popular' ? 'active' : '' %>"
+      >
+        🔥 জনপ্রিয়
+      </a>
+      <a 
+        href="<%= buildUrl(1, 'newest') %>" 
+        class="cat-filter-btn <%= currentSort === 'newest' ? 'active' : '' %>"
+      >
+        🆕 নতুন
+      </a>
+      <a 
+        href="<%= buildUrl(1, 'az') %>" 
+        class="cat-filter-btn <%= currentSort === 'az' ? 'active' : '' %>"
+      >
+        🔤 ক-হ (A-Z)
+      </a>
+      <a 
+        href="<%= buildUrl(1, 'unused') %>" 
+        class="cat-filter-btn <%= currentSort === 'unused' ? 'active' : '' %>"
+      >
+        ০ পোস্ট
+      </a>
     </div>
-  </div>
 
-  <!-- Tags Table (Right) -->
-  <div class="admin-card">
-    <div class="admin-card-header">
-      <div class="admin-card-title">
-        <span>সকল সক্রিয় ট্যাগ</span>
-        <span class="admin-card-badge"><%= toBengaliNumber(tags.length) %> টি</span>
-      </div>
-    </div>
-
-    <div class="admin-table-wrap">
-      <table class="admin-table">
-        <thead>
-          <tr>
-            <th>ট্যাগের নাম</th>
-            <th>স্লাগ</th>
-            <th>মোট পোস্ট</th>
-            <th style="text-align: right;">অ্যাকশন</th>
-          </tr>
-        </thead>
-        <tbody>
-          <% if (tags && tags.length) { %>
-            <% tags.forEach(t => { %>
-              <tr>
-                <td>
-                  <strong style="color: var(--admin-text-main); font-size: 18px;"># <%= t.name %></strong>
-                </td>
-                <td>
-                  <code style="background: #f1f5f9; padding: 4px 8px; border-radius: 4px; font-size: 15px; color: #475569;"><%= t.slug %></code>
-                </td>
-                <td>
-                  <span style="color: var(--admin-text-muted); font-weight: 600;">
-                    <%= toBengaliNumber(t.post_count || 0) %> টি
-                  </span>
-                </td>
-                <td>
-                  <div class="actions-group" style="justify-content: flex-end;">
-                    <form action="/admin/tags/<%= t.id %>/delete" method="POST" style="display: inline;" onsubmit="return confirm('ট্যাগটি মুছে ফেলতে চান?');">
-                      <button type="submit" class="btn-table-action btn-reject" title="মুছে ফেলুন">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                          <polyline points="3 6 5 6 21 6"></polyline>
-                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                        </svg>
-                      </button>
-                    </form>
-                  </div>
-                </td>
-              </tr>
-            <% }) %>
-          <% } else { %>
-            <tr>
-              <td colspan="4" style="text-align: center; color: #94a3b8; padding: 32px;">কোনো ট্যাগ নেই।</td>
-            </tr>
+    <!-- Search Box & Add Tag Action -->
+    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+      <!-- Search Form -->
+      <form action="/admin/tags" method="GET" style="margin: 0; display: flex; align-items: center;">
+        <% if (currentSort && currentSort !== 'popular') { %>
+          <input type="hidden" name="sort" value="<%= currentSort %>">
+        <% } %>
+        <% if (limit && limit !== 80) { %>
+          <input type="hidden" name="limit" value="<%= limit %>">
+        <% } %>
+        <div style="position: relative; width: 250px;">
+          <input 
+            type="text" 
+            name="search"
+            id="tagSearchInput" 
+            value="<%= currentSearch %>"
+            placeholder="৭,১৭৪টি ট্যাগের মধ্যে খুঁজুন..." 
+            class="admin-form-input"
+            style="padding: 8px 30px 8px 34px; font-size: 13.5px; height: 38px; border-radius: 6px; width: 100%; border: 1px solid #cbd5e1;"
+            autocomplete="off"
+          >
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" style="position: absolute; left: 11px; top: 50%; transform: translateY(-50%); pointer-events: none;">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <% if (currentSearch) { %>
+            <a href="<%= buildUrl(1, currentSort, '', limit) %>" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 16px; text-decoration: none;" title="সার্চ ক্লিয়ার করুন">&times;</a>
           <% } %>
-        </tbody>
-      </table>
+        </div>
+      </form>
+
+      <!-- Add New Tag Modal Button -->
+      <button 
+        type="button" 
+        class="btn-new-action" 
+        onclick="openAddTagModal()"
+        style="padding: 8px 16px; font-size: 14px; height: 38px; background: #075603; border-radius: 6px; display: inline-flex; align-items: center; gap: 6px; color: #fff; font-weight: 700; border: none; cursor: pointer;"
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        <span>নতুন ট্যাগ</span>
+      </button>
     </div>
   </div>
 </div>
+
+<!-- 2. High-Density Tag Cloud / Modern Tag Chips Container -->
+<div class="admin-card" style="padding: 22px 24px; min-height: 380px;">
+  
+  <!-- In-page Fast Filter Indicator -->
+  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #f1f5f9; flex-wrap: wrap; gap: 10px;">
+    <div style="font-size: 13.5px; color: #64748b;">
+      প্রদর্শিত হচ্ছে: <strong><%= bnNum(startItem) %> - <%= bnNum(endItem) %></strong> (মোট <%= bnNum(totalItems) %>টি ট্যাগ)
+      <span style="margin: 0 8px; color: #cbd5e1;">|</span>
+      <span style="color: #075603; font-weight: 600;">ট্যাগে ক্লিক করে সরাসরি লাইভ পেজ ভিজিট করুন ↗</span>
+    </div>
+
+    <!-- Client-side Fast In-Page Search -->
+    <div style="position: relative; width: 220px;">
+      <input 
+        type="text" 
+        id="clientTagQuickFilter" 
+        placeholder="এই পেজের ট্যাগ ফিল্টার..." 
+        style="padding: 6px 12px 6px 28px; font-size: 12.5px; height: 32px; border-radius: 6px; width: 100%; border: 1px solid #e2e8f0; background: #f8fafc;"
+        oninput="filterTagsOnCurrentPage(this.value)"
+      >
+      <span style="position: absolute; left: 8px; top: 50%; transform: translateY(-50%); font-size: 12px; color: #94a3b8;">🔍</span>
+    </div>
+  </div>
+
+  <% if (tags && tags.length) { %>
+    <div class="tag-chips-grid" id="tagChipsGrid">
+      <% tags.forEach(t => { 
+           const postCount = t.post_count || 0;
+           const tagUrl = '/tag/' + encodeURIComponent(t.slug || t.name);
+      %>
+        <div 
+          class="tag-chip-card" 
+          data-id="<%= t.id %>"
+          data-name="<%= (t.name || '').toLowerCase() %>" 
+          data-slug="<%= (t.slug || '').toLowerCase() %>"
+        >
+          <!-- Direct Link to Tag Frontend Archive -->
+          <a 
+            href="<%= tagUrl %>" 
+            target="_blank" 
+            class="tag-chip-main-link" 
+            title="লাইভ সাইটে '<%= t.name %>' ট্যাগের সকল পোস্ট দেখুন"
+          >
+            <span class="tag-chip-hash">#</span>
+            <span class="tag-chip-name"><%= t.name %></span>
+            <span class="tag-chip-count <%= postCount > 0 ? 'has-posts' : 'zero-posts' %>" title="<%= bnNum(postCount) %>টি পোস্ট">
+              <%= bnNum(postCount) %>
+            </span>
+            <svg class="tag-chip-visit-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+              <polyline points="15 3 21 3 21 9"></polyline>
+              <line x1="10" y1="14" x2="21" y2="3"></line>
+            </svg>
+          </a>
+
+          <!-- Hover Quick Actions (Edit & Delete) -->
+          <div class="tag-chip-actions">
+            <button 
+              type="button" 
+              class="tag-action-btn btn-edit" 
+              title="ট্যাগ সম্পাদনা করুন"
+              onclick="openEditTagFromCard(this)"
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+              </svg>
+            </button>
+
+            <form action="/admin/tags/<%= t.id %>/delete" method="POST" style="margin: 0; display: inline;" onsubmit="return confirm('ট্যাগটি মুছে ফেলতে চান?');">
+              <button type="submit" class="tag-action-btn btn-del" title="ট্যাগ মুছে ফেলুন">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+            </form>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+  <% } else { %>
+    <div style="text-align: center; padding: 60px 20px; color: #64748b;">
+      <div style="font-size: 42px; margin-bottom: 12px;">🏷️</div>
+      <h3 style="font-size: 18px; font-weight: 700; color: #0f172a; margin-bottom: 6px;">কোনো ট্যাগ পাওয়া যায়নি</h3>
+      <p style="font-size: 14px; margin-bottom: 18px;">
+        <% if (currentSearch) { %>
+          "<%= currentSearch %>" দিয়ে কোনো ট্যাগ মেলেনি।
+          <br><br>
+          <a href="/admin/tags" class="btn-new-action" style="display: inline-flex; font-size: 13.5px; padding: 8px 16px;">সকল ট্যাগ দেখুন</a>
+        <% } else { %>
+          নতুন ট্যাগ তৈরি করতে উপরের "+ নতুন ট্যাগ" বাটনে ক্লিক করুন।
+        <% } %>
+      </p>
+    </div>
+  <% } %>
+
+  <!-- 3. Bottom Pagination Toolbar -->
+  <% if (totalPages > 1) { 
+       // Calculate page range (showing ~7 page numbers with ellipsis)
+       let startPage = Math.max(1, currentPage - 3);
+       let endPage = Math.min(totalPages, currentPage + 3);
+       if (currentPage <= 4) endPage = Math.min(totalPages, 7);
+       if (currentPage >= totalPages - 3) startPage = Math.max(1, totalPages - 6);
+  %>
+    <div class="tag-pagination-bar">
+      <div class="tag-pagination-info">
+        পৃষ্ঠা <strong><%= bnNum(currentPage) %></strong> / <strong><%= bnNum(totalPages) %></strong> (মোট <%= bnNum(totalItems) %>টি ট্যাগ)
+      </div>
+
+      <div class="tag-pagination-nav">
+        <!-- First Page -->
+        <% if (currentPage > 1) { %>
+          <a href="<%= buildUrl(1) %>" class="tag-page-btn" title="প্রথম পৃষ্ঠা">« প্রথম</a>
+          <a href="<%= buildUrl(currentPage - 1) %>" class="tag-page-btn" title="আগের পৃষ্ঠা">‹ আগের</a>
+        <% } %>
+
+        <% if (startPage > 1) { %>
+          <a href="<%= buildUrl(1) %>" class="tag-page-btn">১</a>
+          <% if (startPage > 2) { %>
+            <span class="tag-page-ellipsis">...</span>
+          <% } %>
+        <% } %>
+
+        <% for (let p = startPage; p <= endPage; p++) { %>
+          <a 
+            href="<%= buildUrl(p) %>" 
+            class="tag-page-btn <%= p === currentPage ? 'active' : '' %>"
+          >
+            <%= bnNum(p) %>
+          </a>
+        <% } %>
+
+        <% if (endPage < totalPages) { %>
+          <% if (endPage < totalPages - 1) { %>
+            <span class="tag-page-ellipsis">...</span>
+          <% } %>
+          <a href="<%= buildUrl(totalPages) %>" class="tag-page-btn"><%= bnNum(totalPages) %></a>
+        <% } %>
+
+        <!-- Next / Last -->
+        <% if (currentPage < totalPages) { %>
+          <a href="<%= buildUrl(currentPage + 1) %>" class="tag-page-btn" title="পরের পৃষ্ঠা">পরের ›</a>
+          <a href="<%= buildUrl(totalPages) %>" class="tag-page-btn" title="শেষ পৃষ্ঠা">শেষ »</a>
+        <% } %>
+      </div>
+
+      <!-- Limit Selector -->
+      <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; color: #64748b;">
+        <span>প্রতি পেজে:</span>
+        <select 
+          onchange="location.href = '<%= buildUrl(1, currentSort, currentSearch, '') %>' + this.value"
+          style="padding: 4px 8px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 13px; background: #fff;"
+        >
+          <option value="40" <%= limit === 40 ? 'selected' : '' %>>৪০টি</option>
+          <option value="80" <%= limit === 80 ? 'selected' : '' %>>৮০টি</option>
+          <option value="120" <%= limit === 120 ? 'selected' : '' %>>১২০টি</option>
+          <option value="200" <%= limit === 200 ? 'selected' : '' %>>২০০টি</option>
+        </select>
+      </div>
+    </div>
+  <% } %>
+</div>
+
+<!-- ======================================================== -->
+<!-- MODAL 1: ADD NEW TAG MODAL                               -->
+<!-- ======================================================== -->
+<div id="addTagModal" class="tag-modal-overlay" style="display: none;">
+  <div class="tag-modal-card">
+    <div class="tag-modal-header">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span style="font-size: 20px;">🏷️</span>
+        <h3 style="font-size: 17.5px; font-weight: 700; color: #0f172a; margin: 0;">নতুন ট্যাগ যোগ করুন</h3>
+      </div>
+      <button type="button" class="tag-modal-close" onclick="closeAddTagModal()">&times;</button>
+    </div>
+
+    <form action="/admin/tags/add" method="POST" id="addTagForm">
+      <div class="tag-modal-body">
+        <div class="admin-form-group" style="margin-bottom: 14px;">
+          <label class="admin-form-label" style="font-size: 13.5px; font-weight: 700;">ট্যাগের নাম *</label>
+          <input 
+            type="text" 
+            name="name" 
+            id="addTagNameInput" 
+            class="admin-form-input" 
+            required 
+            placeholder="যেমন: স্মার্টফোন, ল্যাপটপ, হোম থিয়েটার"
+            style="font-size: 14px; padding: 10px 12px;"
+          >
+        </div>
+
+        <div class="admin-form-group" style="margin-bottom: 6px;">
+          <label class="admin-form-label" style="font-size: 13.5px; font-weight: 700;">স্লাগ (ঐচ্ছিক - খালি রাখলে স্বয়ংক্রিয় তৈরি হবে)</label>
+          <input 
+            type="text" 
+            name="slug" 
+            id="addTagSlugInput" 
+            class="admin-form-input" 
+            placeholder="যেমন: smartphone, best-laptop"
+            style="font-size: 14px; padding: 10px 12px;"
+          >
+        </div>
+      </div>
+
+      <div class="tag-modal-footer">
+        <button type="button" class="btn-cancel" onclick="closeAddTagModal()">বাতিল</button>
+        <button type="submit" class="btn-new-action" style="padding: 9px 20px; font-size: 14px;">সংরক্ষণ করুন</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ======================================================== -->
+<!-- MODAL 2: EDIT TAG MODAL                                  -->
+<!-- ======================================================== -->
+<div id="editTagModal" class="tag-modal-overlay" style="display: none;">
+  <div class="tag-modal-card">
+    <div class="tag-modal-header">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span style="font-size: 20px;">✏️</span>
+        <h3 style="font-size: 17.5px; font-weight: 700; color: #0f172a; margin: 0;">ট্যাগ সম্পাদনা</h3>
+      </div>
+      <button type="button" class="tag-modal-close" onclick="closeEditTagModal()">&times;</button>
+    </div>
+
+    <form action="" method="POST" id="editTagForm">
+      <div class="tag-modal-body">
+        <div class="admin-form-group" style="margin-bottom: 14px;">
+          <label class="admin-form-label" style="font-size: 13.5px; font-weight: 700;">ট্যাগের নাম *</label>
+          <input 
+            type="text" 
+            name="name" 
+            id="editTagNameInput" 
+            class="admin-form-input" 
+            required 
+            style="font-size: 14px; padding: 10px 12px;"
+          >
+        </div>
+
+        <div class="admin-form-group" style="margin-bottom: 6px;">
+          <label class="admin-form-label" style="font-size: 13.5px; font-weight: 700;">স্লাগ</label>
+          <input 
+            type="text" 
+            name="slug" 
+            id="editTagSlugInput" 
+            class="admin-form-input" 
+            style="font-size: 14px; padding: 10px 12px;"
+          >
+        </div>
+      </div>
+
+      <div class="tag-modal-footer">
+        <button type="button" class="btn-cancel" onclick="closeEditTagModal()">বাতিল</button>
+        <button type="submit" class="btn-new-action" style="padding: 9px 20px; font-size: 14px;">আপডেট করুন</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ======================================================== -->
+<!-- COMPONENT STYLES & INTERACTION SCRIPT                     -->
+<!-- ======================================================== -->
+<style>
+  /* High Density Modern Tag Chip Grid */
+  .tag-chips-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+  }
+
+  .tag-chip-card {
+    display: inline-flex;
+    align-items: center;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    user-select: none;
+  }
+
+  .tag-chip-card:hover {
+    background: #ffffff;
+    border-color: #075603;
+    box-shadow: 0 4px 12px rgba(7, 86, 3, 0.08);
+    transform: translateY(-1px);
+  }
+
+  /* Main Link spanning the chip */
+  .tag-chip-main-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 12px 7px 10px;
+    text-decoration: none;
+    color: #0f172a;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .tag-chip-hash {
+    color: #075603;
+    font-weight: 800;
+    font-size: 15px;
+    line-height: 1;
+  }
+
+  .tag-chip-name {
+    font-family: 'Kalpurush', 'payasti_uni', 'Hind Siliguri', sans-serif;
+    color: #1e293b;
+    letter-spacing: -0.1px;
+  }
+
+  .tag-chip-card:hover .tag-chip-name {
+    color: #075603;
+  }
+
+  /* Post Count Badge */
+  .tag-chip-count {
+    font-size: 11.5px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 12px;
+    line-height: 1.2;
+    transition: all 0.15s ease;
+  }
+
+  .tag-chip-count.has-posts {
+    background: #eaf5e9;
+    color: #075603;
+  }
+
+  .tag-chip-count.zero-posts {
+    background: #f1f5f9;
+    color: #94a3b8;
+  }
+
+  .tag-chip-card:hover .tag-chip-count.has-posts {
+    background: #075603;
+    color: #ffffff;
+  }
+
+  /* External Visit Arrow Icon */
+  .tag-chip-visit-icon {
+    color: #94a3b8;
+    margin-left: 2px;
+    transition: transform 0.2s ease, color 0.2s ease;
+  }
+
+  .tag-chip-card:hover .tag-chip-visit-icon {
+    color: #075603;
+    transform: translate(1px, -1px);
+  }
+
+  /* Hover Action Buttons */
+  .tag-chip-actions {
+    display: none;
+    align-items: center;
+    gap: 2px;
+    padding-right: 6px;
+    border-left: 1px solid #e2e8f0;
+    margin-left: 2px;
+    padding-left: 4px;
+  }
+
+  .tag-chip-card:hover .tag-chip-actions {
+    display: inline-flex;
+  }
+
+  .tag-action-btn {
+    background: transparent;
+    border: none;
+    padding: 4px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #64748b;
+    transition: all 0.15s ease;
+  }
+
+  .tag-action-btn.btn-edit:hover {
+    background: #eaf5e9;
+    color: #075603;
+  }
+
+  .tag-action-btn.btn-del:hover {
+    background: #fee2e2;
+    color: #dc2626;
+  }
+
+  /* Pagination Bar Styles */
+  .tag-pagination-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-top: 26px;
+    padding-top: 20px;
+    border-top: 1px solid #e2e8f0;
+  }
+
+  .tag-pagination-info {
+    font-size: 13.5px;
+    color: #64748b;
+  }
+
+  .tag-pagination-nav {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex-wrap: wrap;
+  }
+
+  .tag-page-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 34px;
+    height: 34px;
+    padding: 0 10px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #475569;
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    text-decoration: none;
+    transition: all 0.15s ease;
+  }
+
+  .tag-page-btn:hover {
+    background: #eaf5e9;
+    border-color: #075603;
+    color: #075603;
+  }
+
+  .tag-page-btn.active {
+    background: #075603;
+    border-color: #075603;
+    color: #ffffff;
+    font-weight: 700;
+  }
+
+  .tag-page-ellipsis {
+    color: #94a3b8;
+    padding: 0 4px;
+    font-size: 14px;
+  }
+
+  /* Filter Tabs Buttons */
+  .cat-filter-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #64748b;
+    border-radius: 6px;
+    text-decoration: none;
+    transition: all 0.15s ease;
+  }
+
+  .cat-filter-btn:hover {
+    color: #075603;
+    background: rgba(7, 86, 3, 0.08);
+  }
+
+  .cat-filter-btn.active {
+    background: #ffffff;
+    color: #075603;
+    font-weight: 700;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  }
+
+  /* Modal Dialogues */
+  .tag-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    animation: fadeInModal 0.2s ease;
+  }
+
+  .tag-modal-card {
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    max-width: 460px;
+    overflow: hidden;
+  }
+
+  .tag-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 22px;
+    border-bottom: 1px solid #e2e8f0;
+    background: #fafafa;
+  }
+
+  .tag-modal-close {
+    background: transparent;
+    border: none;
+    font-size: 24px;
+    line-height: 1;
+    color: #94a3b8;
+    cursor: pointer;
+    transition: color 0.15s ease;
+  }
+
+  .tag-modal-close:hover {
+    color: #dc2626;
+  }
+
+  .tag-modal-body {
+    padding: 20px 22px;
+  }
+
+  .tag-modal-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 14px 22px;
+    border-top: 1px solid #e2e8f0;
+    background: #fafafa;
+  }
+
+  .btn-cancel {
+    padding: 9px 18px;
+    background: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    color: #475569;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .btn-cancel:hover {
+    background: #e2e8f0;
+  }
+
+  @keyframes fadeInModal {
+    from { opacity: 0; transform: scale(0.98); }
+    to { opacity: 1; transform: scale(1); }
+  }
+</style>
+
+<script>
+  // Fast In-Page Filter for visible tags
+  function filterTagsOnCurrentPage(term) {
+    const q = (term || '').trim().toLowerCase();
+    const cards = document.querySelectorAll('.tag-chip-card');
+    let visibleCount = 0;
+
+    cards.forEach(card => {
+      const name = card.getAttribute('data-name') || '';
+      const slug = card.getAttribute('data-slug') || '';
+      if (!q || name.includes(q) || slug.includes(q)) {
+        card.style.display = 'inline-flex';
+        visibleCount++;
+      } else {
+        card.style.display = 'none';
+      }
+    });
+  }
+
+  // Add Tag Modal Controls
+  function openAddTagModal() {
+    const modal = document.getElementById('addTagModal');
+    if (modal) {
+      modal.style.display = 'flex';
+      setTimeout(() => {
+        const inp = document.getElementById('addTagNameInput');
+        if (inp) inp.focus();
+      }, 100);
+    }
+  }
+
+  function closeAddTagModal() {
+    const modal = document.getElementById('addTagModal');
+    if (modal) modal.style.display = 'none';
+  }
+
+  function openEditTagFromCard(btn) {
+    const card = btn.closest('.tag-chip-card');
+    if (!card) return;
+    const id = card.getAttribute('data-id');
+    const name = card.querySelector('.tag-chip-name')?.textContent || '';
+    const slug = card.getAttribute('data-slug') || '';
+    openEditTagModal(id, name, slug);
+  }
+
+  // Edit Tag Modal Controls
+  function openEditTagModal(id, name, slug) {
+    const modal = document.getElementById('editTagModal');
+    const form = document.getElementById('editTagForm');
+    const nameInp = document.getElementById('editTagNameInput');
+    const slugInp = document.getElementById('editTagSlugInput');
+
+    if (modal && form) {
+      form.action = '/admin/tags/' + id + '/edit';
+      if (nameInp) nameInp.value = name || '';
+      if (slugInp) slugInp.value = slug || '';
+      modal.style.display = 'flex';
+      setTimeout(() => {
+        if (nameInp) nameInp.focus();
+      }, 100);
+    }
+  }
+
+  function closeEditTagModal() {
+    const modal = document.getElementById('editTagModal');
+    if (modal) modal.style.display = 'none';
+  }
+
+  // Close modals on clicking overlay or pressing Esc
+  window.addEventListener('click', function(e) {
+    const addM = document.getElementById('addTagModal');
+    const editM = document.getElementById('editTagModal');
+    if (e.target === addM) closeAddTagModal();
+    if (e.target === editM) closeEditTagModal();
+  });
+
+  window.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      closeAddTagModal();
+      closeEditTagModal();
+    }
+  });
+</script>
 
 <%- include('partials/admin_layout_end') %>

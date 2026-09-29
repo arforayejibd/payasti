@@ -29,6 +29,9 @@ router.get([
   '/section/:parent/:slug'
 ], postController.getCategoryPage);
 
+// Tag Archive (/tag/:slug)
+router.get('/tag/:slug', postController.getTagPage);
+
 // Selected Literature (/topic/selected)
 router.get(['/topic/selected', '/topic/:slug'], (req, res) => {
   req.params.slug = 'গদ্য';

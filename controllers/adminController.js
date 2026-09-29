@@ -1195,18 +1195,66 @@ exports.deleteCategory = async (req, res) => {
 
 exports.getTags = async (req, res) => {
   try {
-    const tags = await db.prepare(`
-      SELECT t.*, 
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 80;
+    const offset = (page - 1) * limit;
+    const search = (req.query.search || '').trim();
+    const sort = req.query.sort || 'popular';
+
+    let countSql = 'SELECT COUNT(*) AS total FROM tags';
+    let countParams = [];
+
+    let selectSql = `
+      SELECT t.id, t.name, t.slug,
         (SELECT COUNT(*) FROM post_tags WHERE tag_id = t.id) AS post_count
       FROM tags t
-      ORDER BY t.id DESC
-    `).all();
+    `;
+    let selectParams = [];
+
+    if (search) {
+      countSql += ' WHERE name LIKE ? OR slug LIKE ?';
+      countParams.push(`%${search}%`, `%${search}%`);
+
+      selectSql += ' WHERE t.name LIKE ? OR t.slug LIKE ?';
+      selectParams.push(`%${search}%`, `%${search}%`);
+    }
+
+    const totalRow = await db.prepare(countSql).get(...countParams);
+    const totalTags = totalRow ? totalRow.total : 0;
+    const totalPages = Math.ceil(totalTags / limit) || 1;
+
+    if (sort === 'az') {
+      selectSql += ' ORDER BY t.name ASC';
+    } else if (sort === 'newest') {
+      selectSql += ' ORDER BY t.id DESC';
+    } else if (sort === 'unused') {
+      selectSql += ' ORDER BY post_count ASC, t.id DESC';
+    } else {
+      selectSql += ' ORDER BY post_count DESC, t.id DESC';
+    }
+
+    selectSql += ' LIMIT ? OFFSET ?';
+    selectParams.push(limit, offset);
+
+    const tags = await db.prepare(selectSql).all(...selectParams);
 
     const seo = generateSeoMeta({ title: 'ট্যাগ সমূহ - এডমিন' });
 
     res.render('admin/tags', {
       user: req.user,
       tags,
+      pagination: {
+        page,
+        limit,
+        totalPages,
+        totalItems: totalTags,
+        hasPrev: page > 1,
+        hasNext: page < totalPages,
+        prevPage: page - 1,
+        nextPage: page + 1
+      },
+      search,
+      sort,
       error: null,
       activeMenu: 'posts_tags',
       openSubmenu: 'posts',
@@ -1233,9 +1281,31 @@ exports.postAddTag = async (req, res) => {
     }
 
     await db.prepare('INSERT INTO tags (name, slug) VALUES (?, ?)').run(name.trim(), tagSlug);
-    res.redirect('/admin/tags');
+    res.redirect(req.headers.referer || '/admin/tags');
   } catch (err) {
     console.error('Error in postAddTag:', err);
+    res.redirect('/admin/tags');
+  }
+};
+
+exports.postEditTag = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, slug } = req.body;
+    if (!name || !name.trim()) {
+      return res.redirect('/admin/tags');
+    }
+
+    let tagSlug = (slug || slugify(name, { lower: true, strict: false })).trim();
+    const existing = await db.prepare('SELECT id FROM tags WHERE slug = ? AND id != ?').get(tagSlug, id);
+    if (existing) {
+      tagSlug = `${tagSlug}-${Date.now()}`;
+    }
+
+    await db.prepare('UPDATE tags SET name = ?, slug = ? WHERE id = ?').run(name.trim(), tagSlug, id);
+    res.redirect(req.headers.referer || '/admin/tags');
+  } catch (err) {
+    console.error('Error in postEditTag:', err);
     res.redirect('/admin/tags');
   }
 };
@@ -1248,7 +1318,7 @@ exports.deleteTag = async (req, res) => {
   } catch (err) {
     console.error('Error deleting tag:', err);
   }
-  res.redirect('/admin/tags');
+  res.redirect(req.headers.referer || '/admin/tags');
 };
 
 // ==========================================
