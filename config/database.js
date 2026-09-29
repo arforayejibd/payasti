@@ -100,6 +100,28 @@ async function initDatabase() {
       `);
 
       await connection.query(`
+        CREATE TABLE IF NOT EXISTS post_categories (
+          post_id INT NOT NULL,
+          category_id INT NOT NULL,
+          PRIMARY KEY (post_id, category_id),
+          INDEX idx_post_categories_post (post_id),
+          INDEX idx_post_categories_category (category_id)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+      `);
+
+      // Ensure post_categories is populated from existing posts
+      try {
+        await connection.query(`
+          INSERT IGNORE INTO post_categories (post_id, category_id)
+          SELECT id, category_id FROM posts WHERE category_id IS NOT NULL AND category_id > 0;
+        `);
+        await connection.query(`
+          INSERT IGNORE INTO post_categories (post_id, category_id)
+          SELECT id, subcategory_id FROM posts WHERE subcategory_id IS NOT NULL AND subcategory_id > 0;
+        `);
+      } catch (pcSyncErr) {}
+
+      await connection.query(`
         CREATE TABLE IF NOT EXISTS books (
           id INT AUTO_INCREMENT PRIMARY KEY,
           wp_id INT UNIQUE,
@@ -246,6 +268,30 @@ async function initDatabase() {
         }
       } catch (uErr) {
         console.warn('⚠️ User init warning:', uErr.message);
+      }
+
+      // Auto-migrate any Bengali slugs to English slugs
+      try {
+        const [allPosts] = await connection.query("SELECT id, title, slug FROM posts");
+        const bnPosts = (allPosts || []).filter(p => /[\u0980-\u09FF]/.test(p.slug || ''));
+        if (bnPosts.length > 0) {
+          const { generateEnglishSlug } = require('../utils/slugify');
+          const usedSlugs = new Set((allPosts || []).filter(p => !/[\u0980-\u09FF]/.test(p.slug || '')).map(p => p.slug));
+          for (const p of bnPosts) {
+            let baseSlug = generateEnglishSlug(p.title) || `post-${p.id}`;
+            let finalSlug = baseSlug;
+            let counter = 2;
+            while (usedSlugs.has(finalSlug)) {
+              finalSlug = `${baseSlug}-${counter}`;
+              counter++;
+            }
+            usedSlugs.add(finalSlug);
+            await connection.query("UPDATE posts SET slug = ? WHERE id = ?", [finalSlug, p.id]);
+          }
+          console.log(`✅ Auto-migrated ${bnPosts.length} Bengali slugs to clean English slugs.`);
+        }
+      } catch (bnErr) {
+        console.warn('⚠️ Auto-migration slug warning:', bnErr.message);
       }
 
       isInitialized = true;

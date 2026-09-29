@@ -155,9 +155,12 @@ exports.getAllPosts = async (req, res) => {
       params.push(statusFilter);
     }
 
+    let joinPcFilter = false;
     if (categoryFilter && categoryFilter !== 'all') {
-      whereClauses.push('p.category_id = ?');
-      params.push(parseInt(categoryFilter, 10));
+      const targetCatId = parseInt(categoryFilter, 10);
+      whereClauses.push('(p.category_id = ? OR p.subcategory_id = ? OR pc_f.category_id = ?)');
+      params.push(targetCatId, targetCatId, targetCatId);
+      joinPcFilter = true;
     }
 
     if (searchQuery) {
@@ -168,20 +171,28 @@ exports.getAllPosts = async (req, res) => {
     const whereSql = whereClauses.length > 0 ? `WHERE ${whereClauses.join(' AND ')}` : '';
 
     const totalFilteredRow = await db.prepare(`
-      SELECT COUNT(*) AS total
+      SELECT COUNT(DISTINCT p.id) AS total
       FROM posts p
       LEFT JOIN users u ON p.author_id = u.id
+      ${joinPcFilter ? 'LEFT JOIN post_categories pc_f ON p.id = pc_f.post_id' : ''}
       ${whereSql}
     `).get(...params);
     const totalFiltered = totalFilteredRow ? totalFilteredRow.total : 0;
     const totalPages = Math.ceil(totalFiltered / limit) || 1;
 
     const posts = await db.prepare(`
-      SELECT p.*, u.display_name AS author_name, u.username AS author_username, u.email AS author_email, c.name AS category_name, c.slug AS category_slug
+      SELECT p.*, 
+        u.display_name AS author_name, u.username AS author_username, u.email AS author_email, 
+        c.name AS category_name, c.slug AS category_slug,
+        GROUP_CONCAT(DISTINCT cat.name ORDER BY (CASE WHEN cat.id = p.category_id THEN 0 ELSE 1 END), cat.name SEPARATOR ', ') AS all_category_names
       FROM posts p
       LEFT JOIN users u ON p.author_id = u.id
       LEFT JOIN categories c ON p.category_id = c.id
+      ${joinPcFilter ? 'LEFT JOIN post_categories pc_f ON p.id = pc_f.post_id' : ''}
+      LEFT JOIN post_categories pc ON p.id = pc.post_id
+      LEFT JOIN categories cat ON (pc.category_id = cat.id OR cat.id = p.category_id OR cat.id = p.subcategory_id)
       ${whereSql}
+      GROUP BY p.id
       ORDER BY p.id DESC
       LIMIT ? OFFSET ?
     `).all(...params, limit, offset);
@@ -286,25 +297,23 @@ exports.postNewPost = async (req, res) => {
     const postAuthorId = author_id && !isNaN(parseInt(author_id, 10)) ? parseInt(author_id, 10) : req.user.id;
     
     // Category processing (single or multiple)
+    const rawCatIds = req.body['category_ids[]'] || req.body.category_ids || req.body['category_id[]'] || req.body.category_id;
     let catIds = [];
-    if (req.body.category_ids) {
-      if (Array.isArray(req.body.category_ids)) {
-        catIds = req.body.category_ids.map(id => parseInt(id, 10)).filter(id => !isNaN(id));
+    if (rawCatIds) {
+      if (Array.isArray(rawCatIds)) {
+        catIds = rawCatIds.map(id => parseInt(id, 10)).filter(id => !isNaN(id) && id > 0);
       } else {
-        const parsed = parseInt(req.body.category_ids, 10);
-        if (!isNaN(parsed)) catIds.push(parsed);
+        const parsed = parseInt(rawCatIds, 10);
+        if (!isNaN(parsed) && parsed > 0) catIds.push(parsed);
       }
-    } else if (req.body.category_id) {
-      const parsed = parseInt(req.body.category_id, 10);
-      if (!isNaN(parsed)) catIds.push(parsed);
     }
 
     if (catIds.length === 0 && categories && categories.length > 0) {
       catIds.push(categories[0].id);
     }
 
-    let postCategoryId = catIds[0] || null;
-    let postSubcategoryId = catIds.length > 1 ? catIds[1] : null;
+    let postCategoryId = null;
+    let postSubcategoryId = null;
 
     const catMap = new Map();
     categories.forEach(c => catMap.set(c.id, c));
@@ -313,14 +322,21 @@ exports.postNewPost = async (req, res) => {
       const catObj = catMap.get(cId);
       if (catObj) {
         if (!catObj.parent_id || catObj.parent_id === 0) {
-          postCategoryId = catObj.id;
+          if (!postCategoryId) {
+            postCategoryId = catObj.id;
+          }
         } else {
-          postSubcategoryId = catObj.id;
-          if (!postCategoryId || postCategoryId === catObj.id) {
+          if (!postSubcategoryId) {
+            postSubcategoryId = catObj.id;
+          }
+          if (!postCategoryId) {
             postCategoryId = catObj.parent_id;
           }
         }
       }
+    }
+    if (!postCategoryId && catIds.length > 0) {
+      postCategoryId = catIds[0];
     }
 
     const postStatus = status || 'publish';
@@ -360,6 +376,12 @@ exports.postNewPost = async (req, res) => {
       try {
         for (const cId of catIds) {
           await db.prepare('INSERT IGNORE INTO post_categories (post_id, category_id) VALUES (?, ?)').run(newPostId, cId);
+        }
+        if (postCategoryId) {
+          await db.prepare('INSERT IGNORE INTO post_categories (post_id, category_id) VALUES (?, ?)').run(newPostId, postCategoryId);
+        }
+        if (postSubcategoryId) {
+          await db.prepare('INSERT IGNORE INTO post_categories (post_id, category_id) VALUES (?, ?)').run(newPostId, postSubcategoryId);
         }
       } catch (catRelErr) {
         console.warn('post_categories insert warning:', catRelErr.message);
@@ -487,25 +509,27 @@ exports.postEditPost = async (req, res) => {
     const postAuthorId = author_id && !isNaN(parseInt(author_id, 10)) ? parseInt(author_id, 10) : (existingPost.author_id || req.user.id);
     
     // Category processing (single or multiple)
+    const rawCatIds = req.body['category_ids[]'] || req.body.category_ids || req.body['category_id[]'] || req.body.category_id;
     let catIds = [];
-    if (req.body.category_ids) {
-      if (Array.isArray(req.body.category_ids)) {
-        catIds = req.body.category_ids.map(cId => parseInt(cId, 10)).filter(cId => !isNaN(cId));
+    if (rawCatIds) {
+      if (Array.isArray(rawCatIds)) {
+        catIds = rawCatIds.map(cId => parseInt(cId, 10)).filter(cId => !isNaN(cId) && cId > 0);
       } else {
-        const parsed = parseInt(req.body.category_ids, 10);
-        if (!isNaN(parsed)) catIds.push(parsed);
+        const parsed = parseInt(rawCatIds, 10);
+        if (!isNaN(parsed) && parsed > 0) catIds.push(parsed);
       }
-    } else if (req.body.category_id) {
-      const parsed = parseInt(req.body.category_id, 10);
-      if (!isNaN(parsed)) catIds.push(parsed);
     }
 
-    if (catIds.length === 0 && (existingPost.category_id || existingPost.subcategory_id)) {
-      catIds = [existingPost.category_id, existingPost.subcategory_id].filter(Boolean);
+    if (catIds.length === 0) {
+      if (rawCatIds !== undefined) {
+        catIds = [existingPost.category_id || 1];
+      } else if (existingPost.category_id || existingPost.subcategory_id) {
+        catIds = [existingPost.category_id, existingPost.subcategory_id].filter(Boolean);
+      }
     }
 
-    let postCategoryId = catIds[0] || null;
-    let postSubcategoryId = catIds.length > 1 ? catIds[1] : null;
+    let postCategoryId = null;
+    let postSubcategoryId = null;
 
     const catMap = new Map();
     categories.forEach(c => catMap.set(c.id, c));
@@ -514,14 +538,21 @@ exports.postEditPost = async (req, res) => {
       const catObj = catMap.get(cId);
       if (catObj) {
         if (!catObj.parent_id || catObj.parent_id === 0) {
-          postCategoryId = catObj.id;
+          if (!postCategoryId) {
+            postCategoryId = catObj.id;
+          }
         } else {
-          postSubcategoryId = catObj.id;
-          if (!postCategoryId || postCategoryId === catObj.id) {
+          if (!postSubcategoryId) {
+            postSubcategoryId = catObj.id;
+          }
+          if (!postCategoryId) {
             postCategoryId = catObj.parent_id;
           }
         }
       }
+    }
+    if (!postCategoryId && catIds.length > 0) {
+      postCategoryId = catIds[0];
     }
 
     const postStatus = status || existingPost.status;
@@ -572,6 +603,12 @@ exports.postEditPost = async (req, res) => {
       await db.prepare('DELETE FROM post_categories WHERE post_id = ?').run(id);
       for (const cId of catIds) {
         await db.prepare('INSERT IGNORE INTO post_categories (post_id, category_id) VALUES (?, ?)').run(id, cId);
+      }
+      if (postCategoryId) {
+        await db.prepare('INSERT IGNORE INTO post_categories (post_id, category_id) VALUES (?, ?)').run(id, postCategoryId);
+      }
+      if (postSubcategoryId) {
+        await db.prepare('INSERT IGNORE INTO post_categories (post_id, category_id) VALUES (?, ?)').run(id, postSubcategoryId);
       }
     } catch (catSyncErr) {
       console.warn('post_categories sync warning:', catSyncErr.message);

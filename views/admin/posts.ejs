@@ -122,7 +122,22 @@
                 </div>
               </td>
               <td>
-                <span class="category-pill"><%= p.category_name || 'সাধারণ' %></span>
+                <% if (p.all_category_names) { 
+                     const catList = p.all_category_names.split(', ');
+                %>
+                  <div style="display: flex; flex-wrap: wrap; gap: 4px; max-width: 220px;">
+                    <% catList.forEach((cName, idx) => { %>
+                      <span 
+                        class="category-pill" 
+                        style="<%= idx === 0 ? 'background: #eaf5e9; color: #075603; font-weight: 700; border: 1px solid #d1e7dd;' : 'background: #f1f5f9; color: #334155; font-size: 12px; font-weight: 500; border: 1px solid #e2e8f0;' %>"
+                      >
+                        <%= cName %>
+                      </span>
+                    <% }) %>
+                  </div>
+                <% } else { %>
+                  <span class="category-pill"><%= p.category_name || 'সাধারণ' %></span>
+                <% } %>
               </td>
               <td style="font-weight: 700; color: #068200;">
                 <%= toBengaliNumber(p.views || 0) %>
@@ -153,7 +168,7 @@
                   <% } %>
 
                   <!-- Edit Action -->
-                  <a href="/admin/posts/<%= p.id %>/edit" class="btn-table-action" style="background: #e0f2fe; color: #0284c7;" title="এডিট করুন">
+                  <a href="/admin/posts/<%= p.id %>/edit" class="btn-table-action" style="background: #eaf5e9; color: #075603;" title="এডিট করুন">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                       <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
                       <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>

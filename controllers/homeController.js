@@ -70,7 +70,7 @@ exports.getHomePage = async (req, res) => {
       FROM posts p
       LEFT JOIN users u ON p.author_id = u.id
       LEFT JOIN categories c ON p.category_id = c.id
-      WHERE p.status = 'publish' AND c.slug IN ('tech', 'tools')
+      WHERE p.status = 'publish' AND (c.slug IN ('tech', 'tools') OR EXISTS (SELECT 1 FROM post_categories pc JOIN categories cat ON pc.category_id = cat.id WHERE pc.post_id = p.id AND cat.slug IN ('tech', 'tools')))
       ORDER BY p.published_at DESC
       LIMIT 6
     `).all();
@@ -81,7 +81,7 @@ exports.getHomePage = async (req, res) => {
       FROM posts p
       LEFT JOIN users u ON p.author_id = u.id
       LEFT JOIN categories c ON p.category_id = c.id
-      WHERE p.status = 'publish' AND c.slug = 'books'
+      WHERE p.status = 'publish' AND (c.slug = 'books' OR EXISTS (SELECT 1 FROM post_categories pc JOIN categories cat ON pc.category_id = cat.id WHERE pc.post_id = p.id AND cat.slug = 'books'))
       ORDER BY p.published_at DESC
       LIMIT 6
     `).all();
@@ -92,7 +92,7 @@ exports.getHomePage = async (req, res) => {
       FROM posts p
       LEFT JOIN users u ON p.author_id = u.id
       LEFT JOIN categories c ON p.category_id = c.id
-      WHERE p.status = 'publish' AND c.slug IN ('beauty-and-personal-care', 'baby-products', 'health-and-wellness', 'food')
+      WHERE p.status = 'publish' AND (c.slug IN ('beauty-and-personal-care', 'baby-products', 'health-and-wellness', 'food') OR EXISTS (SELECT 1 FROM post_categories pc JOIN categories cat ON pc.category_id = cat.id WHERE pc.post_id = p.id AND cat.slug IN ('beauty-and-personal-care', 'baby-products', 'health-and-wellness', 'food')))
       ORDER BY p.published_at DESC
       LIMIT 6
     `).all();

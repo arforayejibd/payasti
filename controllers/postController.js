@@ -45,7 +45,23 @@ exports.getSinglePost = async (req, res) => {
       SELECT * FROM comments WHERE post_id = ? AND status = 'approved' ORDER BY created_at DESC
     `).all(post.id);
 
-    // Fetch Related Posts (same category)
+    // Fetch all categories for this post
+    let postCategories = [];
+    try {
+      postCategories = await db.prepare(`
+        SELECT c.id, c.name, c.slug 
+        FROM categories c
+        JOIN post_categories pc ON c.id = pc.category_id
+        WHERE pc.post_id = ?
+        ORDER BY (CASE WHEN c.id = ? THEN 0 ELSE 1 END), c.name ASC
+      `).all(post.id, post.category_id || 0);
+    } catch (e) {}
+
+    if (postCategories.length === 0 && post.category_name) {
+      postCategories = [{ id: post.category_id, name: post.category_name, slug: post.category_slug }];
+    }
+
+    // Fetch Related Posts (same category or related categories)
     const relatedPosts = await db.prepare(`
       SELECT p.id, p.title, p.slug, p.excerpt, p.content, p.featured_image, p.published_at, p.views, 
              p.rating_score, p.rating_count, p.category_id, p.subcategory_id,
@@ -54,10 +70,11 @@ exports.getSinglePost = async (req, res) => {
       FROM posts p
       LEFT JOIN users u ON p.author_id = u.id
       LEFT JOIN categories c ON p.category_id = c.id
-      WHERE p.category_id = ? AND p.id != ? AND p.status = 'publish'
+      WHERE (p.category_id = ? OR p.subcategory_id = ? OR EXISTS (SELECT 1 FROM post_categories pc WHERE pc.post_id = p.id AND pc.category_id = ?))
+        AND p.id != ? AND p.status = 'publish'
       ORDER BY p.published_at DESC
       LIMIT 4
-    `).all(post.category_id, post.id);
+    `).all(post.category_id || 0, post.category_id || 0, post.category_id || 0, post.id);
 
     // Fetch Trending Reviews for Sidebar Widget
     const trendingPosts = await db.prepare(`
@@ -127,6 +144,7 @@ exports.getSinglePost = async (req, res) => {
 
     res.render('single_post', {
       post,
+      postCategories,
       tags,
       comments,
       userRating,
@@ -274,15 +292,43 @@ exports.getCategoryPage = async (req, res) => {
     const countParams = [];
 
     if (activeSubCategory) {
-      countQuery += " AND (p.category_id = ? OR p.subcategory_id = ?)";
-      countParams.push(activeSubCategory.id, activeSubCategory.id);
-      postsQuery += " AND (p.category_id = ? OR p.subcategory_id = ?)";
-      params.push(activeSubCategory.id, activeSubCategory.id);
+      countQuery += ` AND (
+        p.category_id = ? 
+        OR p.subcategory_id = ? 
+        OR EXISTS (SELECT 1 FROM post_categories pc WHERE pc.post_id = p.id AND pc.category_id = ?)
+      )`;
+      countParams.push(activeSubCategory.id, activeSubCategory.id, activeSubCategory.id);
+      postsQuery += ` AND (
+        p.category_id = ? 
+        OR p.subcategory_id = ? 
+        OR EXISTS (SELECT 1 FROM post_categories pc WHERE pc.post_id = p.id AND pc.category_id = ?)
+      )`;
+      params.push(activeSubCategory.id, activeSubCategory.id, activeSubCategory.id);
     } else if (category.id > 0) {
-      countQuery += " AND (p.category_id = ? OR p.subcategory_id = ? OR c.parent_id = ? OR sc.parent_id = ?)";
-      countParams.push(category.id, category.id, category.id, category.id);
-      postsQuery += " AND (p.category_id = ? OR p.subcategory_id = ? OR c.parent_id = ? OR sc.parent_id = ?)";
-      params.push(category.id, category.id, category.id, category.id);
+      countQuery += ` AND (
+        p.category_id = ? 
+        OR p.subcategory_id = ? 
+        OR c.parent_id = ? 
+        OR sc.parent_id = ?
+        OR EXISTS (
+          SELECT 1 FROM post_categories pc 
+          JOIN categories cat ON pc.category_id = cat.id 
+          WHERE pc.post_id = p.id AND (cat.id = ? OR cat.parent_id = ?)
+        )
+      )`;
+      countParams.push(category.id, category.id, category.id, category.id, category.id, category.id);
+      postsQuery += ` AND (
+        p.category_id = ? 
+        OR p.subcategory_id = ? 
+        OR c.parent_id = ? 
+        OR sc.parent_id = ?
+        OR EXISTS (
+          SELECT 1 FROM post_categories pc 
+          JOIN categories cat ON pc.category_id = cat.id 
+          WHERE pc.post_id = p.id AND (cat.id = ? OR cat.parent_id = ?)
+        )
+      )`;
+      params.push(category.id, category.id, category.id, category.id, category.id, category.id);
     }
 
     const totalPostsRow = await db.prepare(countQuery).get(...countParams);

@@ -22,12 +22,13 @@
         <!-- Article Header -->
         <header class="article-header">
           <div class="article-meta-top" style="flex-wrap: wrap; gap: 8px; margin-bottom: 14px;">
-            <% if (post.category_name) { %>
-              <a href="/category/<%= encodeURIComponent(post.category_slug || '') %>" class="inline-flex items-center gap-1 bg-emerald-100 dark:bg-emerald-950/70 text-emerald-800 dark:text-emerald-300 text-xs font-bold px-3 py-1 rounded-full">
+            <% const catsToShow = (typeof postCategories !== 'undefined' && postCategories.length > 0) ? postCategories : (post.category_name ? [{ name: post.category_name, slug: post.category_slug }] : []); %>
+            <% catsToShow.forEach(cat => { %>
+              <a href="/category/<%= encodeURIComponent(cat.slug || '') %>" class="inline-flex items-center gap-1 bg-emerald-100 dark:bg-emerald-950/70 text-emerald-800 dark:text-emerald-300 text-xs font-bold px-3 py-1 rounded-full">
                 <span>📂</span>
-                <span><%= post.category_name %></span>
+                <span><%= cat.name %></span>
               </a>
-            <% } %>
+            <% }) %>
 
             <span class="article-reading-time" title="আনুমানিক পাঠের সময়">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
@@ -237,29 +238,7 @@
           </div>
         <% } %>
 
-        <!-- 2. Trust Assurance Guarantee Box -->
-        <div class="sidebar-card-widget">
-          <h3 class="sidebar-widget-title">
-            <span>🛡️</span>
-            <span>সেরা ১০ নিরপেক্ষতা নিশ্চয়তা</span>
-          </h3>
-          <ul style="padding: 0; margin: 0; list-style: none; display: flex; flex-direction: column; gap: 10px; font-size: 14px; color: var(--text-muted);">
-            <li style="display: flex; align-items: flex-start; gap: 8px;">
-              <span style="color: var(--brand-primary); font-weight: 800;">✓</span>
-              <span>শত শত বাস্তব ব্যবহারকারীর পর্যালোচনা যাচাই</span>
-            </li>
-            <li style="display: flex; align-items: flex-start; gap: 8px;">
-              <span style="color: var(--brand-primary); font-weight: 800;">✓</span>
-              <span>কোনো পেইড বা পক্ষপাতমূলক রিভিউ নয়</span>
-            </li>
-            <li style="display: flex; align-items: flex-start; gap: 8px;">
-              <span style="color: var(--brand-primary); font-weight: 800;">✓</span>
-              <span>বাংলাদেশে পণ্যের সঠিক প্রাপ্যতা ও দাম বিশ্লেষণ</span>
-            </li>
-          </ul>
-        </div>
-
-        <!-- 3. Category Quick Navigation -->
+        <!-- 2. Category Quick Navigation -->
         <% if (post.category_name) { %>
           <div class="sidebar-card-widget">
             <h3 class="sidebar-widget-title">
