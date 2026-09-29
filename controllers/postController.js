@@ -9,14 +9,26 @@ exports.getSinglePost = async (req, res) => {
   try {
     const { slug } = req.params;
 
-    const post = await db.prepare(`
+    const isAdminOrEditor = req.user && (req.user.role === 'admin' || req.user.role === 'editor');
+
+    let query = `
       SELECT p.*, u.id AS author_id, u.display_name AS author_name, u.nicename AS author_slug, u.avatar AS author_avatar, u.bio AS author_bio, u.email AS author_email,
              c.id AS category_id, c.name AS category_name, c.slug AS category_slug
       FROM posts p
       LEFT JOIN users u ON p.author_id = u.id
       LEFT JOIN categories c ON p.category_id = c.id
-      WHERE p.slug = ? AND p.status = 'publish'
-    `).get(slug);
+      WHERE p.slug = ?
+    `;
+
+    if (!isAdminOrEditor) {
+      if (req.user && req.user.id) {
+        query += ` AND (p.status = 'publish' OR p.author_id = ${parseInt(req.user.id, 10)})`;
+      } else {
+        query += ` AND p.status = 'publish'`;
+      }
+    }
+
+    const post = await db.prepare(query).get(slug);
 
     if (!post) {
       return res.status(404).render('error', {
@@ -28,9 +40,11 @@ exports.getSinglePost = async (req, res) => {
       });
     }
 
-    // Increment views
-    await db.prepare('UPDATE posts SET views = views + 1 WHERE id = ?').run(post.id);
-    post.views += 1;
+    // Increment views for published posts
+    if (post.status === 'publish') {
+      await db.prepare('UPDATE posts SET views = views + 1 WHERE id = ?').run(post.id);
+      post.views += 1;
+    }
 
     // Fetch Tags
     const tags = await db.prepare(`

@@ -5,6 +5,7 @@ const postController = require('../controllers/postController');
 const bookController = require('../controllers/bookController');
 const { generateSeoMeta, getSpellCheckerSchema } = require('../middleware/seo');
 const { requireAuth } = require('../middleware/auth');
+const db = require('../config/database');
 
 // Health check endpoint
 router.get('/health', (req, res) => {
@@ -92,6 +93,25 @@ router.get(['/terms-and-condition', '/terms'], (req, res) => {
 router.get('/post/:slug', postController.getSinglePost);
 router.post('/post/:slug/comment', postController.postComment);
 router.post(['/post/:slug/rate', '/api/post/:slug/rate', '/api/posts/:slug/rate'], postController.postRate);
+
+// Legacy or category-prefixed article URL redirect (e.g. /sports/post-slug -> /post/post-slug)
+router.get('/:category/:slug', async (req, res, next) => {
+  try {
+    const { category, slug } = req.params;
+    const reserved = ['admin', 'api', 'vendor', 'css', 'js', 'images', 'uploads', 'fonts', 'post', 'category', 'section', 'tag', 'book', 'books', 'topic', 'author'];
+    if (reserved.includes(category.toLowerCase())) {
+      return next();
+    }
+
+    const post = await db.prepare('SELECT slug FROM posts WHERE slug = ? LIMIT 1').get(slug);
+    if (post) {
+      return res.redirect(301, `/post/${encodeURIComponent(post.slug)}`);
+    }
+    next();
+  } catch (err) {
+    next();
+  }
+});
 
 // Search
 router.get('/search', postController.searchPosts);

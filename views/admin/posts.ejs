@@ -156,16 +156,14 @@
               </td>
               <td>
                 <div class="actions-group" style="justify-content: flex-end;">
-                  <!-- Live Preview Link (if published) -->
-                  <% if (p.status === 'publish') { %>
-                    <a href="/<%= p.category_slug || 'literature' %>/<%= p.slug %>" target="_blank" class="btn-table-action" style="background: #f1f5f9; color: #334155;" title="View on site">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-                        <polyline points="15 3 21 3 21 9"></polyline>
-                        <line x1="10" y1="14" x2="21" y2="3"></line>
-                      </svg>
-                    </a>
-                  <% } %>
+                  <!-- Live Preview Link -->
+                  <a href="/post/<%= encodeURIComponent(p.slug) %>" target="_blank" class="btn-table-action" style="background: #f1f5f9; color: #334155;" title="View on site">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                      <polyline points="15 3 21 3 21 9"></polyline>
+                      <line x1="10" y1="14" x2="21" y2="3"></line>
+                    </svg>
+                  </a>
 
                   <!-- Edit Action -->
                   <a href="/admin/posts/<%= p.id %>/edit" class="btn-table-action" style="background: #eaf5e9; color: #075603;" title="Edit post">
