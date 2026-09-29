@@ -34,15 +34,23 @@
   <meta property="og:site_name" content="<%= seo.og.site_name %>">
   <meta property="og:locale" content="<%= seo.og.locale %>">
   <meta property="og:image" content="<%= seo.og.image %>">
+  <meta property="og:image:secure_url" content="<%= seo.og.image %>">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="<%= seo.og.title %>">
   <% if (typeof FB_APP_ID !== 'undefined' && FB_APP_ID) { %>
     <meta property="fb:app_id" content="<%= FB_APP_ID %>">
   <% } %>
 
-  <!-- Twitter Cards -->
-  <meta name="twitter:card" content="<%= seo.twitter.card %>">
+  <!-- Twitter / X Cards -->
+  <meta name="twitter:card" content="<%= (seo.twitter && seo.twitter.card) ? seo.twitter.card : 'summary_large_image' %>">
+  <meta name="twitter:site" content="@sera10bd">
+  <meta name="twitter:creator" content="@sera10bd">
   <meta name="twitter:title" content="<%= seo.twitter.title %>">
   <meta name="twitter:description" content="<%= seo.twitter.description %>">
   <meta name="twitter:image" content="<%= seo.twitter.image %>">
+  <meta name="twitter:image:alt" content="<%= seo.twitter.title %>">
+  <meta name="twitter:domain" content="sera10.com">
 
   <% if (seo.articleMeta) { %>
     <meta property="article:author" content="<%= seo.articleMeta.author %>">

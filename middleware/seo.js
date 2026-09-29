@@ -25,8 +25,19 @@ function generateSeoMeta(options = {}) {
     .trim()
     .substring(0, 160);
 
-  const canonicalUrl = url ? `${SITE_URL}${url}` : `${SITE_URL}/`;
-  const ogImage = image || OG_IMAGE;
+  // Helper to ensure all image & canonical URLs are absolute
+  function toAbsoluteUrl(targetUrl) {
+    if (!targetUrl) return OG_IMAGE;
+    const str = String(targetUrl).trim();
+    if (str.startsWith('http://') || str.startsWith('https://')) {
+      return str;
+    }
+    const cleanPath = str.startsWith('/') ? str : `/${str}`;
+    return `${SITE_URL}${cleanPath}`;
+  }
+
+  const canonicalUrl = toAbsoluteUrl(url || '/');
+  const ogImage = toAbsoluteUrl(image || OG_IMAGE);
 
   return {
     title: pageTitle,
@@ -44,6 +55,8 @@ function generateSeoMeta(options = {}) {
     },
     twitter: {
       card: 'summary_large_image',
+      site: '@sera10bd',
+      creator: '@sera10bd',
       title: pageTitle,
       description: metaDesc,
       image: ogImage
