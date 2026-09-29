@@ -6,6 +6,37 @@ const db = require('../config/database');
 const { generateSeoMeta } = require('../middleware/seo');
 const { toBengaliNumber, formatBengaliDate, generateCleanExcerpt } = require('../middleware/banglaDate');
 const { sendAccountApprovedEmail } = require('../services/mailService');
+const { generateEnglishSlug } = require('../utils/slugify');
+const { extractBilingualTags, parseTagsInput } = require('../utils/tagExtractor');
+
+// Helper to synchronize post tags
+async function syncPostTags(postId, tagsInput) {
+  if (!postId) return;
+  const parsedTagNames = parseTagsInput(tagsInput);
+  try {
+    await db.prepare('DELETE FROM post_tags WHERE post_id = ?').run(postId);
+    for (const tagName of parsedTagNames) {
+      if (!tagName || !tagName.trim()) continue;
+      const cleanName = tagName.trim();
+      let tag = await db.prepare('SELECT id, name FROM tags WHERE name = ?').get(cleanName);
+      if (!tag) {
+        let tagSlug = generateEnglishSlug(cleanName) || `tag-${Date.now()}`;
+        const existingSlug = await db.prepare('SELECT id FROM tags WHERE slug = ?').get(tagSlug);
+        if (existingSlug) {
+          tagSlug = `${tagSlug}-${Date.now()}`;
+        }
+        const insertRes = await db.prepare('INSERT INTO tags (name, slug) VALUES (?, ?)').run(cleanName, tagSlug);
+        const newTagId = insertRes.insertId || insertRes.lastInsertRowid;
+        tag = { id: newTagId, name: cleanName };
+      }
+      if (tag && tag.id) {
+        await db.prepare('INSERT IGNORE INTO post_tags (post_id, tag_id) VALUES (?, ?)').run(postId, tag.id);
+      }
+    }
+  } catch (err) {
+    console.error('Error syncing post_tags for post ' + postId + ':', err);
+  }
+}
 
 // ==========================================
 // 1. DASHBOARD OVERVIEW
@@ -188,14 +219,18 @@ exports.getAllPosts = async (req, res) => {
 // New Post (Admin) GET
 exports.getNewPost = async (req, res) => {
   try {
-    const categories = await db.prepare('SELECT id, name FROM categories ORDER BY name ASC').all();
+    const categories = await db.prepare('SELECT id, name, parent_id FROM categories ORDER BY name ASC').all();
     const authors = await db.prepare('SELECT id, display_name, username, role FROM users ORDER BY display_name ASC').all();
+    const allTags = await db.prepare('SELECT id, name, slug FROM tags ORDER BY name ASC').all();
     const seo = generateSeoMeta({ title: 'নতুন লেখা যোগ করুন - এডমিন' });
 
     res.render('admin/post_new', {
       user: req.user,
       categories,
+      selectedCategoryIds: [],
       authors,
+      allTags: allTags || [],
+      postTags: [],
       error: null,
       activeMenu: 'new_post',
       seo,
@@ -210,14 +245,15 @@ exports.getNewPost = async (req, res) => {
 // New Post (Admin) POST
 exports.postNewPost = async (req, res) => {
   try {
-    const { title, author_id, category_id, excerpt, content, status, is_featured } = req.body;
-    const categories = await db.prepare('SELECT id, name FROM categories ORDER BY name ASC').all();
+    const { title, author_id, excerpt, content, status, is_featured } = req.body;
+    const categories = await db.prepare('SELECT id, name, parent_id FROM categories ORDER BY name ASC').all();
     const authors = await db.prepare('SELECT id, display_name, username, role FROM users ORDER BY display_name ASC').all();
 
     if (!title || !title.trim()) {
       return res.render('admin/post_new', {
         user: req.user,
         categories,
+        selectedCategoryIds: [],
         authors,
         error: 'অনুগ্রহ করে পোস্টের শিরোনাম প্রদান করুন।',
         activeMenu: 'new_post',
@@ -235,7 +271,8 @@ exports.postNewPost = async (req, res) => {
       featuredImage = `/uploads/${req.file.filename}`;
     }
 
-    let slug = slugify(title, { lower: true, strict: false, remove: /[*+~.()'"!:@]/g }) || `post-${Date.now()}`;
+    let customSlug = (req.body.slug && req.body.slug.trim()) ? req.body.slug.trim() : '';
+    let slug = generateEnglishSlug(customSlug || title) || `post-${Date.now()}`;
     const existingSlug = await db.prepare('SELECT id FROM posts WHERE slug = ?').get(slug);
     if (existingSlug) {
       slug = `${slug}-${Date.now()}`;
@@ -247,10 +284,45 @@ exports.postNewPost = async (req, res) => {
     }
 
     const postAuthorId = author_id && !isNaN(parseInt(author_id, 10)) ? parseInt(author_id, 10) : req.user.id;
-    let postCategoryId = category_id && !isNaN(parseInt(category_id, 10)) ? parseInt(category_id, 10) : null;
-    if (!postCategoryId && categories && categories.length > 0) {
-      postCategoryId = categories[0].id;
+    
+    // Category processing (single or multiple)
+    let catIds = [];
+    if (req.body.category_ids) {
+      if (Array.isArray(req.body.category_ids)) {
+        catIds = req.body.category_ids.map(id => parseInt(id, 10)).filter(id => !isNaN(id));
+      } else {
+        const parsed = parseInt(req.body.category_ids, 10);
+        if (!isNaN(parsed)) catIds.push(parsed);
+      }
+    } else if (req.body.category_id) {
+      const parsed = parseInt(req.body.category_id, 10);
+      if (!isNaN(parsed)) catIds.push(parsed);
     }
+
+    if (catIds.length === 0 && categories && categories.length > 0) {
+      catIds.push(categories[0].id);
+    }
+
+    let postCategoryId = catIds[0] || null;
+    let postSubcategoryId = catIds.length > 1 ? catIds[1] : null;
+
+    const catMap = new Map();
+    categories.forEach(c => catMap.set(c.id, c));
+
+    for (const cId of catIds) {
+      const catObj = catMap.get(cId);
+      if (catObj) {
+        if (!catObj.parent_id || catObj.parent_id === 0) {
+          postCategoryId = catObj.id;
+        } else {
+          postSubcategoryId = catObj.id;
+          if (!postCategoryId || postCategoryId === catObj.id) {
+            postCategoryId = catObj.parent_id;
+          }
+        }
+      }
+    }
+
     const postStatus = status || 'publish';
     const postFeatured = is_featured === '1' ? 1 : 0;
     
@@ -263,9 +335,9 @@ exports.postNewPost = async (req, res) => {
       postRatingCount = 1;
     }
 
-    await db.prepare(`
-      INSERT INTO posts (author_id, title, slug, content, excerpt, featured_image, category_id, status, views, is_featured, rating_score, rating_count, published_at, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, NOW(), NOW(), NOW())
+    const insertResult = await db.prepare(`
+      INSERT INTO posts (author_id, title, slug, content, excerpt, featured_image, category_id, subcategory_id, status, views, is_featured, rating_score, rating_count, published_at, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, NOW(), NOW(), NOW())
     `).run(
       postAuthorId,
       title.trim(),
@@ -274,11 +346,30 @@ exports.postNewPost = async (req, res) => {
       cleanExcerpt,
       featuredImage,
       postCategoryId,
+      postSubcategoryId,
       postStatus,
       postFeatured,
       postRatingScore,
       postRatingCount
     );
+
+    const newPostId = insertResult.insertId || insertResult.lastInsertRowid;
+
+    // Save relations into post_categories
+    if (newPostId && catIds.length > 0) {
+      try {
+        for (const cId of catIds) {
+          await db.prepare('INSERT IGNORE INTO post_categories (post_id, category_id) VALUES (?, ?)').run(newPostId, cId);
+        }
+      } catch (catRelErr) {
+        console.warn('post_categories insert warning:', catRelErr.message);
+      }
+    }
+
+    // Save relations into post_tags
+    if (newPostId && req.body.tags) {
+      await syncPostTags(newPostId, req.body.tags);
+    }
 
     res.redirect('/admin/posts');
   } catch (err) {
@@ -311,15 +402,41 @@ exports.getEditPost = async (req, res) => {
       return res.redirect('/admin/posts');
     }
 
-    const categories = await db.prepare('SELECT id, name FROM categories ORDER BY name ASC').all();
+    const categories = await db.prepare('SELECT id, name, parent_id FROM categories ORDER BY name ASC').all();
     const authors = await db.prepare('SELECT id, display_name, username, role FROM users ORDER BY display_name ASC').all();
+    
+    let postCategories = [];
+    try {
+      postCategories = await db.prepare('SELECT category_id FROM post_categories WHERE post_id = ?').all(id);
+    } catch (e) {}
+
+    let selectedCategoryIds = (postCategories && postCategories.length > 0)
+      ? postCategories.map(r => r.category_id)
+      : [post.category_id, post.subcategory_id].filter(Boolean);
+
+    let postTags = [];
+    try {
+      postTags = await db.prepare(`
+        SELECT t.id, t.name, t.slug 
+        FROM tags t 
+        JOIN post_tags pt ON t.id = pt.tag_id 
+        WHERE pt.post_id = ?
+        ORDER BY t.name ASC
+      `).all(id);
+    } catch (e) {}
+
+    const allTags = await db.prepare('SELECT id, name, slug FROM tags ORDER BY name ASC').all();
+
     const seo = generateSeoMeta({ title: `লেখা সম্পাদনা: ${post.title}` });
 
     res.render('admin/post_edit', {
       user: req.user,
       post,
       categories,
+      selectedCategoryIds,
       authors,
+      postTags: postTags || [],
+      allTags: allTags || [],
       error: null,
       activeMenu: 'all_posts',
       seo,
@@ -336,11 +453,21 @@ exports.getEditPost = async (req, res) => {
 exports.postEditPost = async (req, res) => {
   try {
     const { id } = req.params;
-    const { title, author_id, category_id, excerpt, content, status, is_featured, enable_rating, rating_score } = req.body;
+    const { title, slug: customSlug, author_id, excerpt, content, status, is_featured, enable_rating, rating_score } = req.body;
+    const categories = await db.prepare('SELECT id, name, parent_id FROM categories ORDER BY name ASC').all();
 
     const existingPost = await db.prepare('SELECT * FROM posts WHERE id = ?').get(id);
     if (!existingPost) {
       return res.redirect('/admin/posts');
+    }
+
+    let updatedSlug = existingPost.slug;
+    if (customSlug && customSlug.trim()) {
+      const generatedSlug = generateEnglishSlug(customSlug.trim());
+      if (generatedSlug && generatedSlug !== existingPost.slug) {
+        const dup = await db.prepare('SELECT id FROM posts WHERE slug = ? AND id != ?').get(generatedSlug, id);
+        updatedSlug = dup ? `${generatedSlug}-${Date.now()}` : generatedSlug;
+      }
     }
 
     let featuredImage = req.body.featured_image !== undefined ? req.body.featured_image : existingPost.featured_image;
@@ -358,7 +485,45 @@ exports.postEditPost = async (req, res) => {
 
     const postTitle = (title || existingPost.title || '').trim();
     const postAuthorId = author_id && !isNaN(parseInt(author_id, 10)) ? parseInt(author_id, 10) : (existingPost.author_id || req.user.id);
-    const postCategoryId = category_id && !isNaN(parseInt(category_id, 10)) ? parseInt(category_id, 10) : (existingPost.category_id || null);
+    
+    // Category processing (single or multiple)
+    let catIds = [];
+    if (req.body.category_ids) {
+      if (Array.isArray(req.body.category_ids)) {
+        catIds = req.body.category_ids.map(cId => parseInt(cId, 10)).filter(cId => !isNaN(cId));
+      } else {
+        const parsed = parseInt(req.body.category_ids, 10);
+        if (!isNaN(parsed)) catIds.push(parsed);
+      }
+    } else if (req.body.category_id) {
+      const parsed = parseInt(req.body.category_id, 10);
+      if (!isNaN(parsed)) catIds.push(parsed);
+    }
+
+    if (catIds.length === 0 && (existingPost.category_id || existingPost.subcategory_id)) {
+      catIds = [existingPost.category_id, existingPost.subcategory_id].filter(Boolean);
+    }
+
+    let postCategoryId = catIds[0] || null;
+    let postSubcategoryId = catIds.length > 1 ? catIds[1] : null;
+
+    const catMap = new Map();
+    categories.forEach(c => catMap.set(c.id, c));
+
+    for (const cId of catIds) {
+      const catObj = catMap.get(cId);
+      if (catObj) {
+        if (!catObj.parent_id || catObj.parent_id === 0) {
+          postCategoryId = catObj.id;
+        } else {
+          postSubcategoryId = catObj.id;
+          if (!postCategoryId || postCategoryId === catObj.id) {
+            postCategoryId = catObj.parent_id;
+          }
+        }
+      }
+    }
+
     const postStatus = status || existingPost.status;
     const postFeatured = is_featured === '1' ? 1 : 0;
 
@@ -383,12 +548,14 @@ exports.postEditPost = async (req, res) => {
 
     await db.prepare(`
       UPDATE posts
-      SET title = ?, author_id = ?, category_id = ?, excerpt = ?, content = ?, featured_image = ?, status = ?, is_featured = ?, rating_score = ?, rating_count = ?, published_at = ?, updated_at = NOW()
+      SET title = ?, slug = ?, author_id = ?, category_id = ?, subcategory_id = ?, excerpt = ?, content = ?, featured_image = ?, status = ?, is_featured = ?, rating_score = ?, rating_count = ?, published_at = ?, updated_at = NOW()
       WHERE id = ?
     `).run(
       postTitle,
+      updatedSlug,
       postAuthorId,
       postCategoryId,
+      postSubcategoryId,
       cleanExcerpt,
       cleanContent,
       featuredImage,
@@ -400,10 +567,37 @@ exports.postEditPost = async (req, res) => {
       id
     );
 
+    // Sync post_categories relations
+    try {
+      await db.prepare('DELETE FROM post_categories WHERE post_id = ?').run(id);
+      for (const cId of catIds) {
+        await db.prepare('INSERT IGNORE INTO post_categories (post_id, category_id) VALUES (?, ?)').run(id, cId);
+      }
+    } catch (catSyncErr) {
+      console.warn('post_categories sync warning:', catSyncErr.message);
+    }
+
+    // Sync post_tags relations
+    if (id && req.body.tags !== undefined) {
+      await syncPostTags(id, req.body.tags);
+    }
+
     res.redirect('/admin/posts');
   } catch (err) {
     console.error('Error in postEditPost:', err);
     res.redirect('/admin/posts');
+  }
+};
+
+// API: Suggest bilingual tags from title & content
+exports.apiSuggestTags = async (req, res) => {
+  try {
+    const { title, content } = req.body;
+    const suggestedTags = extractBilingualTags(title || '', content || '', 10);
+    res.json({ success: true, tags: suggestedTags });
+  } catch (err) {
+    console.error('Error in apiSuggestTags:', err);
+    res.status(500).json({ success: false, error: err.message });
   }
 };
 
@@ -418,6 +612,45 @@ exports.deletePost = async (req, res) => {
     console.error('Error deleting post:', err);
   }
   res.redirect('/admin/posts');
+};
+
+// Migrate all remaining Bengali slugs to English (Admin Action)
+exports.postMigrateSlugs = async (req, res) => {
+  try {
+    const posts = await db.prepare('SELECT id, title, slug FROM posts ORDER BY id ASC').all();
+    const usedSlugs = new Set();
+    
+    posts.forEach(p => {
+      const hasBangla = /[\u0980-\u09FF]/.test(p.slug || '');
+      if (!hasBangla && p.slug) {
+        usedSlugs.add(p.slug);
+      }
+    });
+
+    let updatedCount = 0;
+    for (const post of posts) {
+      const hasBangla = /[\u0980-\u09FF]/.test(post.slug || '');
+      if (!hasBangla && post.slug && post.slug.trim()) continue;
+
+      let baseSlug = generateEnglishSlug(post.title) || `post-${post.id}`;
+      let finalSlug = baseSlug;
+      let counter = 2;
+
+      while (usedSlugs.has(finalSlug)) {
+        finalSlug = `${baseSlug}-${counter}`;
+        counter++;
+      }
+
+      usedSlugs.add(finalSlug);
+      await db.prepare('UPDATE posts SET slug = ? WHERE id = ?').run(finalSlug, post.id);
+      updatedCount++;
+    }
+
+    res.json({ success: true, updatedCount, message: `মোট ${updatedCount}টি পোস্টের পারমালিংক সফলভাবে ইংরেজিতে রূপান্তরিত হয়েছে।` });
+  } catch (err) {
+    console.error('Error in postMigrateSlugs:', err);
+    res.status(500).json({ success: false, error: err.message });
+  }
 };
 
 // ==========================================
@@ -793,16 +1026,28 @@ exports.getCategories = async (req, res) => {
   try {
     const categories = await db.prepare(`
       SELECT c.*, 
-        (SELECT COUNT(*) FROM posts WHERE category_id = c.id) AS post_count
+        p.name AS parent_name,
+        p.slug AS parent_slug,
+        (SELECT COUNT(*) FROM posts WHERE category_id = c.id OR subcategory_id = c.id) AS post_count,
+        (SELECT COUNT(*) FROM categories WHERE parent_id = c.id) AS subcategory_count
       FROM categories c
-      ORDER BY c.name ASC
+      LEFT JOIN categories p ON c.parent_id = p.id
+      ORDER BY 
+        CASE WHEN (c.parent_id IS NULL OR c.parent_id = 0) THEN c.name ELSE p.name END ASC,
+        CASE WHEN (c.parent_id IS NULL OR c.parent_id = 0) THEN 0 ELSE 1 END ASC,
+        c.name ASC
     `).all();
+
+    const rootCategories = categories.filter(c => !c.parent_id || c.parent_id === 0);
+    const subCategories = categories.filter(c => c.parent_id && c.parent_id > 0);
 
     const seo = generateSeoMeta({ title: 'বিভাগ / ক্যাটাগরি - এডমিন' });
 
     res.render('admin/categories', {
       user: req.user,
       categories,
+      rootCategories,
+      subCategories,
       error: null,
       activeMenu: 'posts_categories',
       openSubmenu: 'posts',
@@ -817,25 +1062,85 @@ exports.getCategories = async (req, res) => {
 
 exports.postAddCategory = async (req, res) => {
   try {
-    const { name, slug, description } = req.body;
+    const { name, slug, description, parent_id, is_ajax } = req.body;
     if (!name || !name.trim()) {
+      if (req.xhr || req.headers.accept?.includes('json') || is_ajax) {
+        return res.status(400).json({ success: false, error: 'ক্যাটাগরির নাম প্রদান করুন।' });
+      }
       return res.redirect('/admin/categories');
     }
 
-    let catSlug = (slug || slugify(name, { lower: true, strict: false })).trim();
+    let catSlug = (slug && slug.trim()) ? generateEnglishSlug(slug.trim()) : generateEnglishSlug(name.trim());
+    if (!catSlug) catSlug = `cat-${Date.now()}`;
     const existing = await db.prepare('SELECT id FROM categories WHERE slug = ?').get(catSlug);
     if (existing) {
       catSlug = `${catSlug}-${Date.now()}`;
     }
 
-    await db.prepare(`
+    const parentId = parent_id && !isNaN(parseInt(parent_id, 10)) ? parseInt(parent_id, 10) : 0;
+
+    const result = await db.prepare(`
       INSERT INTO categories (name, slug, description, parent_id, count)
-      VALUES (?, ?, ?, 0, 0)
-    `).run(name.trim(), catSlug, description ? description.trim() : '');
+      VALUES (?, ?, ?, ?, 0)
+    `).run(name.trim(), catSlug, description ? description.trim() : '', parentId);
+
+    const newId = result.insertId || result.lastInsertRowid;
+
+    if (req.xhr || req.headers.accept?.includes('json') || is_ajax) {
+      return res.json({
+        success: true,
+        category: {
+          id: newId,
+          name: name.trim(),
+          slug: catSlug,
+          parent_id: parentId
+        }
+      });
+    }
 
     res.redirect('/admin/categories');
   } catch (err) {
     console.error('Error in postAddCategory:', err);
+    if (req.xhr || req.headers.accept?.includes('json') || req.body.is_ajax) {
+      return res.status(500).json({ success: false, error: err.message });
+    }
+    res.redirect('/admin/categories');
+  }
+};
+
+exports.postEditCategory = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const { name, slug, description, parent_id } = req.body;
+    if (!name || !name.trim()) {
+      return res.redirect('/admin/categories');
+    }
+
+    const existingCat = await db.prepare('SELECT * FROM categories WHERE id = ?').get(id);
+    if (!existingCat) {
+      return res.redirect('/admin/categories');
+    }
+
+    let catSlug = (slug && slug.trim()) ? slugify(slug.trim(), { lower: true, strict: false }) : slugify(name.trim(), { lower: true, strict: false });
+    if (!catSlug) catSlug = `category-${id}`;
+
+    // Check slug uniqueness (excluding current category)
+    const duplicateSlug = await db.prepare('SELECT id FROM categories WHERE slug = ? AND id != ?').get(catSlug, id);
+    if (duplicateSlug) {
+      catSlug = `${catSlug}-${Date.now()}`;
+    }
+
+    const parentId = parent_id && !isNaN(parseInt(parent_id, 10)) && parseInt(parent_id, 10) !== parseInt(id, 10) ? parseInt(parent_id, 10) : 0;
+
+    await db.prepare(`
+      UPDATE categories 
+      SET name = ?, slug = ?, description = ?, parent_id = ?
+      WHERE id = ?
+    `).run(name.trim(), catSlug, description ? description.trim() : '', parentId, id);
+
+    res.redirect('/admin/categories');
+  } catch (err) {
+    console.error('Error in postEditCategory:', err);
     res.redirect('/admin/categories');
   }
 };

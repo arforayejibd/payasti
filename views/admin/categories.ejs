@@ -1,104 +1,759 @@
 <%- include('partials/admin_layout_start', { 
-  pageTitle: 'বিভাগ / ক্যাটাগরি ব্যবস্থাপনা', 
+  pageTitle: 'ক্যাটাগরি ব্যবস্থাপনা', 
   pageBreadcrumb: 'Categories'
 }) %>
 
-<div class="admin-two-col-grid">
-  <!-- Add New Category Form (Left) -->
-  <div class="admin-card">
-    <div class="admin-card-header">
-      <div class="admin-card-title">
-        <span>+ নতুন ক্যাটাগরি তৈরি</span>
+<%
+  const allCats = (typeof categories !== 'undefined' && Array.isArray(categories)) ? categories : [];
+  const rootCats = (typeof rootCategories !== 'undefined' && Array.isArray(rootCategories)) 
+    ? rootCategories 
+    : allCats.filter(c => !c.parent_id || c.parent_id === 0);
+  const subCats = (typeof subCategories !== 'undefined' && Array.isArray(subCategories)) 
+    ? subCategories 
+    : allCats.filter(c => c.parent_id && c.parent_id > 0);
+  const bnNum = (typeof toBengaliNumber === 'function') ? toBengaliNumber : (n => n);
+  
+  // Group subcategories by parent_id
+  const subCatsByParent = new Map();
+  subCats.forEach(sc => {
+    const pId = sc.parent_id;
+    if (!subCatsByParent.has(pId)) {
+      subCatsByParent.set(pId, []);
+    }
+    subCatsByParent.get(pId).push(sc);
+  });
+
+  const rootWithSubCount = rootCats.filter(rc => (subCatsByParent.get(rc.id) || []).length > 0).length;
+%>
+
+<!-- Top Toolbar: Header, Filters, Search & Action -->
+<div class="admin-card" style="margin-bottom: 20px;">
+  <div class="admin-card-header" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; padding: 14px 20px;">
+    
+    <!-- Title & Badges -->
+    <div class="admin-card-title" style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+      <span>ক্যাটাগরি তালিকা</span>
+      <span class="admin-card-badge" id="categoryCountBadge"><%= bnNum(rootCats.length) %> টি মূল বিভাগ</span>
+      <% if (subCats.length > 0) { %>
+        <span style="font-size: 13px; font-weight: 600; color: #475569; background: #f1f5f9; padding: 3px 10px; border-radius: 12px;">
+          মোট <%= bnNum(subCats.length) %> টি সাব-ক্যাটাগরি
+        </span>
+      <% } %>
+    </div>
+
+    <!-- Quick Filter Tabs -->
+    <div class="cat-filter-tabs" style="display: flex; align-items: center; gap: 6px; background: #f1f5f9; padding: 4px; border-radius: 8px;">
+      <button 
+        type="button" 
+        class="cat-filter-btn active" 
+        data-filter="all" 
+        onclick="setCategoryFilter('all', this)"
+      >
+        সকল (<span id="countAll"><%= bnNum(rootCats.length) %></span>)
+      </button>
+      <button 
+        type="button" 
+        class="cat-filter-btn" 
+        data-filter="has-sub" 
+        onclick="setCategoryFilter('has-sub', this)"
+      >
+        📁 সাব সহ (<span id="countHasSub"><%= bnNum(rootWithSubCount) %></span>)
+      </button>
+      <button 
+        type="button" 
+        class="cat-filter-btn" 
+        data-filter="no-sub" 
+        onclick="setCategoryFilter('no-sub', this)"
+      >
+        সাব ছাড়া (<span id="countNoSub"><%= bnNum(rootCats.length - rootWithSubCount) %></span>)
+      </button>
+    </div>
+
+    <!-- Right Controls: Search & Add -->
+    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+      <!-- Live Search Box -->
+      <div style="position: relative; width: 230px;">
+        <input 
+          type="text" 
+          id="categorySearchInput" 
+          placeholder="ক্যাটাগরি বা সাব খুঁজুন..." 
+          class="admin-form-input"
+          style="padding: 8px 12px 8px 34px; font-size: 13.5px; height: 38px;"
+          oninput="applyCategoryFilters()"
+        >
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" style="position: absolute; left: 11px; top: 50%; transform: translateY(-50%); pointer-events: none;">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
       </div>
-    </div>
-    <div class="admin-card-body">
-      <form action="/admin/categories/add" method="POST">
-        <div class="admin-form-group">
-          <label class="admin-form-label">ক্যাটাগরির নাম *</label>
-          <input type="text" name="name" class="admin-form-input" required placeholder="যেমন: টেকনোলজি, লাইফস্টাইল, হোম অ্যাপ্লায়েন্স">
-        </div>
 
-        <div class="admin-form-group">
-          <label class="admin-form-label">স্লাগ (Slug - ইংরেজিতে ঐচ্ছিক)</label>
-          <input type="text" name="slug" class="admin-form-input" placeholder="যেমন: technology, gadgets">
-          <span style="font-size: 14px; color: var(--admin-text-sub);">খালি রাখলে স্বয়ংক্রিয় তৈরি হবে।</span>
-        </div>
-
-        <div class="admin-form-group">
-          <label class="admin-form-label">বিবরণ (ঐচ্ছিক)</label>
-          <textarea name="description" class="admin-form-textarea" rows="3" placeholder="ক্যাটাগরির বিবরণ..."></textarea>
-        </div>
-
-        <button type="submit" class="btn-new-action" style="width: 100%; justify-content: center; padding: 12px; font-size: 16px;">
-          ক্যাটাগরি যুক্ত করুন
-        </button>
-      </form>
-    </div>
-  </div>
-
-  <!-- Categories List Table (Right) -->
-  <div class="admin-card">
-    <div class="admin-card-header">
-      <div class="admin-card-title">
-        <span>সকল রিভিউ ক্যাটাগরি</span>
-        <span class="admin-card-badge"><%= toBengaliNumber(categories.length) %> টি</span>
-      </div>
-    </div>
-
-    <div class="admin-table-wrap">
-      <table class="admin-table">
-        <thead>
-          <tr>
-            <th>নাম</th>
-            <th>স্লাগ</th>
-            <th>মোট পোস্ট</th>
-            <th style="text-align: right;">অ্যাকশন</th>
-          </tr>
-        </thead>
-        <tbody>
-          <% if (categories && categories.length) { %>
-            <% categories.forEach(c => { %>
-              <tr>
-                <td>
-                  <strong style="color: var(--admin-text-main); font-size: 18px;"><%= c.name %></strong>
-                  <% if (c.description) { %>
-                    <div style="font-size: 15px; color: var(--admin-text-sub); margin-top: 3px;"><%= c.description %></div>
-                  <% } %>
-                </td>
-                <td>
-                  <code style="background: #f1f5f9; padding: 4px 8px; border-radius: 4px; font-size: 15px; color: #475569;"><%= c.slug %></code>
-                </td>
-                <td>
-                  <a href="/admin/posts?category=<%= c.id %>" style="color: var(--admin-primary); font-weight: 600; text-decoration: underline;">
-                    <%= toBengaliNumber(c.post_count || 0) %> টি
-                  </a>
-                </td>
-                <td>
-                  <div class="actions-group" style="justify-content: flex-end;">
-                    <a href="/category/<%= c.slug %>" target="_blank" class="btn-table-action" style="background: #f1f5f9; color: #334155;" title="সাইটে বিভাগ দেখুন">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-                        <polyline points="15 3 21 3 21 9"></polyline>
-                        <line x1="10" y1="14" x2="21" y2="3"></line>
-                      </svg>
-                    </a>
-                    <form action="/admin/categories/<%= c.id %>/delete" method="POST" style="display: inline;" onsubmit="return confirm('ক্যাটাগরি মুছে ফেলতে চান?');">
-                      <button type="submit" class="btn-table-action btn-reject" title="মুছে ফেলুন">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                          <polyline points="3 6 5 6 21 6"></polyline>
-                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                        </svg>
-                      </button>
-                    </form>
-                  </div>
-                </td>
-              </tr>
-            <% }) %>
-          <% } %>
-        </tbody>
-      </table>
+      <!-- Add New Button -->
+      <button 
+        type="button" 
+        class="btn-new-action" 
+        onclick="openAddCategoryModal()"
+        style="padding: 8px 16px; font-size: 14px; height: 38px;"
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        <span>নতুন ক্যাটাগরি</span>
+      </button>
     </div>
   </div>
 </div>
+
+<!-- Main Category Grid Container (ONLY ROOT CATEGORIES ARE SHOWN HERE) -->
+<div id="categoryGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); gap: 18px; align-items: start;">
+  
+  <!-- Dashed 'Add New' Card -->
+  <div 
+    onclick="openAddCategoryModal()"
+    class="admin-card add-category-card"
+    id="addNewCategoryCard"
+    style="border: 2px dashed #cbd5e1; background: #fafafa; border-radius: 12px; min-height: 160px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease; text-align: center; padding: 20px;"
+  >
+    <div style="width: 44px; height: 44px; border-radius: 50%; background: #eaf5e9; display: flex; align-items: center; justify-content: center; color: #075603; margin-bottom: 8px;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+    </div>
+    <span style="font-size: 15.5px; font-weight: 700; color: #0f172a;">নতুন ক্যাটাগরি তৈরি করুন</span>
+    <span style="font-size: 12.5px; color: #64748b; margin-top: 2px;">ক্লিক করে তথ্য পূরণ করুন</span>
+  </div>
+
+  <!-- Root Category Cards -->
+  <% if (rootCats && rootCats.length) { %>
+    <% rootCats.forEach(c => { 
+         const children = subCatsByParent.get(c.id) || [];
+         const hasChildren = children.length > 0;
+         const subNames = children.map(ch => ch.name.toLowerCase()).join(' ');
+         const subSlugs = children.map(ch => ch.slug.toLowerCase()).join(' ');
+    %>
+      <div 
+        class="admin-card category-item-card" 
+        data-id="<%= c.id %>"
+        data-has-sub="<%= hasChildren ? 'yes' : 'no' %>"
+        data-name="<%= (c.name || '').toLowerCase() %>" 
+        data-slug="<%= (c.slug || '').toLowerCase() %>"
+        data-sub-names="<%= subNames %>"
+        data-sub-slugs="<%= subSlugs %>"
+        style="border-radius: 12px; display: flex; flex-direction: column; justify-content: space-between; padding: 18px 20px; transition: transform 0.15s ease, box-shadow 0.15s ease; margin-bottom: 0; background: #ffffff;"
+      >
+        <!-- Card Top Section -->
+        <div>
+          <!-- Top Badges Row -->
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px;">
+            <span class="badge-cat-type root-badge" title="মূল ক্যাটাগরি">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+              <span>মূল ক্যাটাগরি</span>
+            </span>
+
+            <!-- Subcategory Clickable Indicator / Toggle Button -->
+            <% if (hasChildren) { %>
+              <button 
+                type="button" 
+                class="badge-sub-toggle-btn" 
+                id="subToggleBtn-<%= c.id %>"
+                onclick="toggleSubcategories(<%= c.id %>)" 
+                title="সাব-ক্যাটাগরি দেখতে বা লুকাতে এখানে ক্লিক করুন"
+              >
+                <span>📁 <%= bnNum(children.length) %>টি সাব</span>
+                <svg class="toggle-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </button>
+            <% } else { %>
+              <button 
+                type="button" 
+                class="badge-sub-add-btn" 
+                onclick="openAddCategoryModalWithParent(<%= c.id %>)" 
+                title="এই ক্যাটাগরির অধীনে সাব-ক্যাটাগরি তৈরি করুন"
+              >
+                <span>+ সাব যোগ</span>
+              </button>
+            <% } %>
+          </div>
+
+          <!-- Category Name -->
+          <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 6px;">
+            <a href="/category/<%= c.slug %>" target="_blank" style="font-size: 18px; font-weight: 700; color: var(--admin-text-main); text-decoration: none; line-height: 1.3;" class="cat-link">
+              <%= c.name %>
+            </a>
+          </div>
+
+          <!-- Slug -->
+          <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 8px;">
+            <code style="background: #f1f5f9; color: #475569; padding: 2px 8px; border-radius: 5px; font-size: 12.5px; font-family: monospace;">
+              /<%= c.slug %>
+            </code>
+          </div>
+        </div>
+
+        <!-- Card Bottom: Post Count & Actions -->
+        <div>
+          <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid #f1f5f9; margin-top: 14px; padding-top: 12px;">
+            <!-- Post Count -->
+            <a 
+              href="/admin/posts?category=<%= c.id %>" 
+              title="এই ক্যাটাগরির পোস্টগুলো দেখুন"
+              style="display: inline-flex; align-items: center; gap: 5px; font-size: 13px; font-weight: 700; color: #075603; background: #eaf5e9; border: 1px solid #d1e7dd; padding: 3px 9px; border-radius: 14px; text-decoration: none;"
+            >
+              <span><%= bnNum(c.post_count || 0) %></span>
+              <span style="font-size: 11.5px; font-weight: 600;">পোস্ট</span>
+            </a>
+
+            <!-- Action Buttons -->
+            <div class="actions-group" style="gap: 5px;">
+              <!-- Edit Button -->
+              <button 
+                type="button" 
+                onclick="openEditCategoryModal(<%= JSON.stringify({ id: c.id, name: c.name, slug: c.slug, description: c.description || '', parent_id: c.parent_id || 0 }) %>)"
+                title="সম্পাদনা"
+                class="btn-table-action"
+                style="color: #075603; background: #eaf5e9; border-color: #d1e7dd;"
+              >
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                </svg>
+              </button>
+
+              <!-- View on Site Button -->
+              <a 
+                href="/category/<%= c.slug %>" 
+                target="_blank" 
+                title="লাইভ দেখুন"
+                class="btn-table-action"
+                style="color: #64748b;"
+              >
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                  <polyline points="15 3 21 3 21 9"></polyline>
+                  <line x1="10" y1="14" x2="21" y2="3"></line>
+                </svg>
+              </a>
+
+              <!-- Delete Button -->
+              <form action="/admin/categories/<%= c.id %>/delete" method="POST" style="display: inline; margin: 0;" onsubmit="return confirm('এই ক্যাটাগরিটি মুছে ফেলতে চান?');">
+                <button 
+                  type="submit" 
+                  title="মুছে ফেলুন"
+                  class="btn-table-action btn-reject"
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                  </svg>
+                </button>
+              </form>
+            </div>
+          </div>
+
+          <!-- Collapsible Subcategories Panel (EXPANDS ON CLICKING 📁 Xটি সাব) -->
+          <% if (hasChildren) { %>
+            <div 
+              id="subPanel-<%= c.id %>" 
+              class="sub-accordion-panel" 
+              style="display: none; margin-top: 14px; padding-top: 14px; border-top: 1px dashed #cbd5e1; animation: panelSlideDown 0.2s ease-out;"
+            >
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                <span style="font-size: 12.5px; font-weight: 700; color: #075603; display: flex; align-items: center; gap: 4px;">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 10 4 15 9 20"></polyline><path d="M20 4v7a4 4 0 0 1-4 4H4"></path></svg>
+                  সাব-ক্যাটাগরি তালিকা (<%= bnNum(children.length) %>টি)
+                </span>
+                <button 
+                  type="button" 
+                  onclick="openAddCategoryModalWithParent(<%= c.id %>)" 
+                  class="btn-sub-quick-add"
+                  title="এই মূল বিভাগের অধীনে আরেকটি সাব যোগ করুন"
+                >
+                  + সাব যোগ
+                </button>
+              </div>
+
+              <!-- List of Subcategories -->
+              <div style="display: flex; flex-direction: column; gap: 6px;">
+                <% children.forEach(child => { %>
+                  <div 
+                    class="sub-item-card" 
+                    style="display: flex; align-items: center; justify-content: space-between; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 7px 10px; transition: all 0.15s ease;"
+                  >
+                    <div style="display: flex; align-items: center; gap: 6px; min-width: 0;">
+                      <span style="color: #075603; font-weight: 700; font-size: 13px;">↳</span>
+                      <div style="min-width: 0;">
+                        <a href="/category/<%= child.slug %>" target="_blank" style="font-size: 13.5px; font-weight: 700; color: #0f172a; text-decoration: none;" class="sub-link">
+                          <%= child.name %>
+                        </a>
+                        <code style="font-size: 11px; color: #64748b; background: #f1f5f9; padding: 1px 5px; border-radius: 4px; margin-left: 4px;">
+                          /<%= child.slug %>
+                        </code>
+                      </div>
+                    </div>
+
+                    <div style="display: flex; align-items: center; gap: 5px; flex-shrink: 0;">
+                      <!-- Child Post Count -->
+                      <a 
+                        href="/admin/posts?category=<%= child.id %>" 
+                        title="পোস্ট সংখ্যা"
+                        style="font-size: 11.5px; font-weight: 700; color: #075603; background: #eaf5e9; border: 1px solid #d1e7dd; padding: 1px 6px; border-radius: 10px; text-decoration: none;"
+                      >
+                        <%= bnNum(child.post_count || 0) %>
+                      </a>
+
+                      <!-- Edit Child -->
+                      <button 
+                        type="button" 
+                        onclick="openEditCategoryModal(<%= JSON.stringify({ id: child.id, name: child.name, slug: child.slug, description: child.description || '', parent_id: child.parent_id || c.id, parent_name: c.name }) %>)"
+                        title="সম্পাদনা"
+                        class="btn-table-action"
+                        style="width: 26px; height: 26px; padding: 0; display: inline-flex; align-items: center; justify-content: center; color: #075603; background: #eaf5e9; border-color: #d1e7dd; border-radius: 4px;"
+                      >
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                      </button>
+
+                      <!-- View Live -->
+                      <a 
+                        href="/category/<%= child.slug %>" 
+                        target="_blank" 
+                        title="লাইভ দেখুন"
+                        class="btn-table-action"
+                        style="width: 26px; height: 26px; padding: 0; display: inline-flex; align-items: center; justify-content: center; color: #64748b; border-radius: 4px;"
+                      >
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                      </a>
+
+                      <!-- Delete Child -->
+                      <form action="/admin/categories/<%= child.id %>/delete" method="POST" style="display: inline; margin: 0;" onsubmit="return confirm('এই সাব-ক্যাটাগরিটি মুছে ফেলতে চান?');">
+                        <button 
+                          type="submit" 
+                          title="মুছে ফেলুন"
+                          class="btn-table-action btn-reject"
+                          style="width: 26px; height: 26px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 4px;"
+                        >
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                        </button>
+                      </form>
+                    </div>
+                  </div>
+                <% }) %>
+              </div>
+            </div>
+          <% } %>
+        </div>
+      </div>
+    <% }) %>
+  <% } %>
+</div>
+
+<!-- No Results Placeholder for Search -->
+<div id="noResultsNotice" style="display: none; text-align: center; padding: 48px 20px; background: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0; margin-top: 10px;">
+  <p style="color: #64748b; font-size: 16px; margin: 0;">কোনো ক্যাটাগরি পাওয়া যায়নি।</p>
+</div>
+
+<!-- 1. Add Category Modal -->
+<div id="categoryAddModal" style="display: none; position: fixed; inset: 0; z-index: 99999; background: rgba(15, 23, 42, 0.5); backdrop-filter: blur(4px); align-items: center; justify-content: center; padding: 20px;">
+  <div style="background: #ffffff; border-radius: 12px; width: 100%; max-width: 480px; box-shadow: 0 20px 30px rgba(0,0,0,0.15); overflow: hidden; animation: modalPop 0.15s ease-out;">
+    <div style="display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid #f1f5f9; background: #f8fafc;">
+      <span style="font-size: 16px; font-weight: 700; color: #0f172a;">নতুন ক্যাটাগরি যোগ করুন</span>
+      <button type="button" onclick="closeAddCategoryModal()" style="background: none; border: none; font-size: 22px; color: #94a3b8; cursor: pointer; line-height: 1; padding: 0;" onmouseover="this.style.color='#0f172a'" onmouseout="this.style.color='#94a3b8'">&times;</button>
+    </div>
+
+    <form action="/admin/categories/add" method="POST" style="padding: 20px;">
+      <div class="admin-form-group" style="margin-bottom: 14px;">
+        <label class="admin-form-label">ক্যাটাগরির নাম *</label>
+        <input type="text" name="name" class="admin-form-input" required placeholder="যেমন: টেকনোলজি, ফুটবল, রেসিপি">
+      </div>
+
+      <div class="admin-form-group" style="margin-bottom: 14px;">
+        <label class="admin-form-label">স্লাগ (Slug - ঐচ্ছিক)</label>
+        <input type="text" name="slug" class="admin-form-input" placeholder="যেমন: tech, football, recipes">
+      </div>
+
+      <div class="admin-form-group" style="margin-bottom: 14px;">
+        <label class="admin-form-label">মাদার / প্যারেন্ট ক্যাটাগরি (ঐচ্ছিক)</label>
+        <select name="parent_id" id="addCatParent" class="admin-form-input">
+          <option value="0">⭐ এটি মূল ক্যাটাগরি (কোনো মাদার নেই)</option>
+          <% if (rootCats && rootCats.length) { %>
+            <optgroup label="── মূল ক্যাটাগরি (মাদার হিসেবে নির্বাচন করুন) ──">
+              <% rootCats.forEach(pc => { %>
+                <option value="<%= pc.id %>"><%= pc.name %></option>
+              <% }) %>
+            </optgroup>
+          <% } %>
+        </select>
+        <span style="font-size: 12px; color: #64748b; margin-top: 4px; display: block;">
+          * ক্যাটাগরিটিকে সাব-ক্যাটাগরি বানাতে চাইলে তালিকা থেকে তার মাদার ক্যাটাগরি বেছে নিন।
+        </span>
+      </div>
+
+      <div class="admin-form-group" style="margin-bottom: 20px;">
+        <label class="admin-form-label">বিবরণ (ঐচ্ছিক)</label>
+        <textarea name="description" class="admin-form-textarea" rows="3" placeholder="ক্যাটাগরির সংক্ষিপ্ত বিবরণ..."></textarea>
+      </div>
+
+      <div style="display: flex; gap: 10px; justify-content: flex-end; padding-top: 10px; border-top: 1px solid #f1f5f9;">
+        <button type="button" onclick="closeAddCategoryModal()" class="btn-table-action" style="padding: 9px 18px; font-size: 14.5px; height: auto;">
+          বাতিল
+        </button>
+        <button type="submit" class="btn-new-action" style="padding: 9px 20px; font-size: 14.5px;">
+          যুক্ত করুন
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- 2. Edit Category Modal -->
+<div id="categoryEditModal" style="display: none; position: fixed; inset: 0; z-index: 99999; background: rgba(15, 23, 42, 0.5); backdrop-filter: blur(4px); align-items: center; justify-content: center; padding: 20px;">
+  <div style="background: #ffffff; border-radius: 12px; width: 100%; max-width: 480px; box-shadow: 0 20px 30px rgba(0,0,0,0.15); overflow: hidden; animation: modalPop 0.15s ease-out;">
+    <div style="display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid #f1f5f9; background: #f8fafc;">
+      <span style="font-size: 16px; font-weight: 700; color: #0f172a;">ক্যাটাগরি সম্পাদনা</span>
+      <button type="button" onclick="closeEditCategoryModal()" style="background: none; border: none; font-size: 22px; color: #94a3b8; cursor: pointer; line-height: 1; padding: 0;" onmouseover="this.style.color='#0f172a'" onmouseout="this.style.color='#94a3b8'">&times;</button>
+    </div>
+
+    <form id="editCategoryForm" action="" method="POST" style="padding: 20px;">
+      <div class="admin-form-group" style="margin-bottom: 14px;">
+        <label class="admin-form-label">ক্যাটাগরির নাম *</label>
+        <input type="text" name="name" id="editCatName" class="admin-form-input" required>
+      </div>
+
+      <div class="admin-form-group" style="margin-bottom: 14px;">
+        <label class="admin-form-label">স্লাগ (Slug)</label>
+        <input type="text" name="slug" id="editCatSlug" class="admin-form-input">
+      </div>
+
+      <div class="admin-form-group" style="margin-bottom: 14px;">
+        <label class="admin-form-label">মাদার / প্যারেন্ট ক্যাটাগরি (ঐচ্ছিক)</label>
+        <select name="parent_id" id="editCatParent" class="admin-form-input">
+          <option value="0">⭐ এটি মূল ক্যাটাগরি (কোনো মাদার নেই)</option>
+          <% if (rootCats && rootCats.length) { %>
+            <optgroup label="── মূল ক্যাটাগরি (মাদার হিসেবে নির্বাচন করুন) ──">
+              <% rootCats.forEach(pc => { %>
+                <option value="<%= pc.id %>"><%= pc.name %></option>
+              <% }) %>
+            </optgroup>
+          <% } %>
+        </select>
+        <span style="font-size: 12px; color: #64748b; margin-top: 4px; display: block;">
+          * ক্যাটাগরিটিকে সাব-ক্যাটাগরি বানাতে চাইলে তালিকা থেকে তার মাদার ক্যাটাগরি বেছে নিন।
+        </span>
+      </div>
+
+      <div class="admin-form-group" style="margin-bottom: 20px;">
+        <label class="admin-form-label">বিবরণ</label>
+        <textarea name="description" id="editCatDesc" class="admin-form-textarea" rows="3"></textarea>
+      </div>
+
+      <div style="display: flex; gap: 10px; justify-content: flex-end; padding-top: 10px; border-top: 1px solid #f1f5f9;">
+        <button type="button" onclick="closeEditCategoryModal()" class="btn-table-action" style="padding: 9px 18px; font-size: 14.5px; height: auto;">
+          বাতিল
+        </button>
+        <button type="submit" class="btn-new-action" style="padding: 9px 20px; font-size: 14.5px;">
+          আপডেট করুন
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<style>
+  @keyframes modalPop {
+    from { opacity: 0; transform: scale(0.97); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  @keyframes panelSlideDown {
+    from { opacity: 0; transform: translateY(-6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  /* Filter Tabs */
+  .cat-filter-btn {
+    border: none;
+    background: transparent;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #475569;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .cat-filter-btn:hover {
+    color: #075603;
+    background: rgba(7, 86, 3, 0.08);
+  }
+  .cat-filter-btn.active {
+    background: #075603;
+    color: #ffffff;
+    box-shadow: 0 1px 3px rgba(7, 86, 3, 0.2);
+  }
+
+  /* Badges */
+  .badge-cat-type {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11.5px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 6px;
+    line-height: 1.2;
+  }
+  .root-badge {
+    background: #eaf5e9;
+    color: #075603;
+    border: 1px solid #d1e7dd;
+  }
+
+  /* Subcategory Toggle Button (The Clickable 📁 Xটি সাব) */
+  .badge-sub-toggle-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #075603;
+    background: #eaf5e9;
+    border: 1px solid #d1e7dd;
+    padding: 3px 9px;
+    border-radius: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    line-height: 1.2;
+  }
+  .badge-sub-toggle-btn:hover {
+    background: #075603;
+    color: #ffffff;
+    border-color: #075603;
+  }
+  .badge-sub-toggle-btn.is-active {
+    background: #075603;
+    color: #ffffff;
+    border-color: #075603;
+    box-shadow: 0 2px 6px rgba(7, 86, 3, 0.25);
+  }
+  .badge-sub-toggle-btn .toggle-icon {
+    transition: transform 0.2s ease;
+  }
+  .badge-sub-toggle-btn.is-active .toggle-icon {
+    transform: rotate(180deg);
+  }
+
+  /* Quick Add Subcategory Button */
+  .badge-sub-add-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: #64748b;
+    background: #f8fafc;
+    border: 1px dashed #cbd5e1;
+    padding: 3px 8px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    line-height: 1.2;
+  }
+  .badge-sub-add-btn:hover {
+    background: #eaf5e9;
+    color: #075603;
+    border-color: #075603;
+  }
+
+  .btn-sub-quick-add {
+    font-size: 11.5px;
+    font-weight: 700;
+    color: #075603;
+    background: #eaf5e9;
+    border: 1px solid #d1e7dd;
+    padding: 2px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .btn-sub-quick-add:hover {
+    background: #075603;
+    color: #ffffff;
+  }
+
+  .sub-item-card:hover {
+    background: #ffffff !important;
+    border-color: #cbd5e1 !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+  }
+  .sub-link:hover {
+    color: #075603 !important;
+  }
+
+  .add-category-card:hover {
+    border-color: #075603 !important;
+    background: #f0fdf4 !important;
+  }
+  .category-item-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+  }
+  .cat-link:hover {
+    color: #075603 !important;
+  }
+</style>
+
+<script>
+  let currentFilter = 'all';
+
+  // Toggle Subcategory Panel when clicking on 📁 Xটি সাব
+  function toggleSubcategories(catId) {
+    const panel = document.getElementById('subPanel-' + catId);
+    const btn = document.getElementById('subToggleBtn-' + catId);
+    if (!panel) return;
+
+    const isHidden = (panel.style.display === 'none' || panel.style.display === '');
+    if (isHidden) {
+      panel.style.display = 'block';
+      if (btn) btn.classList.add('is-active');
+    } else {
+      panel.style.display = 'none';
+      if (btn) btn.classList.remove('is-active');
+    }
+  }
+
+  // Quick Open Add Modal with pre-selected parent
+  function openAddCategoryModalWithParent(parentId) {
+    openAddCategoryModal();
+    const select = document.getElementById('addCatParent');
+    if (select && parentId) {
+      select.value = String(parentId);
+    }
+  }
+
+  function setCategoryFilter(filterType, btnEl) {
+    currentFilter = filterType;
+    document.querySelectorAll('.cat-filter-btn').forEach(btn => btn.classList.remove('active'));
+    if (btnEl) btnEl.classList.add('active');
+    applyCategoryFilters();
+  }
+
+  function applyCategoryFilters() {
+    const q = (document.getElementById('categorySearchInput')?.value || '').toLowerCase().trim();
+    const cards = document.querySelectorAll('.category-item-card');
+    const addCard = document.getElementById('addNewCategoryCard');
+    
+    let visibleCount = 0;
+
+    cards.forEach(card => {
+      const name = card.getAttribute('data-name') || '';
+      const slug = card.getAttribute('data-slug') || '';
+      const hasSub = card.getAttribute('data-has-sub') || 'no';
+      const subNames = card.getAttribute('data-sub-names') || '';
+      const subSlugs = card.getAttribute('data-sub-slugs') || '';
+      const catId = card.getAttribute('data-id');
+
+      // 1. Text Search matching root name, slug OR any of its subcategories' names or slugs
+      const matchesSearch = !q || name.includes(q) || slug.includes(q) || subNames.includes(q) || subSlugs.includes(q);
+
+      // 2. Tab Filter ('all', 'has-sub', 'no-sub')
+      let matchesTab = true;
+      if (currentFilter === 'has-sub') {
+        matchesTab = (hasSub === 'yes');
+      } else if (currentFilter === 'no-sub') {
+        matchesTab = (hasSub === 'no');
+      }
+
+      if (matchesSearch && matchesTab) {
+        card.style.display = 'flex';
+        visibleCount++;
+
+        // If user searched for a subcategory name, automatically expand the panel so they see it!
+        if (q && (subNames.includes(q) || subSlugs.includes(q))) {
+          const panel = document.getElementById('subPanel-' + catId);
+          const btn = document.getElementById('subToggleBtn-' + catId);
+          if (panel) panel.style.display = 'block';
+          if (btn) btn.classList.add('is-active');
+        }
+      } else {
+        card.style.display = 'none';
+      }
+    });
+
+    // Add New card visibility
+    if (addCard) {
+      addCard.style.display = (q && visibleCount === 0) ? 'none' : 'flex';
+    }
+
+    // Dynamic count badge
+    const badge = document.getElementById('categoryCountBadge');
+    if (badge) {
+      badge.textContent = toBengaliDigits(visibleCount) + ' টি মূল বিভাগ';
+    }
+
+    const noResults = document.getElementById('noResultsNotice');
+    if (noResults) {
+      noResults.style.display = (visibleCount === 0) ? 'block' : 'none';
+    }
+  }
+
+  function toBengaliDigits(num) {
+    const bn = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+    return String(num).replace(/[0-9]/g, d => bn[d]);
+  }
+
+  // Add Category Modal
+  function openAddCategoryModal() {
+    const modal = document.getElementById('categoryAddModal');
+    if (modal) modal.style.display = 'flex';
+  }
+
+  function closeAddCategoryModal() {
+    const modal = document.getElementById('categoryAddModal');
+    if (modal) modal.style.display = 'none';
+  }
+
+  // Edit Category Modal
+  function openEditCategoryModal(cat) {
+    if (!cat) return;
+    const modal = document.getElementById('categoryEditModal');
+    const form = document.getElementById('editCategoryForm');
+    
+    form.action = `/admin/categories/${cat.id}/edit`;
+    document.getElementById('editCatName').value = cat.name || '';
+    document.getElementById('editCatSlug').value = cat.slug || '';
+    document.getElementById('editCatDesc').value = cat.description || '';
+    
+    const parentSelect = document.getElementById('editCatParent');
+    if (parentSelect) {
+      parentSelect.value = cat.parent_id || '0';
+      Array.from(parentSelect.options).forEach(opt => {
+        opt.disabled = (parseInt(opt.value, 10) === parseInt(cat.id, 10));
+      });
+    }
+
+    modal.style.display = 'flex';
+  }
+
+  function closeEditCategoryModal() {
+    const modal = document.getElementById('categoryEditModal');
+    if (modal) modal.style.display = 'none';
+  }
+
+  // Backdrop click & Escape key listeners
+  window.addEventListener('click', function(e) {
+    const addModal = document.getElementById('categoryAddModal');
+    const editModal = document.getElementById('categoryEditModal');
+    if (e.target === addModal) closeAddCategoryModal();
+    if (e.target === editModal) closeEditCategoryModal();
+  });
+
+  window.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      closeAddCategoryModal();
+      closeEditCategoryModal();
+    }
+  });
+</script>
 
 <%- include('partials/admin_layout_end') %>
