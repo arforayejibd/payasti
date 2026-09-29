@@ -3,6 +3,9 @@ const { SITE_NAME, TAGLINE, SITE_SUBTITLE, SITE_URL, DEFAULT_DESCRIPTION, OG_IMA
 function generateSeoMeta(options = {}) {
   const {
     title,
+    rawTitle = null,
+    ogTitle = null,
+    twitterTitle = null,
     description,
     image,
     url,
@@ -39,13 +42,16 @@ function generateSeoMeta(options = {}) {
   const canonicalUrl = toAbsoluteUrl(url || '/');
   const ogImage = toAbsoluteUrl(image || OG_IMAGE);
 
+  // Social share title: exact post title if provided
+  const socialTitle = ogTitle || rawTitle || pageTitle;
+
   return {
     title: pageTitle,
     description: metaDesc,
     keywords: keywords,
     canonical: canonicalUrl,
     og: {
-      title: pageTitle,
+      title: socialTitle,
       description: metaDesc,
       url: canonicalUrl,
       type: type,
@@ -57,12 +63,12 @@ function generateSeoMeta(options = {}) {
       card: 'summary_large_image',
       site: '@sera10bd',
       creator: '@sera10bd',
-      title: pageTitle,
+      title: twitterTitle || socialTitle,
       description: metaDesc,
       image: ogImage
     },
     articleMeta: type === 'article' ? {
-      author: author || 'পয়স্তি লেখক',
+      author: author || SITE_NAME,
       publishedTime: publishedTime,
       modifiedTime: modifiedTime || publishedTime
     } : null,
@@ -87,7 +93,7 @@ function getArticleSchema(post, author, category) {
     'inLanguage': 'bn-BD',
     'author': {
       '@type': 'Person',
-      'name': author ? (author.display_name || author.username) : 'পয়স্তি লেখক',
+      'name': author ? (author.display_name || author.username) : SITE_NAME,
       'url': author ? `${SITE_URL}/author/${encodeURIComponent(author.slug || author.nicename || author.username || '')}` : SITE_URL
     },
     'publisher': {

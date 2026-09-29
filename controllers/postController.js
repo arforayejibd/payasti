@@ -106,6 +106,9 @@ exports.getSinglePost = async (req, res) => {
 
     const seo = generateSeoMeta({
       title: `${post.title} | ${SITE_NAME}`,
+      exactTitle: `${post.title} | ${SITE_NAME}`,
+      ogTitle: post.title,
+      twitterTitle: post.title,
       description: post.excerpt || post.content.substring(0, 160),
       image: post.featured_image,
       url: `/post/${post.slug}`,
