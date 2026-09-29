@@ -1,5 +1,5 @@
 <%- include('partials/admin_layout_start', { 
-  pageTitle: 'হেডার মেনু ব্যবস্থাপনা (Header Navigation)', 
+  pageTitle: 'Header Navigation Builder', 
   pageBreadcrumb: 'Header Menu'
 }) %>
 
@@ -171,10 +171,10 @@
     <div style="background: #f0fdf4; border: 1px solid #86efac; color: #166534; padding: 14px 20px; border-radius: 12px; margin-bottom: 24px; font-weight: 700; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 8px rgba(22, 101, 52, 0.08);">
       <div style="display: flex; align-items: center; gap: 10px;">
         <span style="font-size: 22px;">✓</span>
-        <span>হেডার মেনু সফলভাবে সংরক্ষিত হয়েছে! ফন্টএন্ড হেডারে আপনার নির্বাচিত ক্যাটাগরিগুলো তাৎক্ষণিকভাবে কার্যকর হয়েছে।</span>
+        <span>Header navigation saved successfully! Changes are now live on the frontend.</span>
       </div>
       <a href="/" target="_blank" style="padding: 6px 14px; background: #166534; color: #ffffff; text-decoration: none; border-radius: 6px; font-size: 13px; font-weight: 700;">
-        সাইট দেখুন &raquo;
+        View Site &raquo;
       </a>
     </div>
   <% } %>
@@ -185,11 +185,11 @@
       <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
         <div style="display: flex; align-items: center; gap: 8px;">
           <span style="font-size: 16px;">👁️</span>
-          <strong style="font-size: 15px; color: var(--admin-text);">লাইভ হেডার প্রিভিউ (Live Header Preview)</strong>
-          <span style="font-size: 12px; color: var(--admin-text-muted); background: var(--admin-bg); padding: 2px 8px; border-radius: 6px; border: 1px solid var(--admin-border);">স্বয়ংক্রিয় আপডেট</span>
+          <strong style="font-size: 15px; color: var(--admin-text);">Live Header Preview</strong>
+          <span style="font-size: 12px; color: var(--admin-text-muted); background: var(--admin-bg); padding: 2px 8px; border-radius: 6px; border: 1px solid var(--admin-border);">Auto-updated</span>
         </div>
         <div style="font-size: 13px; color: var(--admin-text-muted);">
-          ফন্টএন্ডের হেডারে মেনু যেমনটি দেখা যাবে
+          Real-time preview of how the navigation appears on frontend
         </div>
       </div>
 
@@ -212,16 +212,16 @@
           <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
             <h3 style="font-size: 16px; font-weight: 800; margin: 0; color: var(--admin-text); display: flex; align-items: center; gap: 6px;">
               <span>📂</span>
-              <span>ক্যাটাগরি তালিকা (<%= toBengaliNumber(categories.length) %>)</span>
+              <span>Categories (<%= categories.length %>)</span>
             </h3>
-            <span style="font-size: 12px; color: var(--admin-text-muted);">টিক দিন</span>
+            <span style="font-size: 12px; color: var(--admin-text-muted);">Select</span>
           </div>
 
           <!-- Tabs: All / Popular / Active -->
           <div style="display: flex; align-items: center; gap: 6px;">
-            <button type="button" class="cat-tab-btn active" onclick="switchCatTab('all', this)">সবগুলো</button>
-            <button type="button" class="cat-tab-btn" onclick="switchCatTab('popular', this)">জনপ্রিয়</button>
-            <button type="button" class="cat-tab-btn" onclick="switchCatTab('active', this)">মেনুতে আছে</button>
+            <button type="button" class="cat-tab-btn active" onclick="switchCatTab('all', this)">All</button>
+            <button type="button" class="cat-tab-btn" onclick="switchCatTab('popular', this)">Popular</button>
+            <button type="button" class="cat-tab-btn" onclick="switchCatTab('active', this)">In Menu</button>
           </div>
         </div>
 
@@ -231,7 +231,7 @@
             <input 
               type="text" 
               id="catSearchInput" 
-              placeholder="ক্যাটাগরি খুঁজুন (যেমন: টেক, বই)..." 
+              placeholder="Search categories..." 
               style="width: 100%; padding: 8px 12px 8px 30px; font-size: 13.5px; border: 1px solid var(--admin-border); border-radius: 8px; background: var(--admin-bg); color: var(--admin-text); outline: none;"
               oninput="filterCategoriesList(this.value)"
             >
@@ -240,8 +240,8 @@
 
           <!-- Quick Actions -->
           <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; font-size: 12.5px;">
-            <button type="button" onclick="selectAllCats(true)" style="background: none; border: none; color: var(--admin-primary); cursor: pointer; font-weight: 700; padding: 0;">✓ দৃশ্যমান সব সিলেক্ট করুন</button>
-            <button type="button" onclick="selectAllCats(false)" style="background: none; border: none; color: #ef4444; cursor: pointer; font-weight: 600; padding: 0;">সিলেকশন মুছুন</button>
+            <button type="button" onclick="selectAllCats(true)" style="background: none; border: none; color: var(--admin-primary); cursor: pointer; font-weight: 700; padding: 0;">✓ Select all visible</button>
+            <button type="button" onclick="selectAllCats(false)" style="background: none; border: none; color: #ef4444; cursor: pointer; font-weight: 600; padding: 0;">Clear selection</button>
           </div>
 
           <!-- Category Checkbox List -->
@@ -270,10 +270,10 @@
                 </div>
                 <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
                   <span class="cat-active-badge" id="badge-<%= cat.slug %>" style="display: none; font-size: 11px; font-weight: 700; color: #065f46; background: #d1fae5; padding: 1px 6px; border-radius: 4px;">
-                    যুক্ত
+                    Added
                   </span>
                   <span style="font-size: 12px; font-weight: 700; color: var(--admin-text-muted); background: var(--admin-bg); padding: 2px 7px; border-radius: 10px; border: 1px solid var(--admin-border);">
-                    <%= toBengaliNumber(cat.count || 0) %>
+                    <%= cat.count || 0 %>
                   </span>
                 </div>
               </label>
@@ -286,7 +286,7 @@
             class="btn-new-action" 
             style="width: 100%; margin-top: 14px; padding: 10px; font-size: 14.5px; font-weight: 800; justify-content: center; border-radius: 8px;"
           >
-            <span>+ নির্বাচিতগুলো মেনুতে যোগ করুন</span>
+            <span>+ Add Selected to Menu</span>
           </button>
         </div>
       </div>
@@ -296,20 +296,20 @@
         <div class="admin-card-header" style="padding: 14px 20px;">
           <h3 style="font-size: 15px; font-weight: 800; margin: 0; color: var(--admin-text); display: flex; align-items: center; gap: 6px;">
             <span>🔗</span>
-            <span>কাস্টম লিংক বা এক্সটার্নাল পেজ</span>
+            <span>Custom Link or External Page</span>
           </h3>
         </div>
         <div class="admin-card-body" style="padding: 16px 20px;">
           <div style="margin-bottom: 10px;">
-            <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px; color: var(--admin-text);">মেনুর নাম *</label>
-            <input type="text" id="customLinkTitle" placeholder="যেমন: অফার / গাইড / হোম" style="width: 100%; padding: 8px 12px; font-size: 13.5px; border: 1px solid var(--admin-border); border-radius: 8px; background: var(--admin-bg); color: var(--admin-text); outline: none;">
+            <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px; color: var(--admin-text);">Menu Label *</label>
+            <input type="text" id="customLinkTitle" placeholder="e.g. Deals / Buying Guide / Home" style="width: 100%; padding: 8px 12px; font-size: 13.5px; border: 1px solid var(--admin-border); border-radius: 8px; background: var(--admin-bg); color: var(--admin-text); outline: none;">
           </div>
           <div style="margin-bottom: 12px;">
-            <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px; color: var(--admin-text);">লিংক / URL *</label>
-            <input type="text" id="customLinkUrl" placeholder="যেমন: /offers বা https://..." style="width: 100%; padding: 8px 12px; font-size: 13.5px; border: 1px solid var(--admin-border); border-radius: 8px; background: var(--admin-bg); color: var(--admin-text); outline: none;">
+            <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px; color: var(--admin-text);">Link / URL *</label>
+            <input type="text" id="customLinkUrl" placeholder="e.g. /deals or https://..." style="width: 100%; padding: 8px 12px; font-size: 13.5px; border: 1px solid var(--admin-border); border-radius: 8px; background: var(--admin-bg); color: var(--admin-text); outline: none;">
           </div>
           <button type="button" onclick="addCustomLinkToMenu()" class="btn-action-outline" style="width: 100%; padding: 8px; font-size: 13.5px; font-weight: 700; border-radius: 8px; border: 1px solid var(--admin-border); color: var(--admin-primary); cursor: pointer; background: var(--admin-bg-card);">
-            + কাস্টম লিংক যোগ করুন
+            + Add Custom Link
           </button>
         </div>
       </div>
@@ -317,17 +317,17 @@
       <!-- Quick Preset Buttons -->
       <div class="admin-card">
         <div class="admin-card-header" style="padding: 12px 18px;">
-          <span style="font-size: 13.5px; font-weight: 700; color: var(--admin-text);">⚡ কুইক প্রিসেট</span>
+          <span style="font-size: 13.5px; font-weight: 700; color: var(--admin-text);">⚡ Quick Presets</span>
         </div>
         <div class="admin-card-body" style="padding: 12px 18px; display: flex; flex-direction: column; gap: 8px;">
           <button type="button" onclick="applyPreset('standard')" style="text-align: left; padding: 7px 10px; font-size: 13px; font-weight: 600; border-radius: 6px; border: 1px solid var(--admin-border); background: var(--admin-bg); color: var(--admin-text); cursor: pointer;">
-            🌟 সেরা ১০ স্ট্যান্ডার্ড মেনু
+            🌟 Sera 10 Standard Menu
           </button>
           <button type="button" onclick="applyPreset('tech_books')" style="text-align: left; padding: 7px 10px; font-size: 13px; font-weight: 600; border-radius: 6px; border: 1px solid var(--admin-border); background: var(--admin-bg); color: var(--admin-text); cursor: pointer;">
-            📱 টেক ও গ্যাজেট + বই ফোকাসড
+            📱 Tech, Gadgets & Books Focused
           </button>
           <button type="button" onclick="resetToDefaultMenu()" style="text-align: left; padding: 7px 10px; font-size: 13px; font-weight: 600; border-radius: 6px; border: 1px solid #fee2e2; background: #fff5f5; color: #dc2626; cursor: pointer;">
-            🔄 ডিফল্ট রিস্টোর করুন
+            🔄 Restore Default Menu
           </button>
         </div>
       </div>
@@ -340,15 +340,15 @@
         <div>
           <h3 style="font-size: 17px; font-weight: 800; margin: 0 0 2px; color: var(--admin-text); display: flex; align-items: center; gap: 8px;">
             <span>🧭</span>
-            <span>সক্রিয় হেডার মেনু তালিকা (Active Menu Structure)</span>
+            <span>Active Menu Structure</span>
           </h3>
           <span style="font-size: 13px; color: var(--admin-text-muted);">
-            আইটেমগুলোকে টেনে (Drag & Drop) অথবা ▲ / ▼ বোতাম দিয়ে সাজান। সরাসরি নাম বা সাবমেনু এডিট করুন।
+            Drag & drop items or use ▲ / ▼ buttons to reorder. Edit titles inline or manage submenus.
           </span>
         </div>
         <div style="display: flex; align-items: center; gap: 8px;">
           <button type="button" onclick="collapseAllDrawers()" style="background: none; border: 1px solid var(--admin-border); color: var(--admin-text-muted); padding: 5px 10px; border-radius: 6px; font-size: 12.5px; font-weight: 600; cursor: pointer;">
-            সব সংকোচন করুন
+            Collapse All
           </button>
         </div>
       </div>
@@ -365,18 +365,18 @@
           <!-- Empty State -->
           <div id="emptyMenuState" style="display: none; text-align: center; padding: 40px 20px; background: var(--admin-bg); border: 2px dashed var(--admin-border); border-radius: 12px; margin-bottom: 24px;">
             <div style="font-size: 32px; margin-bottom: 8px;">📭</div>
-            <h4 style="font-size: 16px; font-weight: 700; color: var(--admin-text); margin-bottom: 4px;">কোনো মেনু আইটেম নেই</h4>
-            <p style="font-size: 14px; color: var(--admin-text-muted); margin: 0;">বাম পাশ থেকে ক্যাটাগরি সিলেক্ট করে যোগ করুন।</p>
+            <h4 style="font-size: 16px; font-weight: 700; color: var(--admin-text); margin-bottom: 4px;">No menu items added yet</h4>
+            <p style="font-size: 14px; color: var(--admin-text-muted); margin: 0;">Select categories from the left column to add them to your menu.</p>
           </div>
 
           <!-- Bottom Action Bar -->
           <div style="display: flex; align-items: center; justify-content: space-between; padding-top: 20px; border-top: 1px solid var(--admin-border); flex-wrap: wrap; gap: 14px;">
             <div style="font-size: 14px; color: var(--admin-text-muted);">
-              মোট মূল মেনু আইটেম: <strong id="totalMenuItemsCount" style="color: var(--admin-text);">০</strong> টি
+              Total main items: <strong id="totalMenuItemsCount" style="color: var(--admin-text);">0</strong>
             </div>
 
             <button type="submit" class="btn-new-action" style="padding: 12px 36px; font-size: 16px; font-weight: 800; border-radius: 10px; box-shadow: 0 4px 14px rgba(6, 130, 0, 0.3);">
-              💾 হেডার মেনু সেভ করুন
+              💾 Save Menu Navigation
             </button>
           </div>
         </form>
@@ -389,11 +389,11 @@
   <div class="unsaved-floating-bar" id="unsavedFloatingBar">
     <div style="display: flex; align-items: center; gap: 10px;">
       <span style="font-size: 18px;">⚠️</span>
-      <span style="font-weight: 700; font-size: 14.5px;">মেনুতে অসংরক্ষিত পরিবর্তন রয়েছে। ফন্টএন্ডে দেখতে সেভ করুন।</span>
+      <span style="font-weight: 700; font-size: 14.5px;">You have unsaved changes. Save to publish on frontend.</span>
     </div>
     <div style="display: flex; align-items: center; gap: 10px;">
       <button type="button" onclick="submitMenuForm()" style="background: var(--admin-primary, #059669); color: #ffffff; border: none; padding: 8px 20px; border-radius: 8px; font-weight: 800; font-size: 14px; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.2);">
-        💾 এখনই সেভ করুন
+        💾 Save Now
       </button>
     </div>
   </div>
@@ -404,18 +404,18 @@
   <div class="subcat-modal-card">
     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--admin-border);">
       <h3 style="font-size: 16px; font-weight: 800; color: var(--admin-text); margin: 0;">
-        📂 সাব-ক্যাটাগরি ড্রপডাউন যোগ করুন
+        📂 Add Subcategory Dropdown Item
       </h3>
       <button type="button" onclick="closeSubcatModal()" style="background: none; border: none; font-size: 20px; cursor: pointer; color: var(--admin-text-muted);">&times;</button>
     </div>
 
     <div style="margin-bottom: 14px;">
-      <label style="display: block; font-size: 13.5px; font-weight: 700; margin-bottom: 6px; color: var(--admin-text);">বিদ্যমান ক্যাটাগরি থেকে বেছে নিন:</label>
+      <label style="display: block; font-size: 13.5px; font-weight: 700; margin-bottom: 6px; color: var(--admin-text);">Choose from existing categories:</label>
       <select id="modalCatSelect" onchange="onModalCatChange(this)" style="width: 100%; padding: 8px 12px; font-size: 14px; border: 1px solid var(--admin-border); border-radius: 8px; background: var(--admin-bg); color: var(--admin-text); outline: none;">
-        <option value="">-- ক্যাটাগরি নির্বাচন করুন --</option>
+        <option value="">-- Select Category --</option>
         <% categories.forEach(cat => { %>
           <option value="<%= cat.slug %>" data-name="<%= cat.name %>">
-            <%= cat.name %> (<%= toBengaliNumber(cat.count || 0) %>টি পোস্ট)
+            <%= cat.name %> (<%= cat.count || 0 %> <%= cat.count === 1 ? 'post' : 'posts' %>)
           </option>
         <% }) %>
       </select>
@@ -423,26 +423,26 @@
 
     <div style="display: flex; align-items: center; gap: 10px; margin: 14px 0;">
       <hr style="flex: 1; border: none; border-top: 1px solid var(--admin-border);">
-      <span style="font-size: 12px; color: var(--admin-text-muted); font-weight: 700;">অথবা কাস্টম সাব-লিংক</span>
+      <span style="font-size: 12px; color: var(--admin-text-muted); font-weight: 700;">Or Custom Sub-link</span>
       <hr style="flex: 1; border: none; border-top: 1px solid var(--admin-border);">
     </div>
 
     <div style="margin-bottom: 10px;">
-      <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px; color: var(--admin-text);">সাবমেনুর নাম *</label>
-      <input type="text" id="modalSubTitle" placeholder="যেমন: স্মার্টওয়াচ ও এক্সেসরিজ" style="width: 100%; padding: 8px 12px; font-size: 13.5px; border: 1px solid var(--admin-border); border-radius: 8px; background: var(--admin-bg); color: var(--admin-text); outline: none;">
+      <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px; color: var(--admin-text);">Submenu Name *</label>
+      <input type="text" id="modalSubTitle" placeholder="e.g. Smartwatches & Wearables" style="width: 100%; padding: 8px 12px; font-size: 13.5px; border: 1px solid var(--admin-border); border-radius: 8px; background: var(--admin-bg); color: var(--admin-text); outline: none;">
     </div>
 
     <div style="margin-bottom: 18px;">
-      <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px; color: var(--admin-text);">সাবমেনুর URL / লিঙ্ক *</label>
-      <input type="text" id="modalSubUrl" placeholder="যেমন: /category/tech" style="width: 100%; padding: 8px 12px; font-size: 13.5px; border: 1px solid var(--admin-border); border-radius: 8px; background: var(--admin-bg); color: var(--admin-text); outline: none;">
+      <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px; color: var(--admin-text);">Submenu URL / Link *</label>
+      <input type="text" id="modalSubUrl" placeholder="e.g. /category/tech" style="width: 100%; padding: 8px 12px; font-size: 13.5px; border: 1px solid var(--admin-border); border-radius: 8px; background: var(--admin-bg); color: var(--admin-text); outline: none;">
     </div>
 
     <div style="display: flex; align-items: center; justify-content: flex-end; gap: 10px;">
       <button type="button" onclick="closeSubcatModal()" style="padding: 8px 16px; font-size: 13.5px; font-weight: 600; border-radius: 8px; border: 1px solid var(--admin-border); background: var(--admin-bg); color: var(--admin-text); cursor: pointer;">
-        বাতিল
+        Cancel
       </button>
       <button type="button" onclick="confirmAddSubcategory()" class="btn-new-action" style="padding: 8px 20px; font-size: 13.5px; font-weight: 700; border-radius: 8px;">
-        + সাবমেনু যোগ করুন
+        + Add Submenu
       </button>
     </div>
   </div>
@@ -537,7 +537,7 @@
     preview.innerHTML = '';
 
     if (activeMenuData.length === 0) {
-      preview.innerHTML = '<span style="font-size: 13px; color: var(--admin-text-muted); font-style: italic;">মেনু খালি। বাম পাশ থেকে ক্যাটাগরি যোগ করুন।</span>';
+      preview.innerHTML = '<span style="font-size: 13px; color: var(--admin-text-muted); font-style: italic;">Navigation is empty. Add categories from the left panel.</span>';
       return;
     }
 
@@ -547,7 +547,7 @@
       
       const hasSubs = item.subcategories && item.subcategories.length > 0;
       pill.innerHTML = `
-        <span>${escapeHtml(item.title || 'শিরোনামহীন')}</span>
+        <span>${escapeHtml(item.title || 'Untitled')}</span>
         ${hasSubs ? '<span style="font-size: 10px; opacity: 0.7; margin-left: 2px;">▼ (' + item.subcategories.length + ')</span>' : ''}
       `;
       preview.appendChild(pill);
@@ -587,7 +587,7 @@
           <div style="display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0;">
             
             <!-- Drag Handle -->
-            <div class="menu-drag-handle" title="টেনে ক্রম সাজান">
+            <div class="menu-drag-handle" title="Drag to reorder">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                 <circle cx="9" cy="5" r="2"></circle><circle cx="15" cy="5" r="2"></circle>
                 <circle cx="9" cy="12" r="2"></circle><circle cx="15" cy="12" r="2"></circle>
@@ -597,8 +597,8 @@
 
             <!-- Up / Down Buttons -->
             <div style="display: flex; flex-direction: column; gap: 2px;">
-              <button type="button" onclick="moveMenuItem(${index}, -1)" ${index === 0 ? 'disabled style="opacity: 0.2; cursor: not-allowed;"' : ''} style="background: var(--admin-bg); border: 1px solid var(--admin-border); border-radius: 4px; padding: 2px 6px; font-size: 10px; cursor: pointer; color: var(--admin-text);" title="উপরে তুলুন">▲</button>
-              <button type="button" onclick="moveMenuItem(${index}, 1)" ${index === activeMenuData.length - 1 ? 'disabled style="opacity: 0.2; cursor: not-allowed;"' : ''} style="background: var(--admin-bg); border: 1px solid var(--admin-border); border-radius: 4px; padding: 2px 6px; font-size: 10px; cursor: pointer; color: var(--admin-text);" title="নিচে নামান">▼</button>
+              <button type="button" onclick="moveMenuItem(${index}, -1)" ${index === 0 ? 'disabled style="opacity: 0.2; cursor: not-allowed;"' : ''} style="background: var(--admin-bg); border: 1px solid var(--admin-border); border-radius: 4px; padding: 2px 6px; font-size: 10px; cursor: pointer; color: var(--admin-text);" title="Move up">▲</button>
+              <button type="button" onclick="moveMenuItem(${index}, 1)" ${index === activeMenuData.length - 1 ? 'disabled style="opacity: 0.2; cursor: not-allowed;"' : ''} style="background: var(--admin-bg); border: 1px solid var(--admin-border); border-radius: 4px; padding: 2px 6px; font-size: 10px; cursor: pointer; color: var(--admin-text);" title="Move down">▼</button>
             </div>
 
             <!-- Serial Badge -->
@@ -611,7 +611,7 @@
               <input 
                 type="text" 
                 value="${escapeHtml(item.title || '')}" 
-                placeholder="মেনু নাম" 
+                placeholder="Menu title" 
                 oninput="updateMenuItemTitle(${index}, this.value)"
                 style="width: 100%; padding: 7px 12px; font-size: 14.5px; font-weight: 700; border: 1px solid var(--admin-border); border-radius: 8px; background: var(--admin-bg); color: var(--admin-text); outline: none;"
               >
@@ -630,9 +630,9 @@
               type="button" 
               onclick="toggleDrawer(${index})" 
               style="background: var(--admin-bg); border: 1px solid var(--admin-border); color: var(--admin-text); padding: 6px 12px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px;"
-              title="সাবমেনু ড্রপডাউন পরিচালনা"
+              title="Manage submenu dropdown"
             >
-              <span>📂 সাবমেনু (${hasSubs ? item.subcategories.length : 0})</span>
+              <span>📂 Submenu (${hasSubs ? item.subcategories.length : 0})</span>
               <span id="drawer-arrow-${index}">▼</span>
             </button>
 
@@ -641,7 +641,7 @@
               type="button" 
               onclick="removeMenuItem(${index})" 
               style="background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; border-radius: 8px; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; font-size: 15px; cursor: pointer; transition: all 0.15s ease; flex-shrink: 0;"
-              title="মেনু থেকে মুছুন"
+              title="Remove from menu"
             >
               ✕
             </button>
@@ -651,9 +651,9 @@
         <!-- Subcategories Drawer -->
         <div id="drawer-${index}" style="display: none; margin-top: 14px; padding-top: 14px; border-top: 1px dashed var(--admin-border);">
           <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; margin-left: 36px; flex-wrap: wrap; gap: 8px;">
-            <strong style="font-size: 13.5px; color: var(--admin-text);">🔽 '${escapeHtml(item.title || '')}' এর অধীনে ড্রপডাউন সাব-ক্যাটাগরি:</strong>
+            <strong style="font-size: 13.5px; color: var(--admin-text);">🔽 Submenu dropdown under '${escapeHtml(item.title || '')}':</strong>
             <button type="button" onclick="openSubcategoryModal(${index})" style="background: rgba(6, 130, 0, 0.08); border: 1px solid rgba(6, 130, 0, 0.2); color: var(--admin-primary); padding: 5px 12px; border-radius: 6px; font-size: 12.5px; font-weight: 700; cursor: pointer;">
-              + সাব-ক্যাটাগরি যোগ করুন
+              + Add Subcategory
             </button>
           </div>
 
@@ -673,7 +673,7 @@
   // Render Sub-items HTML
   function renderSubItemsHtml(subs, parentIndex) {
     if (!subs || subs.length === 0) {
-      return `<div style="margin-left: 36px; font-size: 13px; color: var(--admin-text-muted); font-style: italic; padding: 6px 0;">কোনো সাব-আইটেম যোগ করা হয়নি। এটি সাধারণ সিঙ্গেল মেনু হিসেবে থাকবে।</div>`;
+      return `<div style="margin-left: 36px; font-size: 13px; color: var(--admin-text-muted); font-style: italic; padding: 6px 0;">No sub-items added. This will display as a single top-level link.</div>`;
     }
 
     return subs.map((sub, subIndex) => `
@@ -683,7 +683,7 @@
           <input 
             type="text" 
             value="${escapeHtml(sub.title || '')}" 
-            placeholder="সাবমেনু নাম" 
+            placeholder="Submenu title" 
             oninput="updateSubItemTitle(${parentIndex}, ${subIndex}, this.value)"
             style="width: 180px; padding: 5px 10px; font-size: 13px; font-weight: 600; border: 1px solid var(--admin-border); border-radius: 6px; background: var(--admin-bg-card); color: var(--admin-text); outline: none;"
           >
@@ -695,7 +695,7 @@
           type="button" 
           onclick="removeSubItem(${parentIndex}, ${subIndex})" 
           style="background: none; border: none; color: #ef4444; font-size: 14px; font-weight: 700; cursor: pointer; padding: 2px 6px;"
-          title="সাব-আইটেম মুছুন"
+          title="Remove sub-item"
         >
           ✕
         </button>
@@ -852,11 +852,11 @@
     const slug = select.value || (url.includes('/category/') ? url.split('/category/')[1] : '');
 
     if (!title) {
-      alert('সাবমেনুর নাম লিখুন।');
+      alert('Please enter submenu name.');
       return;
     }
     if (!url) {
-      alert('সাবমেনুর লিঙ্ক লিখুন।');
+      alert('Please enter submenu URL.');
       return;
     }
 
@@ -892,7 +892,7 @@
   function addSelectedCategoriesToMenu() {
     const checkedBoxes = document.querySelectorAll('.cat-source-chk:checked');
     if (checkedBoxes.length === 0) {
-      alert('অনুগ্রহ করে অন্তত একটি ক্যাটাগরি সিলেক্ট করুন।');
+      alert('Please select at least one category.');
       return;
     }
 
@@ -921,7 +921,7 @@
       const container = document.getElementById('activeMenuItemsList');
       if (container) container.lastElementChild?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     } else {
-      alert('নির্বাচিত ক্যাটাগরিগুলো ইতোমধ্যেই মেনুতে বিদ্যমান রয়েছে।');
+      alert('Selected categories are already in the menu.');
     }
   }
 
@@ -934,13 +934,13 @@
     let url = (urlInput.value || '').trim();
 
     if (!title) {
-      alert('মেনুর নাম লিখুন।');
+      alert('Please enter menu label.');
       titleInput.focus();
       return;
     }
 
     if (!url) {
-      alert('মেনুর লিংক লিখুন।');
+      alert('Please enter menu link.');
       urlInput.focus();
       return;
     }
@@ -963,40 +963,40 @@
 
   // Apply Presets
   function applyPreset(presetType) {
-    if (!confirm('আপনি কি এই প্রিসেট মেনু সেট করতে চান? বর্তমান সাজানো মেনু পরিবর্তন হবে।')) return;
+    if (!confirm('Apply this preset menu? Current menu order will be replaced.')) return;
 
     if (presetType === 'standard') {
       activeMenuData = [
-        { title: 'হোম', url: '/' },
-        { title: 'সেরা ১০ তালিকা', url: '/category/sera-10-lists', slug: 'sera-10-lists' },
+        { title: 'Home', url: '/' },
+        { title: 'Top 10 Lists', url: '/category/sera-10-lists', slug: 'sera-10-lists' },
         { 
-          title: 'টেক ও গ্যাজেট', 
+          title: 'Tech & Gadgets', 
           url: '/category/tech', 
           slug: 'tech',
           subcategories: [
-            { title: 'স্মার্টওয়াচ ও গ্যাজেটস', slug: 'tech', url: '/category/tech' },
-            { title: 'টুলস ও এক্সেসরিজ', slug: 'tools', url: '/category/tools' }
+            { title: 'Smartwatches & Gadgets', slug: 'tech', url: '/category/tech' },
+            { title: 'Tools & Accessories', slug: 'tools', url: '/category/tools' }
           ]
         },
-        { title: 'বই রিভিউ', url: '/category/books', slug: 'books' },
+        { title: 'Book Reviews', url: '/category/books', slug: 'books' },
         { 
-          title: 'বিউটি ও পার্সোনাল কেয়ার', 
+          title: 'Beauty & Personal Care', 
           url: '/category/beauty-and-personal-care', 
           slug: 'beauty-and-personal-care',
           subcategories: [
-            { title: 'বেবি প্রোডাক্টস', slug: 'baby-products', url: '/category/baby-products' }
+            { title: 'Baby Products', slug: 'baby-products', url: '/category/baby-products' }
           ]
         },
-        { title: 'লাইফস্টাইল ও হেলথ', url: '/category/health-and-wellness', slug: 'health-and-wellness' },
-        { title: 'ব্লগ', url: '/category/blog', slug: 'blog' }
+        { title: 'Health & Wellness', url: '/category/health-and-wellness', slug: 'health-and-wellness' },
+        { title: 'Blog', url: '/category/blog', slug: 'blog' }
       ];
     } else if (presetType === 'tech_books') {
       activeMenuData = [
-        { title: 'হোম', url: '/' },
-        { title: 'সেরা ১০ তালিকা', url: '/category/sera-10-lists', slug: 'sera-10-lists' },
-        { title: 'টেক ও গ্যাজেট', url: '/category/tech', slug: 'tech' },
-        { title: 'বই রিভিউ', url: '/category/books', slug: 'books' },
-        { title: 'ব্লগ', url: '/category/blog', slug: 'blog' }
+        { title: 'Home', url: '/' },
+        { title: 'Top 10 Lists', url: '/category/sera-10-lists', slug: 'sera-10-lists' },
+        { title: 'Tech & Gadgets', url: '/category/tech', slug: 'tech' },
+        { title: 'Book Reviews', url: '/category/books', slug: 'books' },
+        { title: 'Blog', url: '/category/blog', slug: 'blog' }
       ];
     }
 
@@ -1006,7 +1006,7 @@
 
   // Reset to Default
   function resetToDefaultMenu() {
-    if (confirm('আপনি কি মেনুটি ডিফল্ট অবস্থায় ফিরিয়ে নিতে চান?')) {
+    if (confirm('Reset menu to default navigation?')) {
       applyPreset('standard');
     }
   }

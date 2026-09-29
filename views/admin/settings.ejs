@@ -1,5 +1,5 @@
 <%- include('partials/admin_layout_start', { 
-  pageTitle: 'সাইট সাধারণ সেটিংস ও ব্র্যান্ডিং (Settings)', 
+  pageTitle: 'General Settings & Branding', 
   pageBreadcrumb: 'Settings'
 }) %>
 
@@ -120,10 +120,10 @@
     <div style="background: #f0fdf4; border: 1px solid #86efac; color: #166534; padding: 14px 20px; border-radius: 12px; margin-bottom: 24px; font-weight: 700; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 8px rgba(22, 101, 52, 0.08);">
       <div style="display: flex; align-items: center; gap: 10px;">
         <span style="font-size: 22px;">✓</span>
-        <span>সাইট সেটিংস সফলভাবে সংরক্ষিত হয়েছে! ফন্টএন্ডে তা তাৎক্ষণিকভাবে আপডেট হয়েছে।</span>
+        <span>Site settings have been successfully saved and applied to the frontend.</span>
       </div>
       <a href="/" target="_blank" style="padding: 6px 14px; background: #166534; color: #ffffff; text-decoration: none; border-radius: 6px; font-size: 13px; font-weight: 700;">
-        সাইট দেখুন &raquo;
+        View Site &raquo;
       </a>
     </div>
   <% } %>
@@ -143,8 +143,8 @@
           <div class="settings-section-header">
             <div class="settings-section-icon">🎨</div>
             <div>
-              <h3 class="settings-section-title">সাইট ব্র্যান্ডিং, লোগো ও ফেভিকন</h3>
-              <div class="settings-section-subtitle">হেডার, ফুটার এবং ব্রাউজার ট্যাবে প্রদর্শনের লোগো ও আইকন</div>
+              <h3 class="settings-section-title">Site Branding, Logo & Favicon</h3>
+              <div class="settings-section-subtitle">Logos and icons displayed across header, footer, and browser tabs</div>
             </div>
           </div>
 
@@ -154,9 +154,9 @@
             <div class="media-upload-box">
               <div>
                 <label class="admin-form-label" style="font-size: 14.5px; font-weight: 800; color: var(--admin-text, #0f172a); margin-bottom: 2px;">
-                  🖼️ ওয়েবসাইট লোগো (Site Logo)
+                  🖼️ Site Logo
                 </label>
-                <div style="font-size: 12px; color: var(--admin-text-muted, #64748b);">হেডারে ও ফুটারে প্রদর্শিত হবে (স্বচ্ছ PNG বা SVG সাজেস্টেড)</div>
+                <div style="font-size: 12px; color: var(--admin-text-muted, #64748b);">Displayed in header and footer (transparent PNG or SVG recommended)</div>
               </div>
 
               <!-- Drag and Drop Image Picker -->
@@ -164,18 +164,18 @@
                    id="logoDropzone"
                    data-name="site_logo" 
                    data-initial-url="<%= settings.site_logo || '' %>"
-                   data-prompt="লোগো আপলোড বা সিলেক্ট করুন" 
-                   data-hint="ছবি ড্রপ করুন অথবা মিডিয়া লাইব্রেরি থেকে বাছুন"
+                   data-prompt="Upload or select site logo" 
+                   data-hint="Drop image here or choose from Media Library"
                    style="min-height: 140px;">
                 <input type="hidden" name="site_logo" id="siteLogoInput" value="<%= settings.site_logo || '' %>">
               </div>
 
               <div style="display: flex; align-items: center; justify-content: space-between; font-size: 12px; flex-wrap: wrap; gap: 8px;">
                 <button type="button" onclick="openMediaForField('siteLogoInput', 'logoDropzone')" class="btn-action-outline" style="padding: 6px 12px; font-size: 12.5px; font-weight: 700; border-radius: 6px; border: 1px solid var(--admin-border, #e2e8f0); background: #ffffff; cursor: pointer;">
-                  📂 মিডিয়া লাইব্রেরি
+                  📂 Media Library
                 </button>
                 <button type="button" onclick="clearFieldAndDropzone('siteLogoInput', 'logoDropzone')" style="background: none; border: none; color: #ef4444; font-size: 12px; font-weight: 600; cursor: pointer; padding: 4px;">
-                  লোগো মুছুন (ডিফল্ট টেক্সট লোগো ব্যবহার)
+                  Remove logo (use default text logo)
                 </button>
               </div>
             </div>
@@ -184,9 +184,9 @@
             <div class="media-upload-box">
               <div>
                 <label class="admin-form-label" style="font-size: 14.5px; font-weight: 800; color: var(--admin-text, #0f172a); margin-bottom: 2px;">
-                  🔖 ওয়েবসাইট ফেভিকন (Site Favicon)
+                  🔖 Site Favicon
                 </label>
-                <div style="font-size: 12px; color: var(--admin-text-muted, #64748b);">ব্রাউজার ট্যাব ও বুকমার্কে দেখা যাবে (৩২x৩২ বা ৬৪x৬৪ PNG/ICO)</div>
+                <div style="font-size: 12px; color: var(--admin-text-muted, #64748b);">Visible in browser tabs and bookmarks (32x32 or 64x64 PNG/ICO)</div>
               </div>
 
               <!-- Drag and Drop Favicon Picker -->
@@ -194,20 +194,20 @@
                    id="faviconDropzone"
                    data-name="site_favicon" 
                    data-initial-url="<%= settings.site_favicon || '' %>"
-                   data-prompt="ফেভিকন আপলোড বা বাছুন" 
-                   data-hint="আইকন ড্রপ করুন অথবা মিডিয়া থেকে নিন"
+                   data-prompt="Upload or select favicon" 
+                   data-hint="Drop icon here or choose from Media Library"
                    style="min-height: 140px;">
                 <input type="hidden" name="site_favicon" id="siteFaviconInput" value="<%= settings.site_favicon || '' %>">
               </div>
 
               <!-- Browser Tab Mock Live Preview -->
               <div>
-                <div style="font-size: 11.5px; color: var(--admin-text-muted, #64748b); margin-bottom: 4px; font-weight: 600;">ব্রাউজার ট্যাবে যেমন দেখাবে:</div>
+                <div style="font-size: 11.5px; color: var(--admin-text-muted, #64748b); margin-bottom: 4px; font-weight: 600;">Browser tab live preview:</div>
                 <div class="browser-tab-mock">
                   <div class="browser-tab-mock-inner">
                     <img src="<%= settings.site_favicon || '/images/favicon-32x32.png' %>" alt="Favicon" class="tab-favicon-preview" id="mockTabFavicon">
                     <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" id="mockTabTitle">
-                      <%= settings.site_title || 'সেরা ১০' %> - <%= settings.site_tagline || 'রিভিউ' %>
+                      <%= settings.site_title || 'Sera 10' %> - <%= settings.site_tagline || 'Reviews' %>
                     </span>
                   </div>
                 </div>
@@ -215,10 +215,10 @@
 
               <div style="display: flex; align-items: center; justify-content: space-between; font-size: 12px; flex-wrap: wrap; gap: 8px;">
                 <button type="button" onclick="openMediaForField('siteFaviconInput', 'faviconDropzone')" class="btn-action-outline" style="padding: 6px 12px; font-size: 12.5px; font-weight: 700; border-radius: 6px; border: 1px solid var(--admin-border, #e2e8f0); background: #ffffff; cursor: pointer;">
-                  📂 মিডিয়া লাইব্রেরি
+                  📂 Media Library
                 </button>
                 <button type="button" onclick="clearFieldAndDropzone('siteFaviconInput', 'faviconDropzone')" style="background: none; border: none; color: #ef4444; font-size: 12px; font-weight: 600; cursor: pointer; padding: 4px;">
-                  ফেভিকন মুছুন
+                  Remove favicon
                 </button>
               </div>
             </div>
@@ -231,13 +231,13 @@
           <div class="settings-section-header">
             <div class="settings-section-icon">⚙️</div>
             <div>
-              <h3 class="settings-section-title">সাধারণ তথ্য ও পরিচিতি (Website Identity)</h3>
-              <div class="settings-section-subtitle">ওয়েবসাইটের নাম, ট্যাগলাইন এবং এসইও মেটা বিবরণ</div>
+              <h3 class="settings-section-title">General Identity & SEO Metadata</h3>
+              <div class="settings-section-subtitle">Site name, tagline, and SEO meta descriptions</div>
             </div>
           </div>
 
           <div class="admin-form-group">
-            <label class="admin-form-label" style="font-weight: 700;">ওয়েবসাইট শিরোনাম (Site Title) *</label>
+            <label class="admin-form-label" style="font-weight: 700;">Site Title *</label>
             <input 
               type="text" 
               name="site_title" 
@@ -248,11 +248,11 @@
               oninput="updateLiveMocks()"
               style="font-size: 15px; font-weight: 600;"
             >
-            <span style="font-size: 12px; color: var(--admin-text-muted); margin-top: 4px; display: block;">ব্রাউজারের শিরোনাম ও হেডার ব্র্যান্ডে ব্যবহৃত হবে।</span>
+            <span style="font-size: 12px; color: var(--admin-text-muted); margin-top: 4px; display: block;">Used in browser title and header branding.</span>
           </div>
 
           <div class="admin-form-group">
-            <label class="admin-form-label" style="font-weight: 700;">ট্যাগলাইন (Site Tagline)</label>
+            <label class="admin-form-label" style="font-weight: 700;">Site Tagline</label>
             <input 
               type="text" 
               name="site_tagline" 
@@ -262,19 +262,19 @@
               oninput="updateLiveMocks()"
               style="font-size: 15px;"
             >
-            <span style="font-size: 12px; color: var(--admin-text-muted); margin-top: 4px; display: block;">হোমপেজ টাইটেল ও হেডার মেটায় প্রদর্শিত হয়।</span>
+            <span style="font-size: 12px; color: var(--admin-text-muted); margin-top: 4px; display: block;">Displayed in homepage title and header meta.</span>
           </div>
 
           <div class="admin-form-group">
-            <label class="admin-form-label" style="font-weight: 700;">ওয়েবসাইট পরিচিতি / মেটা বিবরণ (Meta Description)</label>
+            <label class="admin-form-label" style="font-weight: 700;">Meta Description / Site Summary</label>
             <textarea 
               name="site_description" 
               class="admin-form-textarea" 
               rows="3"
               style="font-size: 14px; line-height: 1.6;"
-              placeholder="সেরা ১০ (Sera 10) বাংলাদেশের শীর্ষস্থানীয় প্রোডাক্ট রিভিউ..."
+              placeholder="Sera 10 is Bangladesh's leading product review..."
             ><%= settings.site_description || '' %></textarea>
-            <span style="font-size: 12px; color: var(--admin-text-muted); margin-top: 4px; display: block;">গুগল ও সার্চ ইঞ্জিনে সাইটের প্রধান বর্ণনা হিসেবে ব্যবহৃত হবে (১৫০-১৬০ অক্ষর সাজেস্টেড)।</span>
+            <span style="font-size: 12px; color: var(--admin-text-muted); margin-top: 4px; display: block;">Used as primary description in search engines (150-160 characters recommended).</span>
           </div>
         </div>
 
@@ -290,45 +290,45 @@
           <div class="settings-section-header">
             <div class="settings-section-icon">🦶</div>
             <div>
-              <h3 class="settings-section-title">ফুটার সেটিংস ও টেক্সট কাস্টমাইজেশন</h3>
-              <div class="settings-section-subtitle">ফন্টএন্ডের ফুটারের বিবরণ, ডিসক্লেমার ও কপিরাইট বার্তা</div>
+              <h3 class="settings-section-title">Footer Settings & Customization</h3>
+              <div class="settings-section-subtitle">Frontend footer bio, affiliate disclosure, and copyright notice</div>
             </div>
           </div>
 
           <div class="admin-form-group">
-            <label class="admin-form-label" style="font-weight: 700;">ফুটার পরিচিতি বার্তা (Footer About / Bio Text)</label>
+            <label class="admin-form-label" style="font-weight: 700;">Footer About / Bio Text</label>
             <textarea 
               name="footer_about_text" 
               class="admin-form-textarea" 
               rows="3"
               style="font-size: 14px; line-height: 1.6;"
-              placeholder="সেরা ১০ (Sera 10) বাংলাদেশের শীর্ষস্থানীয় নির্ভরযোগ্য প্রোডাক্ট রিভিউ..."
+              placeholder="Write a short summary about the website..."
             ><%= settings.footer_about_text || 'সেরা ১০ (Sera 10) বাংলাদেশের শীর্ষস্থানীয় নির্ভরযোগ্য প্রোডাক্ট রিভিউ, কেনাকাটার গাইড এবং সেরা ১০ তালিকার বিশ্বস্ত প্ল্যাটফর্ম। আমরা গবেষণানির্ভর ও নিরপেক্ষ তথ্যের মাধ্যমে আপনার সঠিক পণ্য বেছে নিতে সাহায্য করি।' %></textarea>
-            <span style="font-size: 12px; color: var(--admin-text-muted); margin-top: 4px; display: block;">ফুটারের প্রথম কলামে লোগোর নিচে এই বিবরণটি দেখা যাবে।</span>
+            <span style="font-size: 12px; color: var(--admin-text-muted); margin-top: 4px; display: block;">Visible under the logo in the first footer column.</span>
           </div>
 
           <div class="admin-form-group">
-            <label class="admin-form-label" style="font-weight: 700;">এফিলিয়েট নোটিশ / ডিসক্লেমার (Affiliate Disclosure)</label>
+            <label class="admin-form-label" style="font-weight: 700;">Affiliate Disclosure Notice</label>
             <textarea 
               name="footer_affiliate_notice" 
               class="admin-form-textarea" 
               rows="2"
               style="font-size: 13.5px; line-height: 1.5;"
-              placeholder="বিজ্ঞপ্তি: আমাদের আর্টিকেলের কিছু এফিলিয়েট লিঙ্কের মাধ্যমে পণ্য ক্রয় করলে আমরা কমিশন পেতে পারি..."
+              placeholder="Affiliate disclosure notice..."
             ><%= settings.footer_affiliate_notice || 'বিজ্ঞপ্তি: আমাদের আর্টিকেলের কিছু এফিলিয়েট লিঙ্কের মাধ্যমে পণ্য ক্রয় করলে আমরা কমিশন পেতে পারি, যা সাইট পরিচালনায় সাহায্য করে। এতে আপনার অতিরিক্ত কোনো খরচ হয় না।' %></textarea>
-            <span style="font-size: 12px; color: var(--admin-text-muted); margin-top: 4px; display: block;">ফুটারের পরিচিতির নিচে ব্যাজ আকারে প্রদর্শিত হবে।</span>
+            <span style="font-size: 12px; color: var(--admin-text-muted); margin-top: 4px; display: block;">Displayed as a disclosure notice below the footer bio.</span>
           </div>
 
           <div class="admin-form-group">
-            <label class="admin-form-label" style="font-weight: 700;">ফুটার কপিরাইট বার্তা (Footer Copyright)</label>
+            <label class="admin-form-label" style="font-weight: 700;">Footer Copyright Notice</label>
             <input 
               type="text" 
               name="footer_copyright_text" 
-              value="<%= settings.footer_copyright_text || 'কপিরাইট © ২০২৪ - ২০২৬ সেরা ১০ (Sera 10)। সর্বস্বত্ব সংরক্ষিত।' %>" 
+              value="<%= settings.footer_copyright_text || 'Copyright © 2024 - 2026 Sera 10. All rights reserved.' %>" 
               class="admin-form-input"
-              placeholder="কপিরাইট © ২০২৪ - ২০২৬ সেরা ১০..."
+              placeholder="Copyright © 2024 - 2026 Sera 10..."
             >
-            <span style="font-size: 12px; color: var(--admin-text-muted); margin-top: 4px; display: block;">ফুটারের একদম নিচের বারটিতে প্রদর্শিত হবে।</span>
+            <span style="font-size: 12px; color: var(--admin-text-muted); margin-top: 4px; display: block;">Displayed in the bottom footer bar.</span>
           </div>
         </div>
 
@@ -337,57 +337,57 @@
           <div class="settings-section-header">
             <div class="settings-section-icon">📞</div>
             <div>
-              <h3 class="settings-section-title">যোগাযোগ ও সোশ্যাল মিডিয়া লিংক</h3>
-              <div class="settings-section-subtitle">ফুটার ও যোগাযোগ বক্সে প্রদর্শনের জন্য লিঙ্ক ও তথ্য</div>
+              <h3 class="settings-section-title">Contact Info & Social Links</h3>
+              <div class="settings-section-subtitle">Links and contact details for header and footer</div>
             </div>
           </div>
 
           <div class="admin-form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
             <div class="admin-form-group">
-              <label class="admin-form-label" style="font-weight: 700;">অফিসিয়াল ইমেইল</label>
+              <label class="admin-form-label" style="font-weight: 700;">Official Email</label>
               <input type="email" name="contact_email" value="<%= settings.contact_email || 'info@sera10.com' %>" class="admin-form-input" placeholder="info@sera10.com">
             </div>
 
             <div class="admin-form-group">
-              <label class="admin-form-label" style="font-weight: 700;">মোবাইল নম্বর</label>
+              <label class="admin-form-label" style="font-weight: 700;">Phone Number</label>
               <input type="text" name="contact_phone" value="<%= settings.contact_phone || '+880 1700-000000' %>" class="admin-form-input" placeholder="+880 1...">
             </div>
           </div>
 
           <div class="admin-form-group">
-            <label class="admin-form-label" style="font-weight: 700;">অফিস বা যোগাযোগের ঠিকানা (Address)</label>
-            <input type="text" name="contact_address" value="<%= settings.contact_address || 'ঢাকা, বাংলাদেশ' %>" class="admin-form-input" placeholder="ঢাকা, বাংলাদেশ">
+            <label class="admin-form-label" style="font-weight: 700;">Office / Contact Address</label>
+            <input type="text" name="contact_address" value="<%= settings.contact_address || 'Dhaka, Bangladesh' %>" class="admin-form-input" placeholder="Dhaka, Bangladesh">
           </div>
 
           <div style="margin-top: 18px; padding-top: 14px; border-top: 1px dashed var(--admin-border, #e2e8f0);">
-            <h4 style="font-size: 14px; font-weight: 800; color: var(--admin-text); margin-bottom: 12px;">🌐 সোশ্যাল মিডিয়া চ্যানেলসমূহ:</h4>
+            <h4 style="font-size: 14px; font-weight: 800; color: var(--admin-text); margin-bottom: 12px;">🌐 Social Media Channels:</h4>
             
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
               <div class="admin-form-group">
-                <label class="admin-form-label" style="font-size: 12.5px; font-weight: 700;">📘 ফেসবুক পেজ URL</label>
+                <label class="admin-form-label" style="font-size: 12.5px; font-weight: 700;">📘 Facebook Page URL</label>
                 <input type="url" name="facebook_url" value="<%= settings.facebook_url || 'https://facebook.com/sera10bd' %>" class="admin-form-input" placeholder="https://facebook.com/...">
               </div>
 
               <div class="admin-form-group">
-                <label class="admin-form-label" style="font-size: 12.5px; font-weight: 700;">▶️ ইউটিউব চ্যানেল URL</label>
+                <label class="admin-form-label" style="font-size: 12.5px; font-weight: 700;">▶️ YouTube Channel URL</label>
                 <input type="url" name="youtube_url" value="<%= settings.youtube_url || '' %>" class="admin-form-input" placeholder="https://youtube.com/@...">
               </div>
             </div>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
               <div class="admin-form-group">
-                <label class="admin-form-label" style="font-size: 12.5px; font-weight: 700;">🐦 টুইটার / X প্রোফাইল URL</label>
+                <label class="admin-form-label" style="font-size: 12.5px; font-weight: 700;">🐦 Twitter / X Profile URL</label>
                 <input type="url" name="twitter_url" value="<%= settings.twitter_url || '' %>" class="admin-form-input" placeholder="https://x.com/...">
               </div>
 
               <div class="admin-form-group">
-                <label class="admin-form-label" style="font-size: 12.5px; font-weight: 700;">📸 ইনস্টাগ্রাম প্রোফাইল URL</label>
+                <label class="admin-form-label" style="font-size: 12.5px; font-weight: 700;">📸 Instagram Profile URL</label>
                 <input type="url" name="instagram_url" value="<%= settings.instagram_url || '' %>" class="admin-form-input" placeholder="https://instagram.com/...">
               </div>
             </div>
 
             <div class="admin-form-group" style="margin-top: 4px;">
-              <label class="admin-form-label" style="font-size: 12.5px; font-weight: 700;">💼 লিঙ্কডইন প্রোফাইল / পেজ URL</label>
+              <label class="admin-form-label" style="font-size: 12.5px; font-weight: 700;">💼 LinkedIn Profile / Page URL</label>
               <input type="url" name="linkedin_url" value="<%= settings.linkedin_url || '' %>" class="admin-form-input" placeholder="https://linkedin.com/company/...">
             </div>
           </div>
@@ -400,7 +400,7 @@
     <!-- BOTTOM ACTION BAR -->
     <div style="display: flex; align-items: center; justify-content: flex-end; gap: 14px; padding: 24px 0 40px;">
       <button type="submit" class="btn-new-action" style="padding: 13px 44px; font-size: 17px; font-weight: 800; border-radius: 10px; box-shadow: 0 4px 14px rgba(7, 86, 3, 0.25);">
-        💾 সেটিংস সংরক্ষণ করুন
+        💾 Save Settings
       </button>
     </div>
 
@@ -409,8 +409,8 @@
 
 <script>
   function updateLiveMocks() {
-    const title = document.getElementById('settingSiteTitle').value || 'সেরা ১০';
-    const tagline = document.getElementById('settingSiteTagline').value || 'রিভিউ';
+    const title = document.getElementById('settingSiteTitle').value || 'Sera 10';
+    const tagline = document.getElementById('settingSiteTagline').value || 'Reviews';
     const mockTitle = document.getElementById('mockTabTitle');
     if (mockTitle) {
       mockTitle.textContent = `${title} - ${tagline}`;
@@ -438,7 +438,7 @@
               <div class="dropzone-preview-wrap">
                 <img src="${file.url}" alt="Selected" class="dropzone-preview-img">
                 <div class="dropzone-overlay-actions">
-                  <button type="button" class="btn-dropzone-action btn-dropzone-remove" onclick="clearFieldAndDropzone('${inputId}', '${dropzoneId}')">✕ মুছুন</button>
+                  <button type="button" class="btn-dropzone-action btn-dropzone-remove" onclick="clearFieldAndDropzone('${inputId}', '${dropzoneId}')">✕ Remove</button>
                 </div>
               </div>
             `;
@@ -459,8 +459,8 @@
     if (dz) {
       dz.dataset.initialUrl = '';
       const inputName = dz.dataset.name || 'featured_image';
-      const promptText = dz.dataset.prompt || 'ছবি ড্র্যাগ করে ছাড়ুন অথবা ক্লিক করুন';
-      const hintText = dz.dataset.hint || 'মিডিয়া লাইব্রেরি থেকে বাছুন';
+      const promptText = dz.dataset.prompt || 'Drop image here or click to select';
+      const hintText = dz.dataset.hint || 'Choose from Media Library';
       dz.innerHTML = `
         <input type="hidden" name="${inputName}" id="${inputId}" value="">
         <div class="dropzone-empty-state">

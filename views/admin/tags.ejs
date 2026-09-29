@@ -1,10 +1,9 @@
 <%- include('partials/admin_layout_start', { 
-  pageTitle: 'ট্যাগ সমূহ - এডমিন', 
+  pageTitle: 'Manage Tags - Admin', 
   pageBreadcrumb: 'Tags'
 }) %>
 
 <%
-  const bnNum = (typeof toBengaliNumber === 'function') ? toBengaliNumber : (n => n);
   const currentSearch = search || '';
   const currentSort = sort || 'popular';
   const currentPage = pagination ? pagination.page : 1;
@@ -36,14 +35,14 @@
     
     <!-- Title & Stats Badge -->
     <div class="admin-card-title" style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-      <span style="font-weight: 800; font-size: 19px; color: #0f172a;">ট্যাগ সমূহ</span>
+      <span style="font-weight: 800; font-size: 19px; color: #0f172a;">Tags</span>
       <span class="admin-card-badge" style="background: #eaf5e9; color: #075603; font-weight: 700; padding: 4px 12px; border-radius: 20px; font-size: 13.5px;">
-        মোট <%= bnNum(totalItems) %>টি ট্যাগ
+        <%= totalItems.toLocaleString() %> total tags
       </span>
       <% if (currentSearch) { %>
         <span style="font-size: 13px; font-weight: 600; color: #075603; background: #eaf5e9; padding: 3px 10px; border-radius: 12px; border: 1px solid rgba(7, 86, 3, 0.2);">
-          খোঁজা হয়েছে: "<%= currentSearch %>" (<%= bnNum(totalItems) %>টি ফলাফল)
-          <a href="<%= buildUrl(1, currentSort, '', limit) %>" style="color: #dc2626; margin-left: 4px; text-decoration: none; font-weight: 700;" title="সার্চ বাতিল করুন">&times;</a>
+          Search: "<%= currentSearch %>" (<%= totalItems.toLocaleString() %> results)
+          <a href="<%= buildUrl(1, currentSort, '', limit) %>" style="color: #dc2626; margin-left: 4px; text-decoration: none; font-weight: 700;" title="Clear search">&times;</a>
         </span>
       <% } %>
     </div>
@@ -54,25 +53,25 @@
         href="<%= buildUrl(1, 'popular') %>" 
         class="cat-filter-btn <%= currentSort === 'popular' ? 'active' : '' %>"
       >
-        🔥 জনপ্রিয়
+        🔥 Popular
       </a>
       <a 
         href="<%= buildUrl(1, 'newest') %>" 
         class="cat-filter-btn <%= currentSort === 'newest' ? 'active' : '' %>"
       >
-        🆕 নতুন
+        🆕 Newest
       </a>
       <a 
         href="<%= buildUrl(1, 'az') %>" 
         class="cat-filter-btn <%= currentSort === 'az' ? 'active' : '' %>"
       >
-        🔤 ক-হ (A-Z)
+        🔤 A-Z
       </a>
       <a 
         href="<%= buildUrl(1, 'unused') %>" 
         class="cat-filter-btn <%= currentSort === 'unused' ? 'active' : '' %>"
       >
-        ০ পোস্ট
+        Unused (0)
       </a>
     </div>
 
@@ -89,10 +88,10 @@
         <div style="position: relative; width: 250px;">
           <input 
             type="text" 
-            name="search"
+            name="search" 
             id="tagSearchInput" 
             value="<%= currentSearch %>"
-            placeholder="৭,১৭৪টি ট্যাগের মধ্যে খুঁজুন..." 
+            placeholder="Search <%= totalItems.toLocaleString() %> tags..." 
             class="admin-form-input"
             style="padding: 8px 30px 8px 34px; font-size: 13.5px; height: 38px; border-radius: 6px; width: 100%; border: 1px solid #cbd5e1;"
             autocomplete="off"
@@ -102,7 +101,7 @@
             <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
           </svg>
           <% if (currentSearch) { %>
-            <a href="<%= buildUrl(1, currentSort, '', limit) %>" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 16px; text-decoration: none;" title="সার্চ ক্লিয়ার করুন">&times;</a>
+            <a href="<%= buildUrl(1, currentSort, '', limit) %>" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 16px; text-decoration: none;" title="Clear search">&times;</a>
           <% } %>
         </div>
       </form>
@@ -118,7 +117,7 @@
           <line x1="12" y1="5" x2="12" y2="19"></line>
           <line x1="5" y1="12" x2="19" y2="12"></line>
         </svg>
-        <span>নতুন ট্যাগ</span>
+        <span>Add Tag</span>
       </button>
     </div>
   </div>
@@ -130,9 +129,9 @@
   <!-- In-page Fast Filter Indicator -->
   <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #f1f5f9; flex-wrap: wrap; gap: 10px;">
     <div style="font-size: 13.5px; color: #64748b;">
-      প্রদর্শিত হচ্ছে: <strong><%= bnNum(startItem) %> - <%= bnNum(endItem) %></strong> (মোট <%= bnNum(totalItems) %>টি ট্যাগ)
+      Showing: <strong><%= startItem %> - <%= endItem %></strong> (of <%= totalItems.toLocaleString() %> tags)
       <span style="margin: 0 8px; color: #cbd5e1;">|</span>
-      <span style="color: #075603; font-weight: 600;">ট্যাগে ক্লিক করে সরাসরি লাইভ পেজ ভিজিট করুন ↗</span>
+      <span style="color: #075603; font-weight: 600;">Click tag name to visit frontend archive ↗</span>
     </div>
 
     <!-- Client-side Fast In-Page Search -->
@@ -140,7 +139,7 @@
       <input 
         type="text" 
         id="clientTagQuickFilter" 
-        placeholder="এই পেজের ট্যাগ ফিল্টার..." 
+        placeholder="Filter on current page..." 
         style="padding: 6px 12px 6px 28px; font-size: 12.5px; height: 32px; border-radius: 6px; width: 100%; border: 1px solid #e2e8f0; background: #f8fafc;"
         oninput="filterTagsOnCurrentPage(this.value)"
       >
@@ -165,12 +164,12 @@
             href="<%= tagUrl %>" 
             target="_blank" 
             class="tag-chip-main-link" 
-            title="লাইভ সাইটে '<%= t.name %>' ট্যাগের সকল পোস্ট দেখুন"
+            title="View all posts tagged with '<%= t.name %>'"
           >
             <span class="tag-chip-hash">#</span>
             <span class="tag-chip-name"><%= t.name %></span>
-            <span class="tag-chip-count <%= postCount > 0 ? 'has-posts' : 'zero-posts' %>" title="<%= bnNum(postCount) %>টি পোস্ট">
-              <%= bnNum(postCount) %>
+            <span class="tag-chip-count <%= postCount > 0 ? 'has-posts' : 'zero-posts' %>" title="<%= postCount %> posts">
+              <%= postCount %>
             </span>
             <svg class="tag-chip-visit-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
@@ -184,7 +183,7 @@
             <button 
               type="button" 
               class="tag-action-btn btn-edit" 
-              title="ট্যাগ সম্পাদনা করুন"
+              title="Edit Tag"
               onclick="openEditTagFromCard(this)"
             >
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -193,8 +192,8 @@
               </svg>
             </button>
 
-            <form action="/admin/tags/<%= t.id %>/delete" method="POST" style="margin: 0; display: inline;" onsubmit="return confirm('ট্যাগটি মুছে ফেলতে চান?');">
-              <button type="submit" class="tag-action-btn btn-del" title="ট্যাগ মুছে ফেলুন">
+            <form action="/admin/tags/<%= t.id %>/delete" method="POST" style="margin: 0; display: inline;" onsubmit="return confirm('Delete this tag?');">
+              <button type="submit" class="tag-action-btn btn-del" title="Delete Tag">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                   <line x1="18" y1="6" x2="6" y2="18"></line>
                   <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -208,14 +207,14 @@
   <% } else { %>
     <div style="text-align: center; padding: 60px 20px; color: #64748b;">
       <div style="font-size: 42px; margin-bottom: 12px;">🏷️</div>
-      <h3 style="font-size: 18px; font-weight: 700; color: #0f172a; margin-bottom: 6px;">কোনো ট্যাগ পাওয়া যায়নি</h3>
+      <h3 style="font-size: 18px; font-weight: 700; color: #0f172a; margin-bottom: 6px;">No tags found</h3>
       <p style="font-size: 14px; margin-bottom: 18px;">
         <% if (currentSearch) { %>
-          "<%= currentSearch %>" দিয়ে কোনো ট্যাগ মেলেনি।
+          No tags matched "<%= currentSearch %>".
           <br><br>
-          <a href="/admin/tags" class="btn-new-action" style="display: inline-flex; font-size: 13.5px; padding: 8px 16px;">সকল ট্যাগ দেখুন</a>
+          <a href="/admin/tags" class="btn-new-action" style="display: inline-flex; font-size: 13.5px; padding: 8px 16px;">View All Tags</a>
         <% } else { %>
-          নতুন ট্যাগ তৈরি করতে উপরের "+ নতুন ট্যাগ" বাটনে ক্লিক করুন।
+          Click "+ Add Tag" button above to create a tag.
         <% } %>
       </p>
     </div>
@@ -223,7 +222,6 @@
 
   <!-- 3. Bottom Pagination Toolbar -->
   <% if (totalPages > 1) { 
-       // Calculate page range (showing ~7 page numbers with ellipsis)
        let startPage = Math.max(1, currentPage - 3);
        let endPage = Math.min(totalPages, currentPage + 3);
        if (currentPage <= 4) endPage = Math.min(totalPages, 7);
@@ -231,18 +229,18 @@
   %>
     <div class="tag-pagination-bar">
       <div class="tag-pagination-info">
-        পৃষ্ঠা <strong><%= bnNum(currentPage) %></strong> / <strong><%= bnNum(totalPages) %></strong> (মোট <%= bnNum(totalItems) %>টি ট্যাগ)
+        Page <strong><%= currentPage %></strong> of <strong><%= totalPages %></strong> (<%= totalItems.toLocaleString() %> tags)
       </div>
 
       <div class="tag-pagination-nav">
         <!-- First Page -->
         <% if (currentPage > 1) { %>
-          <a href="<%= buildUrl(1) %>" class="tag-page-btn" title="প্রথম পৃষ্ঠা">« প্রথম</a>
-          <a href="<%= buildUrl(currentPage - 1) %>" class="tag-page-btn" title="আগের পৃষ্ঠা">‹ আগের</a>
+          <a href="<%= buildUrl(1) %>" class="tag-page-btn" title="First Page">« First</a>
+          <a href="<%= buildUrl(currentPage - 1) %>" class="tag-page-btn" title="Previous Page">‹ Prev</a>
         <% } %>
 
         <% if (startPage > 1) { %>
-          <a href="<%= buildUrl(1) %>" class="tag-page-btn">১</a>
+          <a href="<%= buildUrl(1) %>" class="tag-page-btn">1</a>
           <% if (startPage > 2) { %>
             <span class="tag-page-ellipsis">...</span>
           <% } %>
@@ -253,7 +251,7 @@
             href="<%= buildUrl(p) %>" 
             class="tag-page-btn <%= p === currentPage ? 'active' : '' %>"
           >
-            <%= bnNum(p) %>
+            <%= p %>
           </a>
         <% } %>
 
@@ -261,27 +259,27 @@
           <% if (endPage < totalPages - 1) { %>
             <span class="tag-page-ellipsis">...</span>
           <% } %>
-          <a href="<%= buildUrl(totalPages) %>" class="tag-page-btn"><%= bnNum(totalPages) %></a>
+          <a href="<%= buildUrl(totalPages) %>" class="tag-page-btn"><%= totalPages %></a>
         <% } %>
 
         <!-- Next / Last -->
         <% if (currentPage < totalPages) { %>
-          <a href="<%= buildUrl(currentPage + 1) %>" class="tag-page-btn" title="পরের পৃষ্ঠা">পরের ›</a>
-          <a href="<%= buildUrl(totalPages) %>" class="tag-page-btn" title="শেষ পৃষ্ঠা">শেষ »</a>
+          <a href="<%= buildUrl(currentPage + 1) %>" class="tag-page-btn" title="Next Page">Next ›</a>
+          <a href="<%= buildUrl(totalPages) %>" class="tag-page-btn" title="Last Page">Last »</a>
         <% } %>
       </div>
 
       <!-- Limit Selector -->
       <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; color: #64748b;">
-        <span>প্রতি পেজে:</span>
+        <span>Per page:</span>
         <select 
           onchange="location.href = '<%= buildUrl(1, currentSort, currentSearch, '') %>' + this.value"
           style="padding: 4px 8px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 13px; background: #fff;"
         >
-          <option value="40" <%= limit === 40 ? 'selected' : '' %>>৪০টি</option>
-          <option value="80" <%= limit === 80 ? 'selected' : '' %>>৮০টি</option>
-          <option value="120" <%= limit === 120 ? 'selected' : '' %>>১২০টি</option>
-          <option value="200" <%= limit === 200 ? 'selected' : '' %>>২০০টি</option>
+          <option value="40" <%= limit === 40 ? 'selected' : '' %>>40</option>
+          <option value="80" <%= limit === 80 ? 'selected' : '' %>>80</option>
+          <option value="120" <%= limit === 120 ? 'selected' : '' %>>120</option>
+          <option value="200" <%= limit === 200 ? 'selected' : '' %>>200</option>
         </select>
       </div>
     </div>
@@ -296,7 +294,7 @@
     <div class="tag-modal-header">
       <div style="display: flex; align-items: center; gap: 8px;">
         <span style="font-size: 20px;">🏷️</span>
-        <h3 style="font-size: 17.5px; font-weight: 700; color: #0f172a; margin: 0;">নতুন ট্যাগ যোগ করুন</h3>
+        <h3 style="font-size: 17.5px; font-weight: 700; color: #0f172a; margin: 0;">Add New Tag</h3>
       </div>
       <button type="button" class="tag-modal-close" onclick="closeAddTagModal()">&times;</button>
     </div>
@@ -304,34 +302,34 @@
     <form action="/admin/tags/add" method="POST" id="addTagForm">
       <div class="tag-modal-body">
         <div class="admin-form-group" style="margin-bottom: 14px;">
-          <label class="admin-form-label" style="font-size: 13.5px; font-weight: 700;">ট্যাগের নাম *</label>
+          <label class="admin-form-label" style="font-size: 13.5px; font-weight: 700;">Tag Name *</label>
           <input 
             type="text" 
             name="name" 
             id="addTagNameInput" 
             class="admin-form-input" 
             required 
-            placeholder="যেমন: স্মার্টফোন, ল্যাপটপ, হোম থিয়েটার"
+            placeholder="e.g. Smartphone, Laptop, Sports"
             style="font-size: 14px; padding: 10px 12px;"
           >
         </div>
 
         <div class="admin-form-group" style="margin-bottom: 6px;">
-          <label class="admin-form-label" style="font-size: 13.5px; font-weight: 700;">স্লাগ (ঐচ্ছিক - খালি রাখলে স্বয়ংক্রিয় তৈরি হবে)</label>
+          <label class="admin-form-label" style="font-size: 13.5px; font-weight: 700;">Slug (Optional - auto-generated if blank)</label>
           <input 
             type="text" 
             name="slug" 
             id="addTagSlugInput" 
             class="admin-form-input" 
-            placeholder="যেমন: smartphone, best-laptop"
+            placeholder="e.g. smartphone, best-laptop"
             style="font-size: 14px; padding: 10px 12px;"
           >
         </div>
       </div>
 
       <div class="tag-modal-footer">
-        <button type="button" class="btn-cancel" onclick="closeAddTagModal()">বাতিল</button>
-        <button type="submit" class="btn-new-action" style="padding: 9px 20px; font-size: 14px;">সংরক্ষণ করুন</button>
+        <button type="button" class="btn-cancel" onclick="closeAddTagModal()">Cancel</button>
+        <button type="submit" class="btn-new-action" style="padding: 9px 20px; font-size: 14px;">Save Tag</button>
       </div>
     </form>
   </div>
@@ -345,7 +343,7 @@
     <div class="tag-modal-header">
       <div style="display: flex; align-items: center; gap: 8px;">
         <span style="font-size: 20px;">✏️</span>
-        <h3 style="font-size: 17.5px; font-weight: 700; color: #0f172a; margin: 0;">ট্যাগ সম্পাদনা</h3>
+        <h3 style="font-size: 17.5px; font-weight: 700; color: #0f172a; margin: 0;">Edit Tag</h3>
       </div>
       <button type="button" class="tag-modal-close" onclick="closeEditTagModal()">&times;</button>
     </div>
@@ -353,7 +351,7 @@
     <form action="" method="POST" id="editTagForm">
       <div class="tag-modal-body">
         <div class="admin-form-group" style="margin-bottom: 14px;">
-          <label class="admin-form-label" style="font-size: 13.5px; font-weight: 700;">ট্যাগের নাম *</label>
+          <label class="admin-form-label" style="font-size: 13.5px; font-weight: 700;">Tag Name *</label>
           <input 
             type="text" 
             name="name" 
@@ -365,7 +363,7 @@
         </div>
 
         <div class="admin-form-group" style="margin-bottom: 6px;">
-          <label class="admin-form-label" style="font-size: 13.5px; font-weight: 700;">স্লাগ</label>
+          <label class="admin-form-label" style="font-size: 13.5px; font-weight: 700;">Slug</label>
           <input 
             type="text" 
             name="slug" 
@@ -377,8 +375,8 @@
       </div>
 
       <div class="tag-modal-footer">
-        <button type="button" class="btn-cancel" onclick="closeEditTagModal()">বাতিল</button>
-        <button type="submit" class="btn-new-action" style="padding: 9px 20px; font-size: 14px;">আপডেট করুন</button>
+        <button type="button" class="btn-cancel" onclick="closeEditTagModal()">Cancel</button>
+        <button type="submit" class="btn-new-action" style="padding: 9px 20px; font-size: 14px;">Update Tag</button>
       </div>
     </form>
   </div>

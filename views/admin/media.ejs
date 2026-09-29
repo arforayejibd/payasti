@@ -1,5 +1,5 @@
 <%- include('partials/admin_layout_start', { 
-  pageTitle: 'মিডিয়া লাইব্রেরি (Media)', 
+  pageTitle: 'Media Library', 
   pageBreadcrumb: 'Media Library'
 }) %>
 
@@ -12,14 +12,14 @@
         <circle cx="8.5" cy="8.5" r="1.5"></circle>
         <polyline points="21 15 16 10 5 21"></polyline>
       </svg>
-      <span>নতুন ছবি বা ফাইল আপলোড</span>
+      <span>Upload New Image or File</span>
     </div>
   </div>
   <div class="admin-card-body">
     <form action="/admin/media/upload" method="POST" enctype="multipart/form-data" style="display: flex; gap: 14px; align-items: center; flex-wrap: wrap;">
       <input type="file" name="media_file" class="admin-form-input" required accept="image/*" style="max-width: 380px;">
       <button type="submit" class="btn-new-action" style="padding: 10px 20px;">
-        আপলোড করুন
+        Upload Media
       </button>
     </form>
   </div>
@@ -29,8 +29,8 @@
 <div class="admin-card">
   <div class="admin-card-header">
     <div class="admin-card-title">
-      <span>আপলোডকৃত ছবিসমূহ</span>
-      <span class="admin-card-badge"><%= toBengaliNumber(mediaFiles.length) %> টি ফাইল</span>
+      <span>Uploaded Media Files</span>
+      <span class="admin-card-badge"><%= mediaFiles ? mediaFiles.length : 0 %> <%= (mediaFiles && mediaFiles.length === 1) ? 'file' : 'files' %></span>
     </div>
   </div>
 
@@ -52,13 +52,13 @@
                 </div>
               </div>
               <div style="margin-top: 12px; display: flex; align-items: center; justify-content: space-between; gap: 6px;">
-                <button type="button" class="btn-view-site" style="padding: 6px 12px; font-size: 14px;" onclick="navigator.clipboard.writeText(window.location.origin + '<%= file.url %>'); alert('ছবির লিংক কপি করা হয়েছে!');">
-                  কপি লিংক
+                <button type="button" class="btn-view-site" style="padding: 6px 12px; font-size: 14px;" onclick="navigator.clipboard.writeText(window.location.origin + '<%= file.url %>'); alert('Image link copied to clipboard!');">
+                  Copy Link
                 </button>
-                <form action="/admin/media/delete" method="POST" onsubmit="return confirm('ফাইলটি মুছে ফেলতে চান?');" style="display: inline;">
+                <form action="/admin/media/delete" method="POST" onsubmit="return confirm('Are you sure you want to delete this file?');" style="display: inline;">
                   <input type="hidden" name="filename" value="<%= file.filename %>">
                   <button type="submit" class="btn-table-action btn-reject" style="padding: 6px 12px; font-size: 14px;">
-                    ডিলিট
+                    Delete
                   </button>
                 </form>
               </div>
@@ -69,8 +69,8 @@
     <% } else { %>
       <div class="admin-empty-state">
         <div class="empty-icon">🖼️</div>
-        <div class="empty-title">কোনো মিডিয়া ফাইল পাওয়া যায়নি</div>
-        <div class="empty-desc">উপরের ফর্ম থেকে নতুন ছবি আপলোড করুন।</div>
+        <div class="empty-title">No media files found</div>
+        <div class="empty-desc">Upload images using the form above.</div>
       </div>
     <% } %>
   </div>

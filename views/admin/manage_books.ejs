@@ -1,17 +1,17 @@
 <%- include('partials/admin_layout_start', { 
-  pageTitle: 'পয়স্তি বই সম্ভার ব্যবস্থাপনা', 
-  pageBreadcrumb: 'বই সম্ভার'
+  pageTitle: 'Books Management', 
+  pageBreadcrumb: 'Books'
 }) %>
 
 <!-- Add Book Form Card -->
 <div class="admin-card" style="margin-bottom: 28px;">
   <div class="admin-card-header">
     <div class="admin-card-title">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--admin-purple);">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--admin-primary);">
         <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
         <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
       </svg>
-      <span>নতুন বই প্রকাশ ও যুক্ত করুন</span>
+      <span>Add New Book</span>
     </div>
   </div>
 
@@ -19,43 +19,43 @@
     <form action="/admin/books/add" method="POST" enctype="multipart/form-data">
       <div class="admin-form-grid">
         <div class="admin-form-group">
-          <label class="admin-form-label">বইয়ের শিরোনাম *</label>
-          <input type="text" name="title" class="admin-form-input" required placeholder="বইয়ের নাম লিখুন">
+          <label class="admin-form-label">Book Title *</label>
+          <input type="text" name="title" class="admin-form-input" required placeholder="Enter book title">
         </div>
         <div class="admin-form-group">
-          <label class="admin-form-label">লেখকের নাম *</label>
-          <input type="text" name="author_name" class="admin-form-input" required placeholder="লেখকের নাম লিখুন">
+          <label class="admin-form-label">Author Name *</label>
+          <input type="text" name="author_name" class="admin-form-input" required placeholder="Enter author name">
         </div>
       </div>
 
       <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
         <div class="admin-form-group">
-          <label class="admin-form-label">গায়ের মূল্য (যেমন: ৩২০ টাকা)</label>
-          <input type="text" name="regular_price" class="admin-form-input" placeholder="৩২০ টাকা">
+          <label class="admin-form-label">Regular Price</label>
+          <input type="text" name="regular_price" class="admin-form-input" placeholder="e.g. ৳320">
         </div>
         <div class="admin-form-group">
-          <label class="admin-form-label">ছাড়ের বিক্রয় মূল্য *</label>
-          <input type="text" name="discounted_price" class="admin-form-input" required placeholder="২২০ টাকা">
+          <label class="admin-form-label">Discounted Sale Price *</label>
+          <input type="text" name="discounted_price" class="admin-form-input" required placeholder="e.g. ৳220">
         </div>
         <div class="admin-form-group">
-          <label class="admin-form-label">প্রচ্ছদ ছবি</label>
-          <div class="payasti-image-dropzone" data-name="cover_image" data-prompt="বইয়ের কভার ছবি ড্র্যাগ করে ছাড়ুন" data-hint="ক্লিক করে মিডিয়া লাইব্রেরি থেকে ছবি বাছুন"></div>
+          <label class="admin-form-label">Cover Image</label>
+          <div class="payasti-image-dropzone" data-name="cover_image" data-prompt="Drop book cover image here" data-hint="Click to browse Media Library"></div>
         </div>
       </div>
 
       <div class="admin-form-group">
-        <label class="admin-form-label">রকমারি / অনলাইন অর্ডার লিংক</label>
+        <label class="admin-form-label">Online Order Link (Rokomari / Amazon / Store)</label>
         <input type="url" name="order_url" class="admin-form-input" placeholder="https://www.rokomari.com/book/...">
       </div>
 
       <div class="admin-form-group">
-        <label class="admin-form-label">বইয়ের সংক্ষিপ্ত পরিচিতি / বিবরণ</label>
-        <textarea name="description" class="admin-form-textarea" rows="3" placeholder="বই সম্পর্কিত সংক্ষিপ্ত তথ্য..."></textarea>
+        <label class="admin-form-label">Book Description / Synopsis</label>
+        <textarea name="description" class="admin-form-textarea" rows="3" placeholder="Brief description of the book..."></textarea>
       </div>
 
       <div style="text-align: right;">
         <button type="submit" class="btn-new-action" style="padding: 10px 24px;">
-          + বইটি যুক্ত করুন
+          + Add Book
         </button>
       </div>
     </form>
@@ -66,8 +66,8 @@
 <div class="admin-card">
   <div class="admin-card-header">
     <div class="admin-card-title">
-      <span>বর্তমান প্রকাশিত বইসমূহ</span>
-      <span class="admin-card-badge"><%= toBengaliNumber(books.length) %> টি বই</span>
+      <span>Published Books</span>
+      <span class="admin-card-badge"><%= books ? books.length : 0 %> <%= (books && books.length === 1) ? 'book' : 'books' %></span>
     </div>
   </div>
 
@@ -75,12 +75,12 @@
     <table class="admin-table">
       <thead>
         <tr>
-          <th style="width: 60px;">প্রচ্ছদ</th>
-          <th>বইয়ের শিরোনাম</th>
-          <th>লেখক</th>
-          <th>মূল্য</th>
-          <th>অর্ডার লিংক</th>
-          <th style="text-align: right;">অ্যাকশন</th>
+          <th style="width: 60px;">Cover</th>
+          <th>Book Title</th>
+          <th>Author</th>
+          <th>Price</th>
+          <th>Order Link</th>
+          <th style="text-align: right;">Actions</th>
         </tr>
       </thead>
       <tbody>
@@ -116,7 +116,7 @@
               <td>
                 <% if (b.order_url) { %>
                   <a href="<%= b.order_url %>" target="_blank" class="btn-view-site" style="padding: 6px 12px; font-size: 14px;">
-                    অর্ডার লিংক &nearr;
+                    Order Link &nearr;
                   </a>
                 <% } else { %>
                   <span style="color: #94a3b8;">-</span>
@@ -124,8 +124,8 @@
               </td>
               <td>
                 <div class="actions-group" style="justify-content: flex-end;">
-                  <form action="/admin/books/<%= b.id %>/delete" method="POST" style="display: inline;" onsubmit="return confirm('বইটি কি ডিলিট করতে চান?');">
-                    <button type="submit" class="btn-table-action btn-reject" title="বইটি ডিলিট করুন">
+                  <form action="/admin/books/<%= b.id %>/delete" method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this book?');">
+                    <button type="submit" class="btn-table-action btn-reject" title="Delete book">
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <polyline points="3 6 5 6 21 6"></polyline>
                         <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
@@ -141,8 +141,8 @@
             <td colspan="6">
               <div class="admin-empty-state">
                 <div class="empty-icon">📚</div>
-                <div class="empty-title">বর্তমানে কোনো বই যুক্ত নেই</div>
-                <div class="empty-desc">উপরের ফর্ম ব্যবহার করে নতুন বই প্রকাশ করুন।</div>
+                <div class="empty-title">No books added yet</div>
+                <div class="empty-desc">Use the form above to add your first book.</div>
               </div>
             </td>
           </tr>

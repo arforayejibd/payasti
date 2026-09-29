@@ -1,8 +1,8 @@
 <%- include('partials/admin_layout_start', { 
-  pageTitle: 'নতুন পোস্ট তৈরি', 
-  pageBreadcrumb: 'নতুন পোস্ট',
+  pageTitle: 'Create New Post', 
+  pageBreadcrumb: 'New Post',
   activeMenu: 'new_post',
-  topbarButton: { text: 'সকল পোস্টে ফিরে যান', url: '/admin/posts' }
+  topbarButton: { text: '&larr; Back to Posts', url: '/admin/posts' }
 }) %>
 
 <!-- Official WordPress Gutenberg Core Styles -->
@@ -13,7 +13,7 @@
 <link rel="stylesheet" href="/css/wp-gutenberg-editor.css?v=3.0">
 
 <% if (typeof error !== 'undefined' && error) { %>
-  <div style="background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; padding: 14px 18px; border-radius: 10px; margin-bottom: 24px; font-size: 16px;">
+  <div style="background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; padding: 14px 18px; border-radius: 10px; margin-bottom: 24px; font-size: 15px;">
     ⚠️ <%= error %>
   </div>
 <% } %>
@@ -29,28 +29,28 @@
 
       <!-- Quick Review Inserters Toolbar -->
       <div class="wp-review-quick-tools">
-        <button type="button" class="wp-tool-btn" onclick="window.insertProsConsBlock();" title="সুবিধা ও অসুবিধা বক্স যোগ করুন">
-          <span>⚖️ সুবিধা/অসুবিধা</span>
+        <button type="button" class="wp-tool-btn" onclick="window.insertProsConsBlock();" title="Insert Pros & Cons block">
+          <span>⚖️ Pros/Cons</span>
         </button>
-        <button type="button" class="wp-tool-btn" onclick="window.insertProductCardBlock();" title="প্রোডাক্ট রিভিউ কার্ড যোগ করুন">
-          <span>📦 প্রোডাক্ট বক্স</span>
+        <button type="button" class="wp-tool-btn" onclick="window.insertProductCardBlock();" title="Insert Product Box">
+          <span>📦 Product Box</span>
         </button>
-        <button type="button" class="wp-tool-btn" onclick="window.insertRatingBlock();" title="স্টার রেটিং স্কোর যোগ করুন">
-          <span>⭐ রেটিং</span>
+        <button type="button" class="wp-tool-btn" onclick="window.insertRatingBlock();" title="Insert Rating score">
+          <span>⭐ Rating</span>
         </button>
-        <button type="button" class="wp-tool-btn" onclick="window.insertComparisonTableBlock();" title="তুলনামূলক টেবিল যোগ করুন">
-          <span>📊 টেবিল</span>
+        <button type="button" class="wp-tool-btn" onclick="window.insertComparisonTableBlock();" title="Insert Comparison Table">
+          <span>📊 Table</span>
         </button>
       </div>
     </div>
 
     <div class="wp-top-right">
       <button type="button" class="wp-btn-secondary" id="btnSaveDraft" onclick="window.saveAsDraft();">
-        ড্রাফট সংরক্ষণ
+        Save Draft
       </button>
 
       <button type="submit" class="wp-btn-publish" id="btnPublishPost">
-        <span>পোস্ট প্রকাশ করুন</span>
+        <span>Publish Post</span>
       </button>
     </div>
   </div>
@@ -64,24 +64,24 @@
       <input 
         type="text" 
         name="title" 
-        id="postTitleInput"
+        id="postTitleInput" 
         class="wp-title-input" 
         required 
-        placeholder="পোস্টের শিরোনাম লিখুন বা পেস্ট করুন..." 
+        placeholder="Add post title..." 
         autocomplete="off"
       >
 
       <!-- Live Permalink Preview & Editable English Slug -->
       <div class="wp-permalink-preview" id="wpPermalinkBox">
-        <span class="wp-permalink-label">স্থায়ী লিংক (Permalink):</span>
+        <span class="wp-permalink-label">Permalink:</span>
         <span class="wp-permalink-base">/post/</span><span class="wp-permalink-url" id="wpPermalinkUrl">post-title</span>
         <input type="hidden" name="slug" id="postSlugInput" value="">
-        <button type="button" class="wp-permalink-edit-btn" id="btnEditPermalink" onclick="window.togglePermalinkEdit(true);">সম্পাদনা</button>
+        <button type="button" class="wp-permalink-edit-btn" id="btnEditPermalink" onclick="window.togglePermalinkEdit(true);">Edit</button>
         
         <div class="wp-permalink-edit-wrap" id="permalinkEditWrap" style="display: none;">
-          <input type="text" id="customSlugField" class="wp-permalink-input" placeholder="english-slug-here">
-          <button type="button" class="wp-permalink-save-btn" onclick="window.saveCustomPermalink();">ঠিক আছে</button>
-          <button type="button" class="wp-permalink-cancel-btn" onclick="window.togglePermalinkEdit(false);">বাতিল</button>
+          <input type="text" id="customSlugField" class="wp-permalink-input" placeholder="post-slug-here">
+          <button type="button" class="wp-permalink-save-btn" onclick="window.saveCustomPermalink();">OK</button>
+          <button type="button" class="wp-permalink-cancel-btn" onclick="window.togglePermalinkEdit(false);">Cancel</button>
         </div>
       </div>
 
@@ -93,8 +93,8 @@
       <!-- Realtime Word Count & Status Footer -->
       <div class="wp-editor-footer-status">
         <div class="wp-status-stats">
-          <span class="wp-status-stat-item">📝 মোট শব্দ: <strong id="wpWordCount">০</strong></span>
-          <span class="wp-status-stat-item">⏱️ পড়ার সময়: <strong id="wpReadingTime">১</strong> মিনিট</span>
+          <span class="wp-status-stat-item">📝 Words: <strong id="wpWordCount">0</strong></span>
+          <span class="wp-status-stat-item">⏱️ Read Time: <strong id="wpReadingTime">1</strong> min</span>
         </div>
         <div>
           <span style="color: #059669; font-weight: 600;">⚡ WordPress Gutenberg Canvas</span>
@@ -105,25 +105,25 @@
     <!-- Right Column: Document Settings Sidebar -->
     <div class="wp-inspector-sidebar">
       
-      <!-- Panel 1: স্ট্যাটাস ও দৃশ্যমানতা -->
+      <!-- Panel 1: Status & Visibility -->
       <div class="wp-inspector-card">
         <div class="wp-inspector-header">
-          <span>স্ট্যাটাস ও দৃশ্যমানতা</span>
+          <span>Status & Visibility</span>
         </div>
         <div class="wp-inspector-body">
           <div class="wp-form-group">
-            <label class="wp-label">প্রকাশনা স্ট্যাটাস</label>
+            <label class="wp-label">Post Status</label>
             <select name="status" id="statusSelect" class="wp-select">
-              <option value="publish" selected>সরাসরি প্রকাশিত (Publish)</option>
-              <option value="draft">ড্রাফট (Draft)</option>
-              <option value="pending">রিভিউ পেন্ডিং (Pending)</option>
+              <option value="publish" selected>Publish</option>
+              <option value="draft">Draft</option>
+              <option value="pending">Pending Review</option>
             </select>
           </div>
 
           <!-- Author Selector -->
           <% if (typeof authors !== 'undefined' && authors && authors.length) { %>
             <div class="wp-form-group">
-              <label class="wp-label">পোস্টের লেখক</label>
+              <label class="wp-label">Author</label>
               <select name="author_id" class="wp-select">
                 <% authors.forEach(a => { %>
                   <option value="<%= a.id %>" <%= (user && user.id === a.id) ? 'selected' : '' %>>
@@ -138,33 +138,33 @@
           <div class="wp-form-group">
             <label class="wp-checkbox-label" style="margin-bottom: 6px;">
               <input type="checkbox" name="enable_rating" id="enableRatingCheckbox" value="1" onchange="document.getElementById('ratingScoreFieldWrap').style.display = this.checked ? 'block' : 'none';">
-              <span>⭐ এই পোস্টে রেটিং যুক্ত করুন</span>
+              <span>⭐ Enable rating on this post</span>
             </label>
             <div id="ratingScoreFieldWrap" style="display: none; margin-top: 8px; padding: 10px 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;">
-              <label class="wp-label" style="font-size: 13px; margin-bottom: 4px;">রেটিং স্কোর (১.০ - ৫.০)</label>
+              <label class="wp-label" style="font-size: 13px; margin-bottom: 4px;">Rating Score (1.0 - 5.0)</label>
               <div style="display: flex; align-items: center; gap: 8px;">
                 <span style="font-size: 18px; color: #f59e0b;">★</span>
-                <input type="number" name="rating_score" id="ratingScoreInput" class="wp-input" step="0.1" min="1.0" max="5.0" value="4.8" placeholder="যেমন: 4.8" style="font-weight: 700; width: 110px;">
-                <span style="font-size: 13px; color: #64748b;">/ ৫.০</span>
+                <input type="number" name="rating_score" id="ratingScoreInput" class="wp-input" step="0.1" min="1.0" max="5.0" value="4.8" placeholder="e.g. 4.8" style="font-weight: 700; width: 110px;">
+                <span style="font-size: 13px; color: #64748b;">/ 5.0</span>
               </div>
-              <span style="font-size: 11.5px; color: #64748b; margin-top: 4px; display: block;">পোস্টে প্রদর্শিত সামগ্রিক রিভিউ রেটিং স্কোর।</span>
+              <span style="font-size: 11.5px; color: #64748b; margin-top: 4px; display: block;">Overall review rating score displayed on post.</span>
             </div>
           </div>
 
           <div class="wp-form-group">
             <label class="wp-checkbox-label">
               <input type="checkbox" name="is_featured" value="1">
-              <span>প্রধান ফিচারে প্রদর্শন করুন</span>
+              <span>Featured post on homepage</span>
             </label>
           </div>
         </div>
       </div>
 
-      <!-- Panel 2: ক্যাটাগরি / বিভাগ -->
+      <!-- Panel 2: Categories -->
       <div class="wp-inspector-card wp-category-panel">
         <div class="wp-inspector-header">
-          <span>ক্যাটাগরি / বিভাগ *</span>
-          <span class="wp-badge-count" id="selectedCatCount">০টি নির্বাচিত</span>
+          <span>Categories *</span>
+          <span class="wp-badge-count" id="selectedCatCount">0 selected</span>
         </div>
         <div class="wp-inspector-body">
           
@@ -175,7 +175,7 @@
               type="text" 
               id="categorySearchInput" 
               class="wp-cat-search-input" 
-              placeholder="ক্যাটাগরি খুঁজুন..." 
+              placeholder="Search categories..." 
               autocomplete="off"
               oninput="window.filterCategories(this.value)"
             >
@@ -184,8 +184,8 @@
 
           <!-- Category Tabs -->
           <div class="wp-cat-tabs">
-            <button type="button" class="wp-cat-tab active" id="tabAllCats" onclick="window.switchCatTab('all')">সকল বিভাগ</button>
-            <button type="button" class="wp-cat-tab" id="tabSelectedCats" onclick="window.switchCatTab('selected')">নির্বাচিত বিভাগ</button>
+            <button type="button" class="wp-cat-tab active" id="tabAllCats" onclick="window.switchCatTab('all')">All Categories</button>
+            <button type="button" class="wp-cat-tab" id="tabSelectedCats" onclick="window.switchCatTab('selected')">Selected</button>
           </div>
 
           <!-- Scrollable Category Checklist -->
@@ -233,21 +233,21 @@
                } %>
           </div>
           <div id="noCatFoundMsg" style="display: none; padding: 12px; font-size: 12.5px; color: #94a3b8; text-align: center;">
-            কোনো ক্যাটাগরি খুঁজে পাওয়া যায়নি।
+            No categories found.
           </div>
 
           <!-- Quick Add New Category Toggle -->
           <div class="wp-cat-quick-add-wrap">
             <button type="button" class="wp-cat-add-toggle-btn" id="btnToggleQuickAddCat" onclick="window.toggleQuickAddCat()">
-              <span id="quickAddCatIcon">➕</span> নতুন ক্যাটাগরি যোগ করুন
+              <span id="quickAddCatIcon">➕</span> Add New Category
             </button>
 
             <div class="wp-cat-quick-add-form" id="quickAddCatForm" style="display: none;">
-              <input type="text" id="newCatNameInput" class="wp-input" placeholder="ক্যাটাগরির নাম লিখুন..." style="font-size: 12.5px; margin-bottom: 8px;">
+              <input type="text" id="newCatNameInput" class="wp-input" placeholder="Category name..." style="font-size: 12.5px; margin-bottom: 8px;">
               
-              <label style="font-size: 11.5px; color: #64748b; margin-bottom: 4px; display: block; font-weight: 600;">প্যারেন্ট ক্যাটাগরি (ঐচ্ছিক):</label>
+              <label style="font-size: 11.5px; color: #64748b; margin-bottom: 4px; display: block; font-weight: 600;">Parent Category (Optional):</label>
               <select id="newCatParentSelect" class="wp-select" style="font-size: 12px; margin-bottom: 8px;">
-                <option value="0">— কোনোটি নয় (মূল ক্যাটাগরি) —</option>
+                <option value="0">— None (Parent) —</option>
                 <% if (categories && categories.length) { 
                      categories.filter(c => !c.parent_id || c.parent_id === 0).forEach(rc => { %>
                       <option value="<%= rc.id %>"><%= rc.name %></option>
@@ -257,10 +257,10 @@
 
               <div style="display: flex; gap: 6px;">
                 <button type="button" class="wp-btn-publish" style="padding: 5px 12px; font-size: 12px; border-radius: 5px;" onclick="window.submitQuickAddCategory()">
-                  যোগ করুন
+                  Add
                 </button>
                 <button type="button" class="wp-btn-secondary" style="padding: 5px 10px; font-size: 12px; border-radius: 5px;" onclick="window.toggleQuickAddCat(false)">
-                  বাতিল
+                  Cancel
                 </button>
               </div>
             </div>
@@ -269,17 +269,17 @@
         </div>
       </div>
 
-      <!-- Panel 3: ট্যাগ (Tags) -->
+      <!-- Panel 3: Tags -->
       <div class="wp-inspector-card">
         <div class="wp-inspector-header">
-          <span>ট্যাগ (Tags)</span>
-          <span class="wp-badge-count" id="postTagCountBadge">০</span>
+          <span>Tags</span>
+          <span class="wp-badge-count" id="postTagCountBadge">0</span>
         </div>
         <div class="wp-inspector-body">
           
           <!-- Auto-Suggest Tags Button -->
           <button type="button" class="wp-btn-auto-tags" id="btnAutoSuggestTags" onclick="window.autoSuggestBilingualTags()">
-            <span>⚡ কন্টেন্ট থেকে অটো-ট্যাগ সাজেস্ট করুন</span>
+            <span>⚡ Auto-suggest tags from content</span>
           </button>
 
           <!-- Interactive Tag Chips Container -->
@@ -296,21 +296,21 @@
               type="text" 
               id="postTagInputField" 
               class="wp-tag-input" 
-              placeholder="ট্যাগ লিখে কমা বা Enter চাপুন..."
+              placeholder="Type tag and press Enter or comma..."
               autocomplete="off"
             >
             <button type="button" class="wp-btn-add-tag" onclick="window.addTagFromInput()">
-              যোগ করুন
+              Add
             </button>
           </div>
           <div style="font-size: 11px; color: #94a3b8; margin-bottom: 8px;">
-            💡 একাধিক ট্যাগ আলাদা করতে কমা (<code>,</code>) অথবা <code>Enter</code> চাপুন।
+            💡 Separate multiple tags with commas (<code>,</code>) or <code>Enter</code>.
           </div>
 
           <!-- Most Used / Existing Tags Cloud -->
           <% if (typeof allTags !== 'undefined' && allTags && allTags.length) { %>
             <div class="wp-tag-cloud-wrap">
-              <span class="wp-tag-cloud-title">জনপ্রিয় ট্যাগ থেকে বেছে নিন:</span>
+              <span class="wp-tag-cloud-title">Choose from popular tags:</span>
               <div class="wp-tag-cloud-list">
                 <% allTags.slice(0, 30).forEach(t => { %>
                   <span 
@@ -329,23 +329,23 @@
         </div>
       </div>
 
-      <!-- Panel 4: ফিচার্ড ছবি -->
+      <!-- Panel 4: Featured Image -->
       <div class="wp-inspector-card">
         <div class="wp-inspector-header">
-          <span>ফিচার্ড ছবি</span>
+          <span>Featured Image</span>
         </div>
         <div class="wp-inspector-body">
-          <div class="payasti-image-dropzone" data-name="featured_image" data-prompt="ফিচার্ড ছবি ড্র্যাগ করে ছাড়ুন অথবা ক্লিক করুন" data-hint="ক্লিক করে মিডিয়া লাইব্রেরি থেকে ছবি বাছুন"></div>
+          <div class="payasti-image-dropzone" data-name="featured_image" data-prompt="Drop image here or click to select" data-hint="Click to browse Media Library"></div>
         </div>
       </div>
 
-      <!-- Panel 4: সারাংশ -->
+      <!-- Panel 5: Excerpt / Summary -->
       <div class="wp-inspector-card">
         <div class="wp-inspector-header">
-          <span>উদ্ধৃতি / সারাংশ</span>
+          <span>Excerpt / Summary</span>
         </div>
         <div class="wp-inspector-body">
-          <textarea name="excerpt" class="wp-input" rows="3" placeholder="পোস্টের সংক্ষিপ্ত সারাংশ লিখুন (ঐচ্ছিক)..." style="resize: vertical;"></textarea>
+          <textarea name="excerpt" class="wp-input" rows="3" placeholder="Write a short summary (optional)..." style="resize: vertical;"></textarea>
         </div>
       </div>
 
@@ -423,7 +423,7 @@
   window.saveAsDraft = function() {
     const titleInput = document.getElementById('postTitleInput');
     if (!titleInput.value.trim()) {
-      titleInput.value = 'ড্রাফট পোস্ট - ' + new Date().toLocaleDateString('bn-BD');
+      titleInput.value = 'Draft Post - ' + new Date().toLocaleDateString('en-US');
     }
     document.getElementById('statusSelect').value = 'draft';
     syncGutenbergContent();
@@ -438,11 +438,6 @@
   // Tag Management State & Functions
   let currentTags = [];
 
-  window.toBengaliNum = function(num) {
-    const bnDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
-    return String(num).replace(/\d/g, d => bnDigits[d]);
-  };
-
   window.renderTagChips = function() {
     const wrap = document.getElementById('tagChipsWrap');
     const hiddenInput = document.getElementById('hiddenPostTagsInput');
@@ -455,7 +450,7 @@
       chip.className = 'wp-tag-chip';
       chip.innerHTML = `
         <span>#${tagName}</span>
-        <button type="button" class="wp-tag-remove-btn" onclick="window.removeTagByIndex(${index})" title="মুছে ফেলুন">✕</button>
+        <button type="button" class="wp-tag-remove-btn" onclick="window.removeTagByIndex(${index})" title="Remove">✕</button>
       `;
       wrap.appendChild(chip);
     });
@@ -464,7 +459,7 @@
       hiddenInput.value = currentTags.join(',');
     }
     if (badge) {
-      badge.textContent = window.toBengaliNum(currentTags.length);
+      badge.textContent = currentTags.length;
     }
 
     // Update cloud selection indicators
@@ -523,13 +518,13 @@
     const content = (typeof syncGutenbergContent === 'function') ? syncGutenbergContent() : '';
 
     if (!title && !content) {
-      alert('অনুগ্রহ করে প্রথমে পোস্টের শিরোনাম বা কন্টেন্ট লিখুন।');
+      alert('Please enter post title or content first.');
       return;
     }
 
     if (btn) {
       btn.disabled = true;
-      btn.innerHTML = '<span>⏳ ট্যাগ বিশ্লেষণ হচ্ছে...</span>';
+      btn.innerHTML = '<span>⏳ Analyzing tags...</span>';
     }
 
     try {
@@ -542,18 +537,18 @@
       if (data.success && data.tags && data.tags.length > 0) {
         data.tags.forEach(t => window.addSingleTag(t));
         if (window.showToast) {
-          window.showToast(`✨ ${data.tags.length}টি প্রাসঙ্গিক ট্যাগ যোগ করা হয়েছে!`, 'success');
+          window.showToast(`✨ Added ${data.tags.length} relevant tags!`, 'success');
         }
       } else {
-        alert('কোনো নতুন ট্যাগ খুঁজে পাওয়া যায়নি।');
+        alert('No new tags found.');
       }
     } catch (err) {
       console.error('Error suggesting tags:', err);
-      alert('ট্যাগ বিশ্লেষণে সমস্যা হয়েছে।');
+      alert('Error analyzing tags.');
     } finally {
       if (btn) {
         btn.disabled = false;
-        btn.innerHTML = '<span>⚡ কন্টেন্ট থেকে অটো-ট্যাগ সাজেস্ট করুন</span>';
+        btn.innerHTML = '<span>⚡ Auto-Suggest Tags from Content</span>';
       }
     }
   };
@@ -636,9 +631,9 @@
       const title = document.getElementById('postTitleInput').value.trim();
       if (!title) {
         if (window.showToast) {
-          window.showToast('⚠️ অনুগ্রহ করে পোস্টের শিরোনাম যোগ করুন।', 'error');
+          window.showToast('⚠️ Please enter a post title.', 'error');
         } else {
-          alert('অনুগ্রহ করে পোস্টের শিরোনাম যোগ করুন।');
+          alert('Please enter a post title.');
         }
         document.getElementById('postTitleInput').focus();
         e.preventDefault();
@@ -654,7 +649,7 @@
       const isDraft = document.getElementById('statusSelect').value === 'draft';
       if (submitBtn) {
         submitBtn.disabled = true;
-        submitBtn.innerHTML = isDraft ? '<span>ড্রাফট সেভ হচ্ছে... ⏳</span>' : '<span>পোস্ট প্রকাশ হচ্ছে... ⏳</span>';
+        submitBtn.innerHTML = isDraft ? '<span>Saving Draft... ⏳</span>' : '<span>Publishing Post... ⏳</span>';
       }
       if (draftBtn) draftBtn.disabled = true;
     });

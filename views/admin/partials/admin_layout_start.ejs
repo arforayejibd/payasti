@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title><%= typeof seo !== 'undefined' && seo.title ? seo.title : 'সেরা ১০ অ্যাডমিন ড্যাশবোর্ড' %></title>
+  <title><%= typeof seo !== 'undefined' && seo.title ? seo.title : 'Sera 10 Admin Dashboard' %></title>
   
   <% if (typeof SITE_FAVICON !== 'undefined' && SITE_FAVICON) { %>
     <link rel="icon" href="<%= SITE_FAVICON %>">
@@ -19,7 +19,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preload" href="/fonts/kalpurush.woff2" as="font" type="font/woff2" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   
   <!-- Dedicated Admin Stylesheet -->
   <link rel="stylesheet" href="/css/admin.css">
@@ -35,19 +35,19 @@
     <div class="admin-sidebar-header">
       <a href="/admin" class="admin-brand-link">
         <% if (typeof SITE_LOGO !== 'undefined' && SITE_LOGO) { %>
-          <img src="<%= SITE_LOGO %>" alt="<%= (typeof SITE_NAME !== 'undefined' && SITE_NAME) ? SITE_NAME : 'সেরা ১০' %>" class="admin-brand-logo" style="max-height: 44px; width: auto; object-fit: contain;">
+          <img src="<%= SITE_LOGO %>" alt="<%= (typeof SITE_NAME !== 'undefined' && SITE_NAME) ? SITE_NAME : 'Sera 10' %>" class="admin-brand-logo" style="max-height: 44px; width: auto; object-fit: contain;">
         <% } else { %>
           <div style="display: flex; align-items: center; gap: 8px;">
-            <span style="background: #068200; color: #fff; padding: 2px 9px; border-radius: 8px; font-size: 18px; font-weight: 800;">১০</span>
-            <span style="font-size: 22px; font-weight: 900; color: #ffffff; letter-spacing: -0.5px;">সেরা <span style="color: #10b981;">১০</span></span>
+            <span style="background: #068200; color: #fff; padding: 2px 9px; border-radius: 8px; font-size: 18px; font-weight: 800;">10</span>
+            <span style="font-size: 22px; font-weight: 900; color: #ffffff; letter-spacing: -0.5px;">Sera <span style="color: #10b981;">10</span></span>
           </div>
         <% } %>
       </a>
     </div>
 
-    <!-- মূল নেভিগেশন মেনু -->
+    <!-- Main Navigation Menu -->
     <ul class="admin-sidebar-nav">
-      <!-- ১. ড্যাশবোর্ড -->
+      <!-- 1. Dashboard -->
       <li class="admin-nav-item <%= typeof activeMenu !== 'undefined' && activeMenu === 'admin_dashboard' ? 'active' : '' %>">
         <a href="/admin">
           <div class="admin-nav-left">
@@ -57,12 +57,12 @@
               <rect x="14" y="14" width="7" height="7"></rect>
               <rect x="3" y="14" width="7" height="7"></rect>
             </svg>
-            <span>ড্যাশবোর্ড</span>
+            <span>Dashboard</span>
           </div>
         </a>
       </li>
 
-      <!-- ২. পোস্ট ও রিভিউ (সাবমেনু: সকল পোস্ট, নতুন পোস্ট, ক্যাটাগরি, ট্যাগ) -->
+      <!-- 2. Posts & Reviews -->
       <% 
         const isPostsGroup = typeof activeMenu !== 'undefined' && (
           activeMenu === 'all_posts' || 
@@ -81,7 +81,7 @@
               <line x1="16" y1="17" x2="8" y2="17"></line>
               <polyline points="10 9 9 9 8 9"></polyline>
             </svg>
-            <span>সেরা ১০ পোস্ট</span>
+            <span>Posts</span>
           </div>
           <svg class="submenu-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="6 9 12 15 18 9"></polyline>
@@ -89,21 +89,21 @@
         </a>
         <ul class="admin-submenu">
           <li class="admin-submenu-item <%= typeof activeMenu !== 'undefined' && activeMenu === 'all_posts' ? 'active' : '' %>">
-            <a href="/admin/posts">সকল রিভিউ ও পোস্ট</a>
+            <a href="/admin/posts">All Posts</a>
           </li>
           <li class="admin-submenu-item <%= typeof activeMenu !== 'undefined' && activeMenu === 'new_post' ? 'active' : '' %>">
-            <a href="/admin/posts/new">+ নতুন পোস্ট লিখুন</a>
+            <a href="/admin/posts/new">+ Add New Post</a>
           </li>
           <li class="admin-submenu-item <%= typeof activeMenu !== 'undefined' && activeMenu === 'posts_categories' ? 'active' : '' %>">
-            <a href="/admin/categories">ক্যাটাগরি</a>
+            <a href="/admin/categories">Categories</a>
           </li>
           <li class="admin-submenu-item <%= typeof activeMenu !== 'undefined' && activeMenu === 'posts_tags' ? 'active' : '' %>">
-            <a href="/admin/tags">ট্যাগ</a>
+            <a href="/admin/tags">Tags</a>
           </li>
         </ul>
       </li>
 
-      <!-- ৩. মিডিয়া লাইব্রেরি -->
+      <!-- 3. Media Library -->
       <li class="admin-nav-item <%= typeof activeMenu !== 'undefined' && activeMenu === 'media' ? 'active' : '' %>">
         <a href="/admin/media">
           <div class="admin-nav-left">
@@ -112,12 +112,12 @@
               <circle cx="8.5" cy="8.5" r="1.5"></circle>
               <polyline points="21 15 16 10 5 21"></polyline>
             </svg>
-            <span>মিডিয়া লাইব্রেরি</span>
+            <span>Media Library</span>
           </div>
         </a>
       </li>
 
-      <!-- ৪. মেনু ব্যবস্থাপনা -->
+      <!-- 4. Menu Management -->
       <li class="admin-nav-item <%= typeof activeMenu !== 'undefined' && activeMenu === 'menu' ? 'active' : '' %>">
         <a href="/admin/menu">
           <div class="admin-nav-left">
@@ -126,12 +126,39 @@
               <line x1="3" y1="6" x2="21" y2="6"></line>
               <line x1="3" y1="18" x2="21" y2="18"></line>
             </svg>
-            <span>মেনু ব্যবস্থাপনা</span>
+            <span>Navigation Menus</span>
           </div>
         </a>
       </li>
 
-      <!-- ৫. সাইট সেটিংস -->
+      <!-- 5. Users -->
+      <li class="admin-nav-item <%= typeof activeMenu !== 'undefined' && activeMenu === 'users' ? 'active' : '' %>">
+        <a href="/admin/users">
+          <div class="admin-nav-left">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+            <span>Users</span>
+          </div>
+        </a>
+      </li>
+
+      <!-- 6. Comments -->
+      <li class="admin-nav-item <%= typeof activeMenu !== 'undefined' && activeMenu === 'comments' ? 'active' : '' %>">
+        <a href="/admin/comments">
+          <div class="admin-nav-left">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+            <span>Comments</span>
+          </div>
+        </a>
+      </li>
+
+      <!-- 7. Site Settings -->
       <li class="admin-nav-item <%= typeof activeMenu !== 'undefined' && activeMenu === 'settings' ? 'active' : '' %>">
         <a href="/admin/settings">
           <div class="admin-nav-left">
@@ -139,12 +166,12 @@
               <circle cx="12" cy="12" r="3"></circle>
               <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
             </svg>
-            <span>সাইট সেটিংস</span>
+            <span>Site Settings</span>
           </div>
         </a>
       </li>
 
-      <li class="admin-nav-section-title" style="margin-top: 14px;">সাইট অ্যাকশন</li>
+      <li class="admin-nav-section-title" style="margin-top: 14px;">Site Actions</li>
 
       <li class="admin-nav-item">
         <a href="/" target="_blank" rel="noopener">
@@ -154,7 +181,7 @@
               <line x1="2" y1="12" x2="22" y2="12"></line>
               <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
             </svg>
-            <span>ওয়েবসাইট দেখুন</span>
+            <span>Visit Website</span>
           </div>
           <span style="font-size: 15px; opacity: 0.6;">&nearr;</span>
         </a>
@@ -169,17 +196,17 @@
             <img src="<%= user.avatar %>" alt="<%= user.display_name %>" class="admin-avatar">
           <% } else { %>
             <div class="admin-avatar">
-              <%= typeof user !== 'undefined' && user && user.display_name ? user.display_name.charAt(0) : 'স' %>
+              <%= typeof user !== 'undefined' && user && user.display_name ? user.display_name.charAt(0) : 'A' %>
             </div>
           <% } %>
           <div class="admin-user-meta">
-            <span class="admin-user-name"><%= typeof user !== 'undefined' && user && user.display_name ? user.display_name : 'অ্যাডমিনিস্ট্রেটর' %></span>
+            <span class="admin-user-name"><%= typeof user !== 'undefined' && user && user.display_name ? user.display_name : 'Administrator' %></span>
             <span class="admin-user-role">
-              🛡️ অ্যাডমিন
+              🛡️ <%= typeof user !== 'undefined' && user && user.role ? (user.role.charAt(0).toUpperCase() + user.role.slice(1)) : 'Admin' %>
             </span>
           </div>
         </div>
-        <a href="/logout" class="admin-logout-link" title="লগআউট করুন">
+        <a href="/logout" class="admin-logout-link" title="Sign Out">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
             <polyline points="16 17 21 12 16 7"></polyline>
@@ -195,7 +222,7 @@
     <!-- Topbar -->
     <header class="admin-topbar">
       <div class="admin-topbar-left">
-        <button class="admin-mobile-toggle" id="adminSidebarToggle" aria-label="মেনু খুলুন">
+        <button class="admin-mobile-toggle" id="adminSidebarToggle" aria-label="Open Menu">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <line x1="3" y1="12" x2="21" y2="12"></line>
             <line x1="3" y1="6" x2="21" y2="6"></line>
@@ -204,22 +231,22 @@
         </button>
         <div class="admin-page-title-group">
           <div class="admin-breadcrumbs">
-            <a href="/admin">সেরা ১০ অ্যাডমিন</a>
+            <a href="/admin">Sera 10 Admin</a>
             <span>/</span>
-            <span><%= typeof pageBreadcrumb !== 'undefined' ? pageBreadcrumb : 'প্যানেল' %></span>
+            <span><%= typeof pageBreadcrumb !== 'undefined' ? pageBreadcrumb : 'Panel' %></span>
           </div>
-          <h1 class="admin-page-title"><%= typeof pageTitle !== 'undefined' ? pageTitle : 'অ্যাডমিন ড্যাশবোর্ড' %></h1>
+          <h1 class="admin-page-title"><%= typeof pageTitle !== 'undefined' ? pageTitle : 'Dashboard' %></h1>
         </div>
       </div>
 
       <div class="admin-topbar-actions">
-        <a href="/" target="_blank" class="btn-view-site" title="মূল ওয়েবসাইট দেখুন">
+        <a href="/" target="_blank" class="btn-view-site" title="Visit Live Site">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
             <polyline points="15 3 21 3 21 9"></polyline>
             <line x1="10" y1="14" x2="21" y2="3"></line>
           </svg>
-          <span>ওয়েবসাইট দেখুন</span>
+          <span>Visit Site</span>
         </a>
 
         <% if (typeof topbarButton !== 'undefined' && topbarButton) { %>

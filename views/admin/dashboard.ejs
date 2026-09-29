@@ -1,7 +1,7 @@
 <%- include('partials/admin_layout_start', { 
-  pageTitle: 'অ্যাডমিন ড্যাশবোর্ড', 
-  pageBreadcrumb: 'ড্যাশবোর্ড',
-  topbarButton: { text: '+ নতুন সেরা ১০ পোস্ট', url: '/admin/posts/new' }
+  pageTitle: 'Admin Dashboard', 
+  pageBreadcrumb: 'Dashboard',
+  topbarButton: { text: '+ Add New Post', url: '/admin/posts/new' }
 }) %>
 
 <!-- KPI Metric Cards Grid -->
@@ -9,10 +9,10 @@
   <!-- 1. Published Reviews & Articles -->
   <div class="admin-stat-card success">
     <div class="stat-info">
-      <span class="stat-label">মোট প্রকাশিত রিভিউ ও পোস্ট</span>
-      <span class="stat-number"><%= toBengaliNumber(stats.published) %></span>
+      <span class="stat-label">Total Published Posts</span>
+      <span class="stat-number"><%= stats.published %></span>
       <a href="/admin/posts" class="stat-link">
-        সকল পোস্ট ও রিভিউ দেখুন &rarr;
+        View All Posts &rarr;
       </a>
     </div>
     <div class="stat-icon-wrap">
@@ -26,10 +26,10 @@
   <!-- 2. Categories & Topics -->
   <div class="admin-stat-card info">
     <div class="stat-info">
-      <span class="stat-label">মোট ক্যাটাগরি</span>
-      <span class="stat-number"><%= toBengaliNumber(stats.categories) %></span>
+      <span class="stat-label">Total Categories</span>
+      <span class="stat-number"><%= stats.categories %></span>
       <a href="/admin/categories" class="stat-link">
-        ক্যাটাগরি পরিচালনা করুন &rarr;
+        Manage Categories &rarr;
       </a>
     </div>
     <div class="stat-icon-wrap">
@@ -45,10 +45,10 @@
   <!-- 3. Tags -->
   <div class="admin-stat-card warning">
     <div class="stat-info">
-      <span class="stat-label">মোট ট্যাগ</span>
-      <span class="stat-number"><%= toBengaliNumber(stats.tags) %></span>
+      <span class="stat-label">Total Tags</span>
+      <span class="stat-number"><%= stats.tags %></span>
       <a href="/admin/tags" class="stat-link">
-        ট্যাগসমূহ দেখুন &rarr;
+        View Tags &rarr;
       </a>
     </div>
     <div class="stat-icon-wrap">
@@ -62,10 +62,10 @@
   <!-- 4. Total Views / Impressions -->
   <div class="admin-stat-card purple">
     <div class="stat-info">
-      <span class="stat-label">মোট পাঠক ভিউ</span>
-      <span class="stat-number"><%= toBengaliNumber(stats.totalViews) %></span>
+      <span class="stat-label">Total Article Views</span>
+      <span class="stat-number"><%= Number(stats.totalViews || 0).toLocaleString() %></span>
       <a href="/" target="_blank" class="stat-link">
-        লাইভ ওয়েবসাইট দেখুন &rarr;
+        Visit Live Site &rarr;
       </a>
     </div>
     <div class="stat-icon-wrap">
@@ -88,12 +88,12 @@
         <line x1="16" y1="17" x2="8" y2="17"></line>
         <polyline points="10 9 9 9 8 9"></polyline>
       </svg>
-      <span>সাম্প্রতিক প্রকাশিত সেরা ১০ রিভিউ ও পোস্ট</span>
-      <span class="admin-card-badge"><%= toBengaliNumber(recentPublished.length) %> টি</span>
+      <span>Recent Published Posts</span>
+      <span class="admin-card-badge"><%= recentPublished.length %> items</span>
     </div>
     <div>
       <a href="/admin/posts" class="stat-link" style="color: var(--admin-primary); font-size: 15px; font-weight: 700;">
-        সকল পোস্ট দেখুন &rarr;
+        View All Posts &rarr;
       </a>
     </div>
   </div>
@@ -102,11 +102,11 @@
     <table class="admin-table">
       <thead>
         <tr>
-          <th>শিরোনাম ও বিবরণ</th>
-          <th>ক্যাটাগরি</th>
-          <th>প্রকাশের তারিখ</th>
-          <th>ভিউ</th>
-          <th style="text-align: right;">অ্যাকশন</th>
+          <th>Title & Excerpt</th>
+          <th>Category</th>
+          <th>Published Date</th>
+          <th>Views</th>
+          <th style="text-align: right;">Actions</th>
         </tr>
       </thead>
       <tbody>
@@ -126,30 +126,30 @@
                 <% } %>
               </td>
               <td>
-                <span class="category-pill"><%= p.category_name || 'সাধারণ রিভিউ' %></span>
+                <span class="category-pill"><%= p.category_name || 'General' %></span>
               </td>
-              <td style="white-space: nowrap; color: var(--admin-text-muted); font-size: 15px;">
-                <%= formatBengaliDate(p.published_at || p.created_at) %>
+              <td style="white-space: nowrap; color: var(--admin-text-muted); font-size: 14px;">
+                <%= new Date(p.published_at || p.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) %>
               </td>
               <td style="white-space: nowrap; font-weight: 700; color: #068200;">
-                👁️ <%= toBengaliNumber(p.views || 0) %>
+                👁️ <%= Number(p.views || 0).toLocaleString() %>
               </td>
               <td>
                 <div class="actions-group" style="justify-content: flex-end; gap: 8px;">
-                  <a href="/admin/posts/<%= p.id %>/edit" class="btn-table-action" style="background: #eef2ff; color: #4338ca;" title="এডিট করুন">
+                  <a href="/admin/posts/<%= p.id %>/edit" class="btn-table-action" style="background: #eaf5e9; color: #075603;" title="Edit Post">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                       <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
                       <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
                     </svg>
-                    এডিট
+                    Edit
                   </a>
-                  <a href="/post/<%= encodeURIComponent(p.slug) %>" target="_blank" class="btn-table-action" style="background: #f0fdf4; color: #16a34a;" title="ভিউ দেখুন">
+                  <a href="/post/<%= encodeURIComponent(p.slug) %>" target="_blank" class="btn-table-action" style="background: #f8fafc; color: #334155;" title="View Post">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                       <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
                       <polyline points="15 3 21 3 21 9"></polyline>
                       <line x1="10" y1="14" x2="21" y2="3"></line>
                     </svg>
-                    ভিউ
+                    View
                   </a>
                 </div>
               </td>
@@ -165,8 +165,8 @@
                     <polyline points="14 2 14 8 20 8"></polyline>
                   </svg>
                 </div>
-                <div class="empty-title">বর্তমানে কোনো পোস্ট নেই</div>
-                <div class="empty-desc">নতুন প্রোডাক্ট রিভিউ বা সেরা ১০ তালিকা লিখতে '+ নতুন সেরা ১০ পোস্ট' বাটনে ক্লিক করুন।</div>
+                <div class="empty-title">No posts available</div>
+                <div class="empty-desc">Click "+ Add New Post" to publish a new top 10 review or article.</div>
               </div>
             </td>
           </tr>

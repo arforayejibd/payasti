@@ -1,6 +1,6 @@
 <%- include('partials/admin_layout_start', { 
-  pageTitle: 'পেন্ডিং লেখা অনুমোদন কিউ', 
-  pageBreadcrumb: 'মডারেশন কিউ'
+  pageTitle: 'Pending Posts Review Queue', 
+  pageBreadcrumb: 'Review Queue'
 }) %>
 
 <div class="admin-card">
@@ -10,8 +10,8 @@
         <circle cx="12" cy="12" r="10"></circle>
         <polyline points="12 6 12 12 16 14"></polyline>
       </svg>
-      <span>অনুমোদনের অপেক্ষায় থাকা লেখা</span>
-      <span class="admin-card-badge"><%= toBengaliNumber(pendingPosts.length) %> টি পোস্ট</span>
+      <span>Pending Review Articles</span>
+      <span class="admin-card-badge"><%= pendingPosts.length %> posts</span>
     </div>
   </div>
 
@@ -19,11 +19,11 @@
     <table class="admin-table">
       <thead>
         <tr>
-          <th>শিরোনাম ও সারসংক্ষেপ</th>
-          <th>লেখক ও ইমেইল</th>
-          <th>বিভাগ</th>
-          <th>জমা দেওয়ার সময়</th>
-          <th style="text-align: right; min-width: 200px;">সিদ্ধান্ত</th>
+          <th>Title & Excerpt</th>
+          <th>Author & Email</th>
+          <th>Category</th>
+          <th>Submitted At</th>
+          <th style="text-align: right; min-width: 200px;">Actions</th>
         </tr>
       </thead>
       <tbody>
@@ -32,12 +32,12 @@
             <tr>
               <td>
                 <div class="post-title-cell">
-                  <a href="/admin/posts/<%= p.id %>/edit" title="লেখাটি দেখে এডিট করুন">
+                  <a href="/admin/posts/<%= p.id %>/edit" title="Edit and review this post">
                     <%= p.title %>
                   </a>
                 </div>
                 <% if (p.excerpt) { %>
-                  <div style="font-size: 15px; color: var(--admin-text-sub); margin-top: 4px; line-height: 1.5; max-width: 360px;">
+                  <div style="font-size: 14px; color: var(--admin-text-sub); margin-top: 4px; line-height: 1.5; max-width: 360px;">
                     <%= p.excerpt %>
                   </div>
                 <% } %>
@@ -45,7 +45,7 @@
               <td>
                 <div class="author-cell">
                   <div class="author-mini-avatar">
-                    <%= p.author_name ? p.author_name.charAt(0) : 'ল' %>
+                    <%= p.author_name ? p.author_name.charAt(0) : 'A' %>
                   </div>
                   <div class="author-cell-info">
                     <span class="author-name"><%= p.author_name %></span>
@@ -54,29 +54,29 @@
                 </div>
               </td>
               <td>
-                <span class="category-pill"><%= p.category_name || 'অন্য সাহিত্য' %></span>
+                <span class="category-pill"><%= p.category_name || 'General' %></span>
               </td>
-              <td style="white-space: nowrap; color: var(--admin-text-muted); font-size: 16px;">
-                <%= formatBengaliDate(p.created_at) %>
+              <td style="white-space: nowrap; color: var(--admin-text-muted); font-size: 13.5px;">
+                <%= new Date(p.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) %>
               </td>
               <td>
                 <div class="actions-group" style="justify-content: flex-end;">
                   <!-- Edit link -->
-                  <a href="/admin/posts/<%= p.id %>/edit" class="btn-table-action" style="background: #eaf5e9; color: #075603;" title="সম্পাদনা করুন">
-                    এডিট
+                  <a href="/admin/posts/<%= p.id %>/edit" class="btn-table-action" style="background: #eaf5e9; color: #075603;" title="Edit Post">
+                    Edit
                   </a>
 
                   <!-- Approve form -->
-                  <form action="/admin/post/<%= p.id %>/approve" method="POST" style="display: inline;" onsubmit="return confirm('লেখাটি কি অনুমোদন ও পাবলিশ করতে চান?');">
+                  <form action="/admin/post/<%= p.id %>/approve" method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to approve and publish this post?');">
                     <button type="submit" class="btn-table-action btn-approve">
-                      ✓ এপ্রুভ
+                      ✓ Approve
                     </button>
                   </form>
 
                   <!-- Reject form -->
-                  <form action="/admin/post/<%= p.id %>/reject" method="POST" style="display: inline;" onsubmit="return confirm('লেখাটি রিজেক্ট করে ড্রাফট হিসেবে সংরক্ষণ করতে চান?');">
+                  <form action="/admin/post/<%= p.id %>/reject" method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to reject this post and move it to drafts?');">
                     <button type="submit" class="btn-table-action btn-reject">
-                      ✕ রিজেক্ট
+                      ✕ Reject
                     </button>
                   </form>
                 </div>
@@ -92,8 +92,8 @@
                     <polyline points="20 6 9 17 4 12"></polyline>
                   </svg>
                 </div>
-                <div class="empty-title">অনুমোদনের অপেক্ষায় কোনো লেখা নেই!</div>
-                <div class="empty-desc">সব লেখকের লেখা ইতিমধ্যে অনুমোদিত বা পর্যালোচিত হয়ে গেছে।</div>
+                <div class="empty-title">No posts awaiting review!</div>
+                <div class="empty-desc">All submitted articles have been reviewed or approved.</div>
               </div>
             </td>
           </tr>

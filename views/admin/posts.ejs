@@ -1,7 +1,7 @@
 <%- include('partials/admin_layout_start', { 
-  pageTitle: 'সকল লেখা পরিচালনা', 
-  pageBreadcrumb: 'পোস্ট তালিকা',
-  topbarButton: { text: '+ নতুন পোস্ট লিখুন', url: '/admin/posts/new' }
+  pageTitle: 'Manage Posts', 
+  pageBreadcrumb: 'Posts',
+  topbarButton: { text: '+ Add New Post', url: '/admin/posts/new' }
 }) %>
 
 <!-- Filter Bar & Tabs -->
@@ -12,22 +12,22 @@
       <a href="/admin/posts?status=all&category=<%= categoryFilter %>&q=<%= searchQuery %>" 
          class="btn-view-site" 
          style="<%= statusFilter === 'all' ? 'background: var(--admin-primary); color: #fff; border-color: var(--admin-primary);' : '' %>">
-        সকল লেখা (<%= toBengaliNumber(counts.all) %>)
+        All (<%= counts.all %>)
       </a>
       <a href="/admin/posts?status=publish&category=<%= categoryFilter %>&q=<%= searchQuery %>" 
          class="btn-view-site" 
          style="<%= statusFilter === 'publish' ? 'background: var(--admin-primary); color: #fff; border-color: var(--admin-primary);' : '' %>">
-        প্রকাশিত (<%= toBengaliNumber(counts.publish) %>)
+        Published (<%= counts.publish %>)
       </a>
       <a href="/admin/posts?status=pending&category=<%= categoryFilter %>&q=<%= searchQuery %>" 
          class="btn-view-site" 
          style="<%= statusFilter === 'pending' ? 'background: #f59e0b; color: #fff; border-color: #f59e0b;' : '' %>">
-        পেন্ডিং (<%= toBengaliNumber(counts.pending) %>)
+        Pending (<%= counts.pending %>)
       </a>
       <a href="/admin/posts?status=draft&category=<%= categoryFilter %>&q=<%= searchQuery %>" 
          class="btn-view-site" 
          style="<%= statusFilter === 'draft' ? 'background: #64748b; color: #fff; border-color: #64748b;' : '' %>">
-        ড্রাফট (<%= toBengaliNumber(counts.draft) %>)
+        Drafts (<%= counts.draft %>)
       </a>
     </div>
 
@@ -35,8 +35,8 @@
     <form action="/admin/posts" method="GET" style="display: flex; gap: 10px; flex-wrap: wrap;">
       <input type="hidden" name="status" value="<%= statusFilter %>">
 
-      <select name="category" class="admin-form-select" style="width: auto; padding: 8px 14px; font-size: 16px;" onchange="this.form.submit()">
-        <option value="all">সকল বিভাগ</option>
+      <select name="category" class="admin-form-select" style="width: auto; padding: 8px 14px; font-size: 14px;" onchange="this.form.submit()">
+        <option value="all">All Categories</option>
         <% if (categories && categories.length) { %>
           <% categories.forEach(c => { %>
             <option value="<%= c.id %>" <%= categoryFilter == c.id ? 'selected' : '' %>><%= c.name %></option>
@@ -50,12 +50,12 @@
           name="q" 
           value="<%= searchQuery %>" 
           class="admin-form-input" 
-          placeholder="শিরোনাম দিয়ে খুঁজুন..." 
-          style="width: 220px; padding: 8px 14px; font-size: 15px;"
+          placeholder="Search by title..." 
+          style="width: 220px; padding: 8px 14px; font-size: 14px;"
         >
-        <button type="submit" class="btn-view-site" style="padding: 8px 16px; font-size: 15px;">অনুসন্ধান</button>
+        <button type="submit" class="btn-view-site" style="padding: 8px 16px; font-size: 14px;">Search</button>
         <% if (searchQuery || categoryFilter !== 'all' || statusFilter !== 'all') { %>
-          <a href="/admin/posts" class="btn-view-site" style="padding: 8px 14px; color: #dc2626; font-size: 15px;" title="ফিল্টার রিসেট">✕</a>
+          <a href="/admin/posts" class="btn-view-site" style="padding: 8px 14px; color: #dc2626; font-size: 14px;" title="Reset Filter">✕</a>
         <% } %>
       </div>
     </form>
@@ -66,8 +66,8 @@
 <div class="admin-card">
   <div class="admin-card-header">
     <div class="admin-card-title">
-      <span>পোস্ট ও রিভিউ তালিকা</span>
-      <span class="admin-card-badge">মোট <%= toBengaliNumber(totalFiltered) %> টি</span>
+      <span>Articles & Reviews</span>
+      <span class="admin-card-badge"><%= totalFiltered %> total</span>
     </div>
   </div>
 
@@ -75,14 +75,14 @@
     <table class="admin-table">
       <thead>
         <tr>
-          <th style="width: 50px;">ছবি</th>
-          <th>শিরোনাম ও সারসংক্ষেপ</th>
-          <th>পোস্টার/টিম</th>
-          <th>ক্যাটাগরি</th>
-          <th>ভিউ</th>
-          <th>স্ট্যাটাস</th>
-          <th>তারিখ</th>
-          <th style="text-align: right; min-width: 140px;">অ্যাকশন</th>
+          <th style="width: 50px;">Image</th>
+          <th>Title & Excerpt</th>
+          <th>Author</th>
+          <th>Category</th>
+          <th>Views</th>
+          <th>Status</th>
+          <th>Date</th>
+          <th style="text-align: right; min-width: 140px;">Actions</th>
         </tr>
       </thead>
       <tbody>
@@ -105,7 +105,7 @@
                   </a>
                 </div>
                 <% if (p.excerpt) { %>
-                  <div style="font-size: 14px; color: var(--admin-text-sub); margin-top: 4px; max-width: 320px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                  <div style="font-size: 13.5px; color: var(--admin-text-sub); margin-top: 4px; max-width: 320px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                     <%= p.excerpt %>
                   </div>
                 <% } %>
@@ -113,10 +113,10 @@
               <td>
                 <div class="author-cell">
                   <div class="author-mini-avatar">
-                    <%= p.author_name ? p.author_name.charAt(0) : 'স' %>
+                    <%= p.author_name ? p.author_name.charAt(0) : 'A' %>
                   </div>
                   <div class="author-cell-info">
-                    <span class="author-name"><%= p.author_name || 'সেরা ১০ টিম' %></span>
+                    <span class="author-name"><%= p.author_name || 'Sera 10 Team' %></span>
                     <span class="author-email">@<%= p.author_username || 'admin' %></span>
                   </div>
                 </div>
@@ -136,29 +136,29 @@
                     <% }) %>
                   </div>
                 <% } else { %>
-                  <span class="category-pill"><%= p.category_name || 'সাধারণ' %></span>
+                  <span class="category-pill"><%= p.category_name || 'General' %></span>
                 <% } %>
               </td>
               <td style="font-weight: 700; color: #068200;">
-                <%= toBengaliNumber(p.views || 0) %>
+                <%= Number(p.views || 0).toLocaleString() %>
               </td>
               <td>
                 <% if (p.status === 'publish') { %>
-                  <span class="status-badge published">প্রকাশিত</span>
+                  <span class="status-badge published">Published</span>
                 <% } else if (p.status === 'pending') { %>
-                  <span class="status-badge pending">পেন্ডিং</span>
+                  <span class="status-badge pending">Pending</span>
                 <% } else { %>
-                  <span class="status-badge" style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1;">ড্রাফট</span>
+                  <span class="status-badge" style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1;">Draft</span>
                 <% } %>
               </td>
-              <td style="white-space: nowrap; color: var(--admin-text-muted); font-size: 16px;">
-                <%= formatBengaliDate(p.published_at || p.created_at) %>
+              <td style="white-space: nowrap; color: var(--admin-text-muted); font-size: 13.5px;">
+                <%= new Date(p.published_at || p.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) %>
               </td>
               <td>
                 <div class="actions-group" style="justify-content: flex-end;">
                   <!-- Live Preview Link (if published) -->
                   <% if (p.status === 'publish') { %>
-                    <a href="/<%= p.category_slug || 'literature' %>/<%= p.slug %>" target="_blank" class="btn-table-action" style="background: #f1f5f9; color: #334155;" title="সাইটে দেখুন">
+                    <a href="/<%= p.category_slug || 'literature' %>/<%= p.slug %>" target="_blank" class="btn-table-action" style="background: #f1f5f9; color: #334155;" title="View on site">
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
                         <polyline points="15 3 21 3 21 9"></polyline>
@@ -168,17 +168,17 @@
                   <% } %>
 
                   <!-- Edit Action -->
-                  <a href="/admin/posts/<%= p.id %>/edit" class="btn-table-action" style="background: #eaf5e9; color: #075603;" title="এডিট করুন">
+                  <a href="/admin/posts/<%= p.id %>/edit" class="btn-table-action" style="background: #eaf5e9; color: #075603;" title="Edit post">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                       <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
                       <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
                     </svg>
-                    এডিট
+                    Edit
                   </a>
 
                   <!-- Delete Action -->
-                  <form action="/admin/posts/<%= p.id %>/delete" method="POST" style="display: inline;" onsubmit="return confirm('আপনি কি নিশ্চিত যে এই লেখাটি চিরতরে মুছে ফেলতে চান?');">
-                    <button type="submit" class="btn-table-action btn-reject" title="ডিলিট করুন">
+                  <form action="/admin/posts/<%= p.id %>/delete" method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to permanently delete this post?');">
+                    <button type="submit" class="btn-table-action btn-reject" title="Delete post">
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <polyline points="3 6 5 6 21 6"></polyline>
                         <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
@@ -194,8 +194,8 @@
             <td colspan="8">
               <div class="admin-empty-state">
                 <div class="empty-icon">📝</div>
-                <div class="empty-title">কোনো লেখা পাওয়া যায়নি</div>
-                <div class="empty-desc">অনুসন্ধান বা ফিল্টারের সাথে মিলে এমন কোনো পোস্ট ডাটাবেসে নেই।</div>
+                <div class="empty-title">No posts found</div>
+                <div class="empty-desc">No articles matched your search or filter criteria.</div>
               </div>
             </td>
           </tr>
@@ -207,18 +207,18 @@
   <!-- Pagination -->
   <% if (totalPages > 1) { %>
     <div style="padding: 16px 24px; border-top: 1px solid var(--admin-border); display: flex; align-items: center; justify-content: space-between;">
-      <span style="font-size: 16px; color: var(--admin-text-muted);">
-        পৃষ্ঠা <%= toBengaliNumber(page) %> / <%= toBengaliNumber(totalPages) %>
+      <span style="font-size: 14px; color: var(--admin-text-muted);">
+        Page <%= page %> of <%= totalPages %>
       </span>
       <div style="display: flex; gap: 6px;">
         <% if (page > 1) { %>
-          <a href="/admin/posts?status=<%= statusFilter %>&category=<%= categoryFilter %>&q=<%= searchQuery %>&page=<%= page - 1 %>" class="btn-view-site" style="padding: 8px 14px; font-size: 16px;">
-            &larr; পূর্ববর্তী
+          <a href="/admin/posts?status=<%= statusFilter %>&category=<%= categoryFilter %>&q=<%= searchQuery %>&page=<%= page - 1 %>" class="btn-view-site" style="padding: 8px 14px; font-size: 14px;">
+            &larr; Previous
           </a>
         <% } %>
         <% if (page < totalPages) { %>
-          <a href="/admin/posts?status=<%= statusFilter %>&category=<%= categoryFilter %>&q=<%= searchQuery %>&page=<%= page + 1 %>" class="btn-view-site" style="padding: 8px 14px; font-size: 16px;">
-            পরবর্তী &rarr;
+          <a href="/admin/posts?status=<%= statusFilter %>&category=<%= categoryFilter %>&q=<%= searchQuery %>&page=<%= page + 1 %>" class="btn-view-site" style="padding: 8px 14px; font-size: 14px;">
+            Next &rarr;
           </a>
         <% } %>
       </div>

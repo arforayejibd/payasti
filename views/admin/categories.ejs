@@ -1,5 +1,5 @@
 <%- include('partials/admin_layout_start', { 
-  pageTitle: 'ক্যাটাগরি ব্যবস্থাপনা', 
+  pageTitle: 'Manage Categories', 
   pageBreadcrumb: 'Categories'
 }) %>
 
@@ -32,11 +32,11 @@
     
     <!-- Title & Badges -->
     <div class="admin-card-title" style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-      <span>ক্যাটাগরি তালিকা</span>
-      <span class="admin-card-badge" id="categoryCountBadge"><%= bnNum(rootCats.length) %> টি মূল বিভাগ</span>
+      <span>Categories</span>
+      <span class="admin-card-badge" id="categoryCountBadge"><%= rootCats.length %> parent categories</span>
       <% if (subCats.length > 0) { %>
         <span style="font-size: 13px; font-weight: 600; color: #475569; background: #f1f5f9; padding: 3px 10px; border-radius: 12px;">
-          মোট <%= bnNum(subCats.length) %> টি সাব-ক্যাটাগরি
+          <%= subCats.length %> subcategories total
         </span>
       <% } %>
     </div>
@@ -49,7 +49,7 @@
         data-filter="all" 
         onclick="setCategoryFilter('all', this)"
       >
-        সকল (<span id="countAll"><%= bnNum(rootCats.length) %></span>)
+        All (<span id="countAll"><%= rootCats.length %></span>)
       </button>
       <button 
         type="button" 
@@ -57,7 +57,7 @@
         data-filter="has-sub" 
         onclick="setCategoryFilter('has-sub', this)"
       >
-        📁 সাব সহ (<span id="countHasSub"><%= bnNum(rootWithSubCount) %></span>)
+        📁 With Subs (<span id="countHasSub"><%= rootWithSubCount %></span>)
       </button>
       <button 
         type="button" 
@@ -65,7 +65,7 @@
         data-filter="no-sub" 
         onclick="setCategoryFilter('no-sub', this)"
       >
-        সাব ছাড়া (<span id="countNoSub"><%= bnNum(rootCats.length - rootWithSubCount) %></span>)
+        Without Subs (<span id="countNoSub"><%= rootCats.length - rootWithSubCount %></span>)
       </button>
     </div>
 
@@ -76,7 +76,7 @@
         <input 
           type="text" 
           id="categorySearchInput" 
-          placeholder="ক্যাটাগরি বা সাব খুঁজুন..." 
+          placeholder="Search category or sub..." 
           class="admin-form-input"
           style="padding: 8px 12px 8px 34px; font-size: 13.5px; height: 38px;"
           oninput="applyCategoryFilters()"
@@ -98,7 +98,7 @@
           <line x1="12" y1="5" x2="12" y2="19"></line>
           <line x1="5" y1="12" x2="19" y2="12"></line>
         </svg>
-        <span>নতুন ক্যাটাগরি</span>
+        <span>Add Category</span>
       </button>
     </div>
   </div>
@@ -120,8 +120,8 @@
         <line x1="5" y1="12" x2="19" y2="12"></line>
       </svg>
     </div>
-    <span style="font-size: 15.5px; font-weight: 700; color: #0f172a;">নতুন ক্যাটাগরি তৈরি করুন</span>
-    <span style="font-size: 12.5px; color: #64748b; margin-top: 2px;">ক্লিক করে তথ্য পূরণ করুন</span>
+    <span style="font-size: 15.5px; font-weight: 700; color: #0f172a;">Create New Category</span>
+    <span style="font-size: 12.5px; color: #64748b; margin-top: 2px;">Click to add a category</span>
   </div>
 
   <!-- Root Category Cards -->
@@ -146,9 +146,9 @@
         <div>
           <!-- Top Badges Row -->
           <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px;">
-            <span class="badge-cat-type root-badge" title="মূল ক্যাটাগরি">
+            <span class="badge-cat-type root-badge" title="Parent Category">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
-              <span>মূল ক্যাটাগরি</span>
+              <span>Parent Category</span>
             </span>
 
             <!-- Subcategory Clickable Indicator / Toggle Button -->
@@ -158,9 +158,9 @@
                 class="badge-sub-toggle-btn" 
                 id="subToggleBtn-<%= c.id %>"
                 onclick="toggleSubcategories(<%= c.id %>)" 
-                title="সাব-ক্যাটাগরি দেখতে বা লুকাতে এখানে ক্লিক করুন"
+                title="Click to view or hide subcategories"
               >
-                <span>📁 <%= bnNum(children.length) %>টি সাব</span>
+                <span>📁 <%= children.length %> subs</span>
                 <svg class="toggle-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                   <polyline points="6 9 12 15 18 9"></polyline>
                 </svg>
@@ -170,9 +170,9 @@
                 type="button" 
                 class="badge-sub-add-btn" 
                 onclick="openAddCategoryModalWithParent(<%= c.id %>)" 
-                title="এই ক্যাটাগরির অধীনে সাব-ক্যাটাগরি তৈরি করুন"
+                title="Add subcategory under this parent"
               >
-                <span>+ সাব যোগ</span>
+                <span>+ Add Sub</span>
               </button>
             <% } %>
           </div>
@@ -198,11 +198,11 @@
             <!-- Post Count -->
             <a 
               href="/admin/posts?category=<%= c.id %>" 
-              title="এই ক্যাটাগরির পোস্টগুলো দেখুন"
+              title="View posts in this category"
               style="display: inline-flex; align-items: center; gap: 5px; font-size: 13px; font-weight: 700; color: #075603; background: #eaf5e9; border: 1px solid #d1e7dd; padding: 3px 9px; border-radius: 14px; text-decoration: none;"
             >
-              <span><%= bnNum(c.post_count || 0) %></span>
-              <span style="font-size: 11.5px; font-weight: 600;">পোস্ট</span>
+              <span><%= c.post_count || 0 %></span>
+              <span style="font-size: 11.5px; font-weight: 600;">posts</span>
             </a>
 
             <!-- Action Buttons -->
@@ -211,7 +211,7 @@
               <button 
                 type="button" 
                 onclick="openEditCategoryModal(<%= JSON.stringify({ id: c.id, name: c.name, slug: c.slug, description: c.description || '', parent_id: c.parent_id || 0 }) %>)"
-                title="সম্পাদনা"
+                title="Edit Category"
                 class="btn-table-action"
                 style="color: #075603; background: #eaf5e9; border-color: #d1e7dd;"
               >
@@ -225,7 +225,7 @@
               <a 
                 href="/category/<%= c.slug %>" 
                 target="_blank" 
-                title="লাইভ দেখুন"
+                title="View on site"
                 class="btn-table-action"
                 style="color: #64748b;"
               >
@@ -237,10 +237,10 @@
               </a>
 
               <!-- Delete Button -->
-              <form action="/admin/categories/<%= c.id %>/delete" method="POST" style="display: inline; margin: 0;" onsubmit="return confirm('এই ক্যাটাগরিটি মুছে ফেলতে চান?');">
+              <form action="/admin/categories/<%= c.id %>/delete" method="POST" style="display: inline; margin: 0;" onsubmit="return confirm('Are you sure you want to delete this category?');">
                 <button 
                   type="submit" 
-                  title="মুছে ফেলুন"
+                  title="Delete Category"
                   class="btn-table-action btn-reject"
                 >
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -252,7 +252,7 @@
             </div>
           </div>
 
-          <!-- Collapsible Subcategories Panel (EXPANDS ON CLICKING 📁 Xটি সাব) -->
+          <!-- Collapsible Subcategories Panel -->
           <% if (hasChildren) { %>
             <div 
               id="subPanel-<%= c.id %>" 
@@ -262,15 +262,15 @@
               <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
                 <span style="font-size: 12.5px; font-weight: 700; color: #075603; display: flex; align-items: center; gap: 4px;">
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 10 4 15 9 20"></polyline><path d="M20 4v7a4 4 0 0 1-4 4H4"></path></svg>
-                  সাব-ক্যাটাগরি তালিকা (<%= bnNum(children.length) %>টি)
+                  Subcategories (<%= children.length %>)
                 </span>
                 <button 
                   type="button" 
                   onclick="openAddCategoryModalWithParent(<%= c.id %>)" 
                   class="btn-sub-quick-add"
-                  title="এই মূল বিভাগের অধীনে আরেকটি সাব যোগ করুন"
+                  title="Add subcategory under this parent"
                 >
-                  + সাব যোগ
+                  + Add Sub
                 </button>
               </div>
 
@@ -297,17 +297,17 @@
                       <!-- Child Post Count -->
                       <a 
                         href="/admin/posts?category=<%= child.id %>" 
-                        title="পোস্ট সংখ্যা"
+                        title="View posts"
                         style="font-size: 11.5px; font-weight: 700; color: #075603; background: #eaf5e9; border: 1px solid #d1e7dd; padding: 1px 6px; border-radius: 10px; text-decoration: none;"
                       >
-                        <%= bnNum(child.post_count || 0) %>
+                        <%= child.post_count || 0 %>
                       </a>
 
                       <!-- Edit Child -->
                       <button 
                         type="button" 
                         onclick="openEditCategoryModal(<%= JSON.stringify({ id: child.id, name: child.name, slug: child.slug, description: child.description || '', parent_id: child.parent_id || c.id, parent_name: c.name }) %>)"
-                        title="সম্পাদনা"
+                        title="Edit"
                         class="btn-table-action"
                         style="width: 26px; height: 26px; padding: 0; display: inline-flex; align-items: center; justify-content: center; color: #075603; background: #eaf5e9; border-color: #d1e7dd; border-radius: 4px;"
                       >
@@ -318,7 +318,7 @@
                       <a 
                         href="/category/<%= child.slug %>" 
                         target="_blank" 
-                        title="লাইভ দেখুন"
+                        title="View on site"
                         class="btn-table-action"
                         style="width: 26px; height: 26px; padding: 0; display: inline-flex; align-items: center; justify-content: center; color: #64748b; border-radius: 4px;"
                       >
@@ -326,10 +326,10 @@
                       </a>
 
                       <!-- Delete Child -->
-                      <form action="/admin/categories/<%= child.id %>/delete" method="POST" style="display: inline; margin: 0;" onsubmit="return confirm('এই সাব-ক্যাটাগরিটি মুছে ফেলতে চান?');">
+                      <form action="/admin/categories/<%= child.id %>/delete" method="POST" style="display: inline; margin: 0;" onsubmit="return confirm('Are you sure you want to delete this subcategory?');">
                         <button 
                           type="submit" 
-                          title="মুছে ফেলুন"
+                          title="Delete"
                           class="btn-table-action btn-reject"
                           style="width: 26px; height: 26px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 4px;"
                         >
@@ -350,34 +350,34 @@
 
 <!-- No Results Placeholder for Search -->
 <div id="noResultsNotice" style="display: none; text-align: center; padding: 48px 20px; background: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0; margin-top: 10px;">
-  <p style="color: #64748b; font-size: 16px; margin: 0;">কোনো ক্যাটাগরি পাওয়া যায়নি।</p>
+  <p style="color: #64748b; font-size: 16px; margin: 0;">No categories found.</p>
 </div>
 
 <!-- 1. Add Category Modal -->
 <div id="categoryAddModal" style="display: none; position: fixed; inset: 0; z-index: 99999; background: rgba(15, 23, 42, 0.5); backdrop-filter: blur(4px); align-items: center; justify-content: center; padding: 20px;">
   <div style="background: #ffffff; border-radius: 12px; width: 100%; max-width: 480px; box-shadow: 0 20px 30px rgba(0,0,0,0.15); overflow: hidden; animation: modalPop 0.15s ease-out;">
     <div style="display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid #f1f5f9; background: #f8fafc;">
-      <span style="font-size: 16px; font-weight: 700; color: #0f172a;">নতুন ক্যাটাগরি যোগ করুন</span>
+      <span style="font-size: 16px; font-weight: 700; color: #0f172a;">Add New Category</span>
       <button type="button" onclick="closeAddCategoryModal()" style="background: none; border: none; font-size: 22px; color: #94a3b8; cursor: pointer; line-height: 1; padding: 0;" onmouseover="this.style.color='#0f172a'" onmouseout="this.style.color='#94a3b8'">&times;</button>
     </div>
 
     <form action="/admin/categories/add" method="POST" style="padding: 20px;">
       <div class="admin-form-group" style="margin-bottom: 14px;">
-        <label class="admin-form-label">ক্যাটাগরির নাম *</label>
-        <input type="text" name="name" class="admin-form-input" required placeholder="যেমন: টেকনোলজি, ফুটবল, রেসিপি">
+        <label class="admin-form-label">Category Name *</label>
+        <input type="text" name="name" class="admin-form-input" required placeholder="e.g. Technology, Football, Recipes">
       </div>
 
       <div class="admin-form-group" style="margin-bottom: 14px;">
-        <label class="admin-form-label">স্লাগ (Slug - ঐচ্ছিক)</label>
-        <input type="text" name="slug" class="admin-form-input" placeholder="যেমন: tech, football, recipes">
+        <label class="admin-form-label">Slug (Optional)</label>
+        <input type="text" name="slug" class="admin-form-input" placeholder="e.g. tech, football, recipes">
       </div>
 
       <div class="admin-form-group" style="margin-bottom: 14px;">
-        <label class="admin-form-label">মাদার / প্যারেন্ট ক্যাটাগরি (ঐচ্ছিক)</label>
+        <label class="admin-form-label">Parent Category (Optional)</label>
         <select name="parent_id" id="addCatParent" class="admin-form-input">
-          <option value="0">⭐ এটি মূল ক্যাটাগরি (কোনো মাদার নেই)</option>
+          <option value="0">⭐ Top-level category (No parent)</option>
           <% if (rootCats && rootCats.length) { %>
-            <optgroup label="── মূল ক্যাটাগরি (মাদার হিসেবে নির্বাচন করুন) ──">
+            <optgroup label="── Parent Categories ──">
               <% rootCats.forEach(pc => { %>
                 <option value="<%= pc.id %>"><%= pc.name %></option>
               <% }) %>
@@ -385,21 +385,21 @@
           <% } %>
         </select>
         <span style="font-size: 12px; color: #64748b; margin-top: 4px; display: block;">
-          * ক্যাটাগরিটিকে সাব-ক্যাটাগরি বানাতে চাইলে তালিকা থেকে তার মাদার ক্যাটাগরি বেছে নিন।
+          * Select a parent category if this should be a subcategory.
         </span>
       </div>
 
       <div class="admin-form-group" style="margin-bottom: 20px;">
-        <label class="admin-form-label">বিবরণ (ঐচ্ছিক)</label>
-        <textarea name="description" class="admin-form-textarea" rows="3" placeholder="ক্যাটাগরির সংক্ষিপ্ত বিবরণ..."></textarea>
+        <label class="admin-form-label">Description (Optional)</label>
+        <textarea name="description" class="admin-form-textarea" rows="3" placeholder="Short description of the category..."></textarea>
       </div>
 
       <div style="display: flex; gap: 10px; justify-content: flex-end; padding-top: 10px; border-top: 1px solid #f1f5f9;">
         <button type="button" onclick="closeAddCategoryModal()" class="btn-table-action" style="padding: 9px 18px; font-size: 14.5px; height: auto;">
-          বাতিল
+          Cancel
         </button>
         <button type="submit" class="btn-new-action" style="padding: 9px 20px; font-size: 14.5px;">
-          যুক্ত করুন
+          Save Category
         </button>
       </div>
     </form>
@@ -410,27 +410,27 @@
 <div id="categoryEditModal" style="display: none; position: fixed; inset: 0; z-index: 99999; background: rgba(15, 23, 42, 0.5); backdrop-filter: blur(4px); align-items: center; justify-content: center; padding: 20px;">
   <div style="background: #ffffff; border-radius: 12px; width: 100%; max-width: 480px; box-shadow: 0 20px 30px rgba(0,0,0,0.15); overflow: hidden; animation: modalPop 0.15s ease-out;">
     <div style="display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid #f1f5f9; background: #f8fafc;">
-      <span style="font-size: 16px; font-weight: 700; color: #0f172a;">ক্যাটাগরি সম্পাদনা</span>
+      <span style="font-size: 16px; font-weight: 700; color: #0f172a;">Edit Category</span>
       <button type="button" onclick="closeEditCategoryModal()" style="background: none; border: none; font-size: 22px; color: #94a3b8; cursor: pointer; line-height: 1; padding: 0;" onmouseover="this.style.color='#0f172a'" onmouseout="this.style.color='#94a3b8'">&times;</button>
     </div>
 
     <form id="editCategoryForm" action="" method="POST" style="padding: 20px;">
       <div class="admin-form-group" style="margin-bottom: 14px;">
-        <label class="admin-form-label">ক্যাটাগরির নাম *</label>
+        <label class="admin-form-label">Category Name *</label>
         <input type="text" name="name" id="editCatName" class="admin-form-input" required>
       </div>
 
       <div class="admin-form-group" style="margin-bottom: 14px;">
-        <label class="admin-form-label">স্লাগ (Slug)</label>
+        <label class="admin-form-label">Slug</label>
         <input type="text" name="slug" id="editCatSlug" class="admin-form-input">
       </div>
 
       <div class="admin-form-group" style="margin-bottom: 14px;">
-        <label class="admin-form-label">মাদার / প্যারেন্ট ক্যাটাগরি (ঐচ্ছিক)</label>
+        <label class="admin-form-label">Parent Category (Optional)</label>
         <select name="parent_id" id="editCatParent" class="admin-form-input">
-          <option value="0">⭐ এটি মূল ক্যাটাগরি (কোনো মাদার নেই)</option>
+          <option value="0">⭐ Top-level category (No parent)</option>
           <% if (rootCats && rootCats.length) { %>
-            <optgroup label="── মূল ক্যাটাগরি (মাদার হিসেবে নির্বাচন করুন) ──">
+            <optgroup label="── Parent Categories ──">
               <% rootCats.forEach(pc => { %>
                 <option value="<%= pc.id %>"><%= pc.name %></option>
               <% }) %>
@@ -438,21 +438,21 @@
           <% } %>
         </select>
         <span style="font-size: 12px; color: #64748b; margin-top: 4px; display: block;">
-          * ক্যাটাগরিটিকে সাব-ক্যাটাগরি বানাতে চাইলে তালিকা থেকে তার মাদার ক্যাটাগরি বেছে নিন।
+          * Select a parent category if this should be a subcategory.
         </span>
       </div>
 
       <div class="admin-form-group" style="margin-bottom: 20px;">
-        <label class="admin-form-label">বিবরণ</label>
+        <label class="admin-form-label">Description</label>
         <textarea name="description" id="editCatDesc" class="admin-form-textarea" rows="3"></textarea>
       </div>
 
       <div style="display: flex; gap: 10px; justify-content: flex-end; padding-top: 10px; border-top: 1px solid #f1f5f9;">
         <button type="button" onclick="closeEditCategoryModal()" class="btn-table-action" style="padding: 9px 18px; font-size: 14.5px; height: auto;">
-          বাতিল
+          Cancel
         </button>
         <button type="submit" class="btn-new-action" style="padding: 9px 20px; font-size: 14.5px;">
-          আপডেট করুন
+          Update Category
         </button>
       </div>
     </form>
@@ -509,7 +509,7 @@
     border: 1px solid #d1e7dd;
   }
 
-  /* Subcategory Toggle Button (The Clickable 📁 Xটি সাব) */
+  /* Subcategory Toggle Button */
   .badge-sub-toggle-btn {
     display: inline-flex;
     align-items: center;
@@ -606,7 +606,7 @@
 <script>
   let currentFilter = 'all';
 
-  // Toggle Subcategory Panel when clicking on 📁 Xটি সাব
+  // Toggle Subcategory Panel
   function toggleSubcategories(catId) {
     const panel = document.getElementById('subPanel-' + catId);
     const btn = document.getElementById('subToggleBtn-' + catId);
@@ -688,18 +688,13 @@
     // Dynamic count badge
     const badge = document.getElementById('categoryCountBadge');
     if (badge) {
-      badge.textContent = toBengaliDigits(visibleCount) + ' টি মূল বিভাগ';
+      badge.textContent = visibleCount + (visibleCount === 1 ? ' Main Category' : ' Main Categories');
     }
 
     const noResults = document.getElementById('noResultsNotice');
     if (noResults) {
       noResults.style.display = (visibleCount === 0) ? 'block' : 'none';
     }
-  }
-
-  function toBengaliDigits(num) {
-    const bn = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
-    return String(num).replace(/[0-9]/g, d => bn[d]);
   }
 
   // Add Category Modal
