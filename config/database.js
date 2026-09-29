@@ -121,6 +121,19 @@ async function initDatabase() {
         `);
       } catch (pcSyncErr) {}
 
+      // Keep categories.count accurately synced with live published posts
+      try {
+        await connection.query(`
+          UPDATE categories c 
+          SET count = (
+            SELECT COUNT(DISTINCT p.id) 
+            FROM posts p 
+            LEFT JOIN post_categories pc ON pc.post_id = p.id 
+            WHERE p.status = 'publish' AND (p.category_id = c.id OR p.subcategory_id = c.id OR pc.category_id = c.id)
+          );
+        `);
+      } catch (catCountErr) {}
+
       await connection.query(`
         CREATE TABLE IF NOT EXISTS books (
           id INT AUTO_INCREMENT PRIMARY KEY,

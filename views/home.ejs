@@ -55,42 +55,18 @@
           <a href="/search?q=ফ্রিজ" class="hero-trending-tag-link">ফ্রিজ</a>
           <a href="/search?q=ঘড়ি" class="hero-trending-tag-link">স্মার্টওয়াচ</a>
         </div>
-
-        <!-- Trust Badges Bar -->
-        <div class="hero-trust-bar">
-          <div class="hero-trust-item">
-            <span style="font-size: 22px;">🔍</span>
-            <strong>নিরপেক্ষ রিভিউ</strong>
-            <span>গভীর ফিচার যাচাই</span>
-          </div>
-          <div class="hero-trust-item">
-            <span style="font-size: 22px;">⭐</span>
-            <strong>সেরা ১০ বাছাই</strong>
-            <span>রেটিং ও র‍্যাংকিং</span>
-          </div>
-          <div class="hero-trust-item">
-            <span style="font-size: 22px;">⚖️</span>
-            <strong>সুবিধা-অসুবিধা</strong>
-            <span>সতর্ক ও স্পষ্ট তুলনা</span>
-          </div>
-          <div class="hero-trust-item">
-            <span style="font-size: 22px;">🇧🇩</span>
-            <strong>লোকাল মার্কেট</strong>
-            <span>বাংলাদেশ বাজার দর</span>
-          </div>
-        </div>
       </div>
     </section>
 
     <!-- 3. HERO MAGAZINE BENTO SHOWCASE: #1 Pick & Ranked 2, 3, 4 -->
     <% if (featuredPosts && featuredPosts.length) { %>
-      <section style="margin-bottom: 44px;">
+      <section class="home-section-wrap">
         <div class="review-section-header">
           <div class="section-title-wrap">
             <span class="section-title-indicator"></span>
             <h2 class="section-heading">এই সপ্তাহের সেরা বাছাই (Editor's Choice)</h2>
           </div>
-          <span style="font-size: 15px; font-weight: 700; color: var(--brand-primary); background: rgba(6, 130, 0, 0.08); padding: 4px 14px; border-radius: 50px;">
+          <span class="section-header-tag">
             🔥 শীর্ষ রেটিং প্রাপ্ত
           </span>
         </div>
@@ -133,20 +109,8 @@
             <!-- Content Details -->
             <div class="hero-main-body">
               <div>
-                <!-- Highlights Box -->
-                <div class="hero-highlights-box">
-                  <div class="hero-highlights-title">
-                    <span>⚡ এই রিভিউয়ের মূল আকর্ষণ:</span>
-                  </div>
-                  <ul class="hero-highlights-list">
-                    <li>বাস্তব ব্যবহারকারীর যাচাইকৃত অভিজ্ঞতা</li>
-                    <li>সেরা ফিচার ও নির্ভরযোগ্য পারফরম্যান্স</li>
-                    <li>সর্বশেষ বাজারদর ও অফার আপডেট</li>
-                  </ul>
-                </div>
-
                 <p class="hero-main-excerpt">
-                  <%- formatCardExcerpt(heroPost.content || heroPost.excerpt, 28, 2) %>
+                  <%- formatCardExcerpt(heroPost.content || heroPost.excerpt, 35, 2) %>
                 </p>
               </div>
 
@@ -164,12 +128,12 @@
           <div class="hero-side-list">
             <% featuredPosts.slice(1, 4).forEach((post, idx) => { %>
               <div class="hero-side-card">
-                <div class="hero-side-thumb">
+                <a href="/post/<%= encodeURIComponent(post.slug || '') %>" class="hero-side-thumb">
                   <% if (post.featured_image) { %>
                     <img src="<%= post.featured_image %>" alt="<%= post.title %>" loading="lazy">
                   <% } %>
                   <span class="badge-rank-num">#<%= toBengaliNumber(idx + 2) %></span>
-                </div>
+                </a>
 
                 <div class="hero-side-info">
                   <div>
@@ -212,9 +176,9 @@
         <div class="category-hub-header">
           <div class="section-title-wrap">
             <span class="section-title-indicator"></span>
-            <h3 style="font-size: 22px; font-weight: 700; color: var(--text-heading);">পণ্য বিভাগ অনুযায়ী সেরা ১০ তালিকা খুঁজুন</h3>
+            <h3 class="category-hub-title">পণ্য বিভাগ অনুযায়ী সেরা ১০ তালিকা খুঁজুন</h3>
           </div>
-          <span style="font-size: 15px; color: var(--text-light);"><%= toBengaliNumber(topCategories.length) %>টি ক্যাটাগরি ব্রাউজ করুন</span>
+          <span class="category-hub-count"><%= toBengaliNumber(topCategories.length) %>টি ক্যাটাগরি ব্রাউজ করুন</span>
         </div>
 
         <div class="category-hub-pills">
@@ -230,7 +194,7 @@
 
     <!-- 5. TOP 10 LISTICLES SECTION -->
     <% if (topLists && topLists.length) { %>
-      <section style="margin-bottom: 44px;">
+      <section class="home-section-wrap">
         <div class="review-section-header">
           <div class="section-title-wrap">
             <span class="section-title-indicator"></span>
@@ -252,7 +216,7 @@
 
     <!-- 6. TECH & GADGETS REVIEWS SECTION -->
     <% if (techReviews && techReviews.length) { %>
-      <section style="margin-bottom: 44px;">
+      <section class="home-section-wrap">
         <div class="review-section-header">
           <div class="section-title-wrap">
             <span class="section-title-indicator"></span>
@@ -275,40 +239,40 @@
     <!-- 7. AFFILIATE BUYER COMPARISON TABLE -->
     <section class="affiliate-comparison-table-wrap">
       <div class="comparison-table-head">
-        <div>
-          <span style="font-size: 13px; font-weight: 700; color: var(--brand-primary); text-transform: uppercase; letter-spacing: 0.5px;">র‍্যাপিড কম্প্যারিজম</span>
-          <h3 style="margin-top: 4px; color: var(--text-heading);">জনপ্রিয় প্রোডাক্ট রিভিউ তুলনামূলক সারসংক্ষেপ</h3>
+        <div class="comparison-table-title-group">
+          <span class="comparison-table-sub">র‍্যাপিড কম্প্যারিজম</span>
+          <h3 class="comparison-table-heading">জনপ্রিয় প্রোডাক্ট রিভিউ তুলনামূলক সারসংক্ষেপ</h3>
         </div>
-        <span style="font-size: 14px; background: var(--bg-muted); padding: 6px 14px; border-radius: 8px; color: var(--text-muted); font-weight: 600;">
+        <span class="comparison-table-badge">
           📊 রেটিং ও ফিচারের ওপর ভিত্তি করে নির্বাচিত
         </span>
       </div>
 
-      <div style="overflow-x: auto;">
+      <div class="table-responsive-scroll">
         <table class="affiliate-table">
           <thead>
             <tr>
-              <th>পণ্য / রিভিউ বিষয়</th>
-              <th>ক্যাটাগরি</th>
-              <th style="text-align: center;">স্কোর</th>
-              <th>প্রধান সুবিধা</th>
-              <th style="text-align: right;">অ্যাকশন</th>
+              <th class="th-product">পণ্য / রিভিউ বিষয়</th>
+              <th class="th-category">ক্যাটাগরি</th>
+              <th class="th-score">স্কোর</th>
+              <th class="th-features">প্রকাশের সময়</th>
+              <th class="th-action">অ্যাকশন</th>
             </tr>
           </thead>
           <tbody>
             <% if (featuredPosts && featuredPosts.length) { %>
               <% featuredPosts.slice(0, 5).forEach((p, idx) => { %>
                 <tr>
-                  <td style="font-weight: 700;">
-                    <a href="/post/<%= encodeURIComponent(p.slug || '') %>" style="display: inline-flex; align-items: center; color: var(--text-heading);">
+                  <td class="td-product">
+                    <a href="/post/<%= encodeURIComponent(p.slug || '') %>" class="table-product-link">
                       <span class="table-rank-num"><%= toBengaliNumber(idx+1) %></span>
-                      <span><%= p.title %></span>
+                      <span class="table-product-title"><%= p.title %></span>
                     </a>
                   </td>
-                  <td style="color: var(--text-muted); font-size: 16px;"><%= p.category_name || 'সাধারণ' %></td>
-                  <td style="text-align: center; font-weight: 800; color: #f59e0b;">★ <%= toBengaliNumber(p.rating_score || '4.8') %></td>
-                  <td style="font-size: 15px; color: var(--text-muted);">টেকসই বিল্ড ও সেরা পারফরম্যান্স</td>
-                  <td style="text-align: right;">
+                  <td class="td-category"><%= p.category_name || 'সাধারণ' %></td>
+                  <td class="td-score">★ <%= toBengaliNumber(p.rating_score || '4.8') %></td>
+                  <td class="td-features"><%= formatBengaliDate(p.published_at || p.created_at) %></td>
+                  <td class="td-action">
                     <a href="/post/<%= encodeURIComponent(p.slug || '') %>" class="btn-table-action">
                       রিভিউ দেখুন &raquo;
                     </a>
@@ -325,32 +289,38 @@
     <section class="affiliate-trust-grid">
       <div class="trust-promise-card">
         <div class="trust-promise-icon">🔍</div>
-        <h4 class="trust-promise-title">গভীর গবেষণা ও ডেটা বিশ্লেষণ</h4>
-        <p class="trust-promise-desc">
-          শত শত ক্রেতার বাস্তব অভিজ্ঞতা ও টেকনিক্যাল স্পেক্স পুঙ্খানুপুঙ্খভাবে যাচাই করে সেরা তালিকা তৈরি করি।
-        </p>
+        <div class="trust-promise-content">
+          <h4 class="trust-promise-title">গভীর গবেষণা ও ডেটা বিশ্লেষণ</h4>
+          <p class="trust-promise-desc">
+            শত শত ক্রেতার বাস্তব অভিজ্ঞতা ও টেকনিক্যাল স্পেক্স পুঙ্খানুপুঙ্খভাবে যাচাই করে সেরা তালিকা তৈরি করি।
+          </p>
+        </div>
       </div>
 
       <div class="trust-promise-card">
         <div class="trust-promise-icon">⚖️</div>
-        <h4 class="trust-promise-title">সুবিধা ও অসুবিধার স্বচ্ছতা</h4>
-        <p class="trust-promise-desc">
-          শুধু ভালো দিক নয়; কেনার আগে পণ্যের সম্ভাব্য সীমাবদ্ধতা ও দুর্বলতাগুলোও পরিষ্কারভাবে তুলে ধরা হয়।
-        </p>
+        <div class="trust-promise-content">
+          <h4 class="trust-promise-title">সুবিধা ও অসুবিধার স্বচ্ছতা</h4>
+          <p class="trust-promise-desc">
+            শুধু ভালো দিক নয়; কেনার আগে পণ্যের সম্ভাব্য সীমাবদ্ধতা ও দুর্বলতাগুলোও পরিষ্কারভাবে তুলে ধরা হয়।
+          </p>
+        </div>
       </div>
 
       <div class="trust-promise-card">
         <div class="trust-promise-icon">💰</div>
-        <h4 class="trust-promise-title">ভ্যালু ফর মানি রিকমেন্ডেশন</h4>
-        <p class="trust-promise-desc">
-          বাজেটের মধ্যে সেরা কোয়ালিটি ও আফটার-সেলস সার্ভিসের নিশ্চয়তা প্রদানকারী পণ্যগুলোকেই আমরা প্রাধান্য দিই।
-        </p>
+        <div class="trust-promise-content">
+          <h4 class="trust-promise-title">ভ্যালু ফর মানি রিকমেন্ডেশন</h4>
+          <p class="trust-promise-desc">
+            বাজেটের মধ্যে সেরা কোয়ালিটি ও আফটার-সেলস সার্ভিসের নিশ্চয়তা প্রদানকারী পণ্যগুলোকেই আমরা প্রাধান্য দিই।
+          </p>
+        </div>
       </div>
     </section>
 
     <!-- 9. BOOKS & LITERATURE SECTION -->
     <% if (bookReviews && bookReviews.length) { %>
-      <section style="margin-bottom: 44px;">
+      <section class="home-section-wrap">
         <div class="review-section-header">
           <div class="section-title-wrap">
             <span class="section-title-indicator"></span>
@@ -372,7 +342,7 @@
 
     <!-- 10. LIFESTYLE, BEAUTY & HOME SECTION -->
     <% if (lifestyleReviews && lifestyleReviews.length) { %>
-      <section style="margin-bottom: 44px;">
+      <section class="home-section-wrap">
         <div class="review-section-header">
           <div class="section-title-wrap">
             <span class="section-title-indicator"></span>
@@ -393,7 +363,7 @@
     <% } %>
 
     <!-- 11. LATEST BUYING GUIDES & ARTICLES GRID -->
-    <section style="margin-bottom: 44px;">
+    <section class="home-section-wrap">
       <div class="review-section-header">
         <div class="section-title-wrap">
           <span class="section-title-indicator"></span>

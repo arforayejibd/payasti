@@ -188,21 +188,63 @@ exports.getCategoryPage = async (req, res) => {
     const limit = 20;
     const offset = (page - 1) * limit;
 
-    // Resolve English slug to Bengali if needed with Unicode normalization
-    const resolvedSlug = (CATEGORY_SLUG_MAP[slug] || decodeURIComponent(slug)).normalize('NFC');
+    // Helper to find category by slug or name (Bengali or English)
+    async function findCategory(slugOrName, parentId = null) {
+      if (!slugOrName) return null;
+      const raw = String(slugOrName).trim();
+      const decoded = decodeURIComponent(raw).normalize('NFC');
+      const mapped = CATEGORY_SLUG_MAP[raw] || CATEGORY_SLUG_MAP[decoded] || null;
 
-    // Find Category
-    let category = await db.prepare('SELECT * FROM categories WHERE slug = ?').get(resolvedSlug);
-    
-    if (!category) {
-      // Try decoded or LIKE search
-      category = await db.prepare('SELECT * FROM categories WHERE slug = ? OR name = ?').get(slug, resolvedSlug);
+      // 1. Search under specific parent if provided
+      if (parentId) {
+        let cat = await db.prepare(`
+          SELECT * FROM categories 
+          WHERE parent_id = ? AND (
+            slug = ? OR slug = ? OR LOWER(slug) = LOWER(?) OR
+            name = ? OR name = ? OR LOWER(name) = LOWER(?)
+          )
+          LIMIT 1
+        `).get(parentId, raw, decoded, decoded, raw, decoded, decoded);
+        if (cat) return cat;
+
+        if (mapped) {
+          cat = await db.prepare(`
+            SELECT * FROM categories 
+            WHERE parent_id = ? AND (slug = ? OR name = ? OR LOWER(name) = LOWER(?))
+            LIMIT 1
+          `).get(parentId, mapped, mapped, mapped);
+          if (cat) return cat;
+        }
+      }
+
+      // 2. Exact match by slug or name across all categories
+      let cat = await db.prepare(`
+        SELECT * FROM categories 
+        WHERE slug = ? OR slug = ? OR LOWER(slug) = LOWER(?) OR
+              name = ? OR name = ? OR LOWER(name) = LOWER(?)
+        LIMIT 1
+      `).get(raw, decoded, decoded, raw, decoded, decoded);
+      if (cat) return cat;
+
+      if (mapped) {
+        cat = await db.prepare(`
+          SELECT * FROM categories 
+          WHERE slug = ? OR name = ? OR LOWER(name) = LOWER(?)
+          LIMIT 1
+        `).get(mapped, mapped, mapped);
+        if (cat) return cat;
+      }
+
+      // 3. Fallback partial LIKE search
+      return await db.prepare(`
+        SELECT * FROM categories 
+        WHERE slug LIKE ? OR name LIKE ?
+        LIMIT 1
+      `).get(`%${decoded}%`, `%${decoded}%`);
     }
 
-    if (!category) {
-      // Try partial match
-      category = await db.prepare('SELECT * FROM categories WHERE slug LIKE ? OR name LIKE ?').get(`%${resolvedSlug}%`, `%${resolvedSlug}%`);
-    }
+    // Find main Category
+    let category = await findCategory(slug);
 
     if (category) {
       if (category.description) {
@@ -222,11 +264,12 @@ exports.getCategoryPage = async (req, res) => {
       }
     } else {
       // Fallback default category object
+      const safeSlug = decodeURIComponent(slug).normalize('NFC');
       category = {
         id: 0,
-        name: resolvedSlug,
-        slug: resolvedSlug,
-        description: `${resolvedSlug} বিষয়ক সেরা ১০ তালিকা ও রিভিউ`
+        name: safeSlug,
+        slug: safeSlug,
+        description: `${safeSlug} বিষয়ক সেরা ১০ তালিকা ও রিভিউ`
       };
     }
 
@@ -234,21 +277,19 @@ exports.getCategoryPage = async (req, res) => {
     let subcategories = [];
     let parentCategory = null;
     let activeSubCategory = null;
-    let activeSubSlug = subSlug ? (CATEGORY_SLUG_MAP[subSlug] || decodeURIComponent(subSlug)).normalize('NFC') : null;
+    let activeSubSlug = null;
 
     if (category.id > 0) {
       if (category.parent_id > 0) {
+        // If the URL slug was already a child category (e.g. /category/football or /category/wrestling)
         parentCategory = (await db.prepare('SELECT * FROM categories WHERE id = ?').get(category.parent_id)) || category;
         activeSubCategory = category;
         activeSubSlug = category.slug;
       } else {
+        // Parent category (e.g. /category/sports)
         parentCategory = category;
         if (subSlug) {
-          const decodedSub = (CATEGORY_SLUG_MAP[subSlug] || decodeURIComponent(subSlug)).normalize('NFC');
-          activeSubCategory = await db.prepare('SELECT * FROM categories WHERE (parent_id = ? OR id = ?) AND (slug = ? OR name = ?)').get(category.id, category.id, decodedSub, decodedSub);
-          if (!activeSubCategory) {
-            activeSubCategory = await db.prepare('SELECT * FROM categories WHERE slug = ? OR name = ?').get(decodedSub, decodedSub);
-          }
+          activeSubCategory = await findCategory(subSlug, category.id);
           if (activeSubCategory) {
             activeSubSlug = activeSubCategory.slug;
           }
@@ -256,14 +297,24 @@ exports.getCategoryPage = async (req, res) => {
       }
 
       const targetParentId = parentCategory.id;
-      const children = await db.prepare('SELECT * FROM categories WHERE parent_id = ? ORDER BY count DESC, id ASC').all(targetParentId);
+      const children = await db.prepare(`
+        SELECT c.*, 
+          (SELECT COUNT(DISTINCT p.id) FROM posts p 
+           LEFT JOIN post_categories pc ON pc.post_id = p.id 
+           WHERE p.status = 'publish' AND (p.category_id = c.id OR p.subcategory_id = c.id OR pc.category_id = c.id)
+          ) AS real_count 
+        FROM categories c 
+        WHERE c.parent_id = ? 
+        ORDER BY real_count DESC, c.count DESC, c.id ASC
+      `).all(targetParentId);
+
       if (children.length > 0) {
         subcategories = children.map(c => ({
           id: c.id,
           name: c.name,
           slug: c.slug,
-          count: c.count,
-          url: `/section/${encodeURIComponent(parentCategory.slug)}/${encodeURIComponent(c.slug)}`
+          count: (c.real_count !== undefined && c.real_count !== null) ? c.real_count : c.count,
+          url: `/category/${encodeURIComponent(parentCategory.slug)}/${encodeURIComponent(c.slug)}`
         }));
       }
     }

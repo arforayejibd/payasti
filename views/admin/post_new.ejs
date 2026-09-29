@@ -71,10 +71,18 @@
         autocomplete="off"
       >
 
-      <!-- Live Permalink Preview -->
-      <div class="wp-permalink-preview">
-        <span>স্থায়ী লিংক (Permalink):</span>
-        <span class="wp-permalink-url" id="wpPermalinkUrl">/post/post-title</span>
+      <!-- Live Permalink Preview & Editable English Slug -->
+      <div class="wp-permalink-preview" id="wpPermalinkBox">
+        <span class="wp-permalink-label">স্থায়ী লিংক (Permalink):</span>
+        <span class="wp-permalink-base">/post/</span><span class="wp-permalink-url" id="wpPermalinkUrl">post-title</span>
+        <input type="hidden" name="slug" id="postSlugInput" value="">
+        <button type="button" class="wp-permalink-edit-btn" id="btnEditPermalink" onclick="window.togglePermalinkEdit(true);">সম্পাদনা</button>
+        
+        <div class="wp-permalink-edit-wrap" id="permalinkEditWrap" style="display: none;">
+          <input type="text" id="customSlugField" class="wp-permalink-input" placeholder="english-slug-here">
+          <button type="button" class="wp-permalink-save-btn" onclick="window.saveCustomPermalink();">ঠিক আছে</button>
+          <button type="button" class="wp-permalink-cancel-btn" onclick="window.togglePermalinkEdit(false);">বাতিল</button>
+        </div>
       </div>
 
       <!-- Gutenberg Writing Flow -->
@@ -152,32 +160,176 @@
         </div>
       </div>
 
-      <!-- Panel 2: ক্যাটাগরি -->
-      <div class="wp-inspector-card">
+      <!-- Panel 2: ক্যাটাগরি / বিভাগ -->
+      <div class="wp-inspector-card wp-category-panel">
         <div class="wp-inspector-header">
           <span>ক্যাটাগরি / বিভাগ *</span>
+          <span class="wp-badge-count" id="selectedCatCount">০টি নির্বাচিত</span>
         </div>
         <div class="wp-inspector-body">
-          <select name="category_id" id="categorySelect" class="wp-select" required>
+          
+          <!-- Category Search Filter Box -->
+          <div class="wp-cat-search-box">
+            <span class="wp-cat-search-icon">🔍</span>
+            <input 
+              type="text" 
+              id="categorySearchInput" 
+              class="wp-cat-search-input" 
+              placeholder="ক্যাটাগরি খুঁজুন..." 
+              autocomplete="off"
+              oninput="window.filterCategories(this.value)"
+            >
+            <button type="button" id="clearCatSearch" class="wp-cat-search-clear" onclick="window.clearCategorySearch()" style="display: none;">✕</button>
+          </div>
+
+          <!-- Category Tabs -->
+          <div class="wp-cat-tabs">
+            <button type="button" class="wp-cat-tab active" id="tabAllCats" onclick="window.switchCatTab('all')">সকল বিভাগ</button>
+            <button type="button" class="wp-cat-tab" id="tabSelectedCats" onclick="window.switchCatTab('selected')">নির্বাচিত বিভাগ</button>
+          </div>
+
+          <!-- Scrollable Category Checklist -->
+          <div class="wp-cat-checklist-container" id="categoryChecklistWrap">
             <% if (categories && categories.length) { 
                  const rootCats = categories.filter(c => !c.parent_id || c.parent_id === 0);
-                 let firstCatSelected = false;
                  rootCats.forEach((c, idx) => {
                    const children = categories.filter(child => child.parent_id === c.id);
-                   const isFirst = (idx === 0 && !firstCatSelected);
-                   if (isFirst) firstCatSelected = true;
+                   const isChecked = (typeof selectedCategoryIds !== 'undefined' && selectedCategoryIds.includes(c.id));
             %>
-              <option value="<%= c.id %>" <%= isFirst ? 'selected' : '' %> style="font-weight: 700;"><%= c.name %></option>
-              <% children.forEach(child => { %>
-                <option value="<%= child.id %>">&nbsp;&nbsp;— <%= child.name %></option>
-              <% }) %>
+              <div class="wp-cat-item-group" data-cat-id="<%= c.id %>" data-cat-name="<%= c.name.toLowerCase() %>">
+                <label class="wp-cat-checkbox-label root-cat">
+                  <input 
+                    type="checkbox" 
+                    name="category_ids[]" 
+                    value="<%= c.id %>" 
+                    <%= isChecked ? 'checked' : '' %>
+                    onchange="window.updateCategorySelectionStats()"
+                  >
+                  <span class="wp-cat-name"><%= c.name %></span>
+                </label>
+                
+                <% if (children && children.length) { %>
+                  <div class="wp-cat-children">
+                    <% children.forEach(child => { 
+                         const isChildChecked = (typeof selectedCategoryIds !== 'undefined' && selectedCategoryIds.includes(child.id));
+                    %>
+                      <div class="wp-cat-item-child" data-cat-id="<%= child.id %>" data-cat-name="<%= child.name.toLowerCase() %>">
+                        <label class="wp-cat-checkbox-label child-cat">
+                          <input 
+                            type="checkbox" 
+                            name="category_ids[]" 
+                            value="<%= child.id %>" 
+                            <%= isChildChecked ? 'checked' : '' %>
+                            onchange="window.updateCategorySelectionStats()"
+                          >
+                          <span class="wp-cat-name">— <%= child.name %></span>
+                        </label>
+                      </div>
+                    <% }); %>
+                  </div>
+                <% } %>
+              </div>
             <%   });
                } %>
-          </select>
+          </div>
+          <div id="noCatFoundMsg" style="display: none; padding: 12px; font-size: 12.5px; color: #94a3b8; text-align: center;">
+            কোনো ক্যাটাগরি খুঁজে পাওয়া যায়নি।
+          </div>
+
+          <!-- Quick Add New Category Toggle -->
+          <div class="wp-cat-quick-add-wrap">
+            <button type="button" class="wp-cat-add-toggle-btn" id="btnToggleQuickAddCat" onclick="window.toggleQuickAddCat()">
+              <span id="quickAddCatIcon">➕</span> নতুন ক্যাটাগরি যোগ করুন
+            </button>
+
+            <div class="wp-cat-quick-add-form" id="quickAddCatForm" style="display: none;">
+              <input type="text" id="newCatNameInput" class="wp-input" placeholder="ক্যাটাগরির নাম লিখুন..." style="font-size: 12.5px; margin-bottom: 8px;">
+              
+              <label style="font-size: 11.5px; color: #64748b; margin-bottom: 4px; display: block; font-weight: 600;">প্যারেন্ট ক্যাটাগরি (ঐচ্ছিক):</label>
+              <select id="newCatParentSelect" class="wp-select" style="font-size: 12px; margin-bottom: 8px;">
+                <option value="0">— কোনোটি নয় (মূল ক্যাটাগরি) —</option>
+                <% if (categories && categories.length) { 
+                     categories.filter(c => !c.parent_id || c.parent_id === 0).forEach(rc => { %>
+                      <option value="<%= rc.id %>"><%= rc.name %></option>
+                <%   }); 
+                   } %>
+              </select>
+
+              <div style="display: flex; gap: 6px;">
+                <button type="button" class="wp-btn-publish" style="padding: 5px 12px; font-size: 12px; border-radius: 5px;" onclick="window.submitQuickAddCategory()">
+                  যোগ করুন
+                </button>
+                <button type="button" class="wp-btn-secondary" style="padding: 5px 10px; font-size: 12px; border-radius: 5px;" onclick="window.toggleQuickAddCat(false)">
+                  বাতিল
+                </button>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
 
-      <!-- Panel 3: ফিচার্ড ছবি -->
+      <!-- Panel 3: ট্যাগ (Tags) -->
+      <div class="wp-inspector-card">
+        <div class="wp-inspector-header">
+          <span>ট্যাগ (Tags)</span>
+          <span class="wp-badge-count" id="postTagCountBadge">০</span>
+        </div>
+        <div class="wp-inspector-body">
+          
+          <!-- Auto-Suggest Tags Button -->
+          <button type="button" class="wp-btn-auto-tags" id="btnAutoSuggestTags" onclick="window.autoSuggestBilingualTags()">
+            <span>⚡ কন্টেন্ট থেকে অটো-ট্যাগ সাজেস্ট করুন</span>
+          </button>
+
+          <!-- Interactive Tag Chips Container -->
+          <div class="wp-tag-chips-wrap" id="tagChipsWrap" onclick="document.getElementById('postTagInputField').focus()">
+            <!-- Dynamic tag chips inserted here -->
+          </div>
+
+          <!-- Hidden Input for Form Submission -->
+          <input type="hidden" name="tags" id="hiddenPostTagsInput" value="">
+
+          <!-- Tag Input Field & Add Button -->
+          <div class="wp-tag-input-row">
+            <input 
+              type="text" 
+              id="postTagInputField" 
+              class="wp-tag-input" 
+              placeholder="ট্যাগ লিখে কমা বা Enter চাপুন..."
+              autocomplete="off"
+            >
+            <button type="button" class="wp-btn-add-tag" onclick="window.addTagFromInput()">
+              যোগ করুন
+            </button>
+          </div>
+          <div style="font-size: 11px; color: #94a3b8; margin-bottom: 8px;">
+            💡 একাধিক ট্যাগ আলাদা করতে কমা (<code>,</code>) অথবা <code>Enter</code> চাপুন।
+          </div>
+
+          <!-- Most Used / Existing Tags Cloud -->
+          <% if (typeof allTags !== 'undefined' && allTags && allTags.length) { %>
+            <div class="wp-tag-cloud-wrap">
+              <span class="wp-tag-cloud-title">জনপ্রিয় ট্যাগ থেকে বেছে নিন:</span>
+              <div class="wp-tag-cloud-list">
+                <% allTags.slice(0, 30).forEach(t => { %>
+                  <span 
+                    class="wp-tag-cloud-item" 
+                    id="cloudTag_<%= t.id %>"
+                    data-tag-name="<%= t.name %>" 
+                    onclick="window.toggleTagFromCloud('<%= t.name.replace(/'/g, "\\'") %>')"
+                  >
+                    + <%= t.name %>
+                  </span>
+                <% }); %>
+              </div>
+            </div>
+          <% } %>
+
+        </div>
+      </div>
+
+      <!-- Panel 4: ফিচার্ড ছবি -->
       <div class="wp-inspector-card">
         <div class="wp-inspector-header">
           <span>ফিচার্ড ছবি</span>
@@ -283,8 +435,152 @@
     }
   };
 
+  // Tag Management State & Functions
+  let currentTags = [];
+
+  window.toBengaliNum = function(num) {
+    const bnDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+    return String(num).replace(/\d/g, d => bnDigits[d]);
+  };
+
+  window.renderTagChips = function() {
+    const wrap = document.getElementById('tagChipsWrap');
+    const hiddenInput = document.getElementById('hiddenPostTagsInput');
+    const badge = document.getElementById('postTagCountBadge');
+    if (!wrap) return;
+
+    wrap.innerHTML = '';
+    currentTags.forEach((tagName, index) => {
+      const chip = document.createElement('span');
+      chip.className = 'wp-tag-chip';
+      chip.innerHTML = `
+        <span>#${tagName}</span>
+        <button type="button" class="wp-tag-remove-btn" onclick="window.removeTagByIndex(${index})" title="মুছে ফেলুন">✕</button>
+      `;
+      wrap.appendChild(chip);
+    });
+
+    if (hiddenInput) {
+      hiddenInput.value = currentTags.join(',');
+    }
+    if (badge) {
+      badge.textContent = window.toBengaliNum(currentTags.length);
+    }
+
+    // Update cloud selection indicators
+    document.querySelectorAll('.wp-tag-cloud-item').forEach(el => {
+      const name = el.getAttribute('data-tag-name');
+      if (name && currentTags.some(t => t.toLowerCase() === name.toLowerCase())) {
+        el.classList.add('selected');
+      } else {
+        el.classList.remove('selected');
+      }
+    });
+  };
+
+  window.addSingleTag = function(rawName) {
+    if (!rawName) return;
+    const name = rawName.trim().replace(/^#+/, '');
+    if (name.length < 1) return;
+    const lower = name.toLowerCase();
+    if (!currentTags.some(t => t.toLowerCase() === lower)) {
+      currentTags.push(name);
+      window.renderTagChips();
+    }
+  };
+
+  window.removeTagByIndex = function(index) {
+    currentTags.splice(index, 1);
+    window.renderTagChips();
+  };
+
+  window.toggleTagFromCloud = function(name) {
+    const lower = name.toLowerCase();
+    const idx = currentTags.findIndex(t => t.toLowerCase() === lower);
+    if (idx >= 0) {
+      currentTags.splice(idx, 1);
+    } else {
+      currentTags.push(name);
+    }
+    window.renderTagChips();
+  };
+
+  window.addTagFromInput = function() {
+    const input = document.getElementById('postTagInputField');
+    if (!input) return;
+    const val = input.value;
+    if (!val || !val.trim()) return;
+    const parts = val.split(/[,,\n\r]+/);
+    parts.forEach(p => window.addSingleTag(p));
+    input.value = '';
+    input.focus();
+  };
+
+  // Auto-Suggest Bilingual Tags from Gutenberg Content & Title
+  window.autoSuggestBilingualTags = async function() {
+    const btn = document.getElementById('btnAutoSuggestTags');
+    const title = document.getElementById('postTitleInput') ? document.getElementById('postTitleInput').value.trim() : '';
+    const content = (typeof syncGutenbergContent === 'function') ? syncGutenbergContent() : '';
+
+    if (!title && !content) {
+      alert('অনুগ্রহ করে প্রথমে পোস্টের শিরোনাম বা কন্টেন্ট লিখুন।');
+      return;
+    }
+
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '<span>⏳ ট্যাগ বিশ্লেষণ হচ্ছে...</span>';
+    }
+
+    try {
+      const res = await fetch('/admin/api/suggest-tags', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, content })
+      });
+      const data = await res.json();
+      if (data.success && data.tags && data.tags.length > 0) {
+        data.tags.forEach(t => window.addSingleTag(t));
+        if (window.showToast) {
+          window.showToast(`✨ ${data.tags.length}টি প্রাসঙ্গিক ট্যাগ যোগ করা হয়েছে!`, 'success');
+        }
+      } else {
+        alert('কোনো নতুন ট্যাগ খুঁজে পাওয়া যায়নি।');
+      }
+    } catch (err) {
+      console.error('Error suggesting tags:', err);
+      alert('ট্যাগ বিশ্লেষণে সমস্যা হয়েছে।');
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = '<span>⚡ কন্টেন্ট থেকে অটো-ট্যাগ সাজেস্ট করুন</span>';
+      }
+    }
+  };
+
   document.addEventListener('DOMContentLoaded', function() {
     const textarea = document.getElementById('postContentInput');
+    
+    // Initialize Tag Input key listeners
+    const tagInput = document.getElementById('postTagInputField');
+    if (tagInput) {
+      tagInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' || e.key === ',') {
+          e.preventDefault();
+          window.addTagFromInput();
+        } else if (e.key === 'Backspace' && tagInput.value === '' && currentTags.length > 0) {
+          window.removeTagByIndex(currentTags.length - 1);
+        }
+      });
+      tagInput.addEventListener('blur', function() {
+        if (tagInput.value.trim()) {
+          window.addTagFromInput();
+        }
+      });
+    }
+
+    // Render initial tag state
+    window.renderTagChips();
     
     // Initialize Media Library hook
     if (window.initGutenbergMediaLibrary) {

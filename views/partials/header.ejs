@@ -63,7 +63,7 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap">
 
   <link rel="stylesheet" href="/css/tailwind.css">
-  <link rel="stylesheet" href="/css/style.css?v=4.2">
+  <link rel="stylesheet" href="/css/style.css?v=6.2">
   <% if (typeof isDashboard !== 'undefined' && isDashboard) { %>
     <link rel="stylesheet" href="/css/dashboard.css">
   <% } %>
@@ -83,12 +83,13 @@
         if (document.body) document.body.classList.add('theme-dark');
       }
 
-      var def = document.querySelector('.theme-icon-default');
-      var sep = document.querySelector('.theme-icon-sepia');
-      var dar = document.querySelector('.theme-icon-dark');
-      if (def) def.style.display = (theme === 'default') ? 'inline-flex' : 'none';
-      if (sep) sep.style.display = (theme === 'sepia') ? 'inline-flex' : 'none';
-      if (dar) dar.style.display = (theme === 'dark') ? 'inline-flex' : 'none';
+      document.querySelectorAll('.theme-icon-default').forEach(el => { el.style.display = (theme === 'default') ? 'inline-flex' : 'none'; });
+      document.querySelectorAll('.theme-icon-sepia').forEach(el => { el.style.display = (theme === 'sepia') ? 'inline-flex' : 'none'; });
+      document.querySelectorAll('.theme-icon-dark').forEach(el => { el.style.display = (theme === 'dark') ? 'inline-flex' : 'none'; });
+
+      document.querySelectorAll('.theme-pill-btn').forEach(btn => btn.classList.remove('active'));
+      var activePill = document.querySelector('.mode-pill-' + theme);
+      if (activePill) activePill.classList.add('active');
     }
 
     (function() {
@@ -99,6 +100,11 @@
       } catch (e) {}
     })();
 
+    function setSiteThemeDirect(theme) {
+      applyThemeToDOM(theme);
+      try { localStorage.setItem('payasti_site_theme', theme); } catch (e) {}
+    }
+
     function toggleSiteTheme() {
       var themes = ['default', 'sepia', 'dark'];
       var current = 'default';
@@ -106,8 +112,7 @@
       else if (document.documentElement.classList.contains('theme-dark')) current = 'dark';
 
       var next = themes[(themes.indexOf(current) + 1) % themes.length];
-      applyThemeToDOM(next);
-      try { localStorage.setItem('payasti_site_theme', next); } catch (e) {}
+      setSiteThemeDirect(next);
     }
 
     document.addEventListener('DOMContentLoaded', function() {
@@ -135,32 +140,69 @@
 
       <!-- Navigation Menu -->
       <nav class="main-nav-menu" id="mainNav">
-        <% if (navMenu && navMenu.length) { %>
-          <% navMenu.forEach(item => { %>
-            <% if (item.subcategories && item.subcategories.length) { %>
-              <div class="nav-item-dropdown">
-                <a href="<%= item.url %>" class="nav-menu-item dropdown-toggle <%= (typeof currentPath !== 'undefined' && (currentPath === item.url || currentPath.startsWith(item.url + '/') || (item.slug && currentPath.includes(item.slug)))) ? 'current-menu-item' : '' %>">
-                  <span><%= item.title %></span>
-                  <svg class="dropdown-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="6 9 12 15 18 9"></polyline>
-                  </svg>
-                </a>
-                <div class="nav-dropdown-menu">
-                  <a href="<%= item.url %>" class="dropdown-item dropdown-item-all <%= (typeof currentPath !== 'undefined' && currentPath === item.url) ? 'active' : '' %>">
-                    সকল <%= item.title %>
+        <!-- Mobile Drawer Header (visible on mobile only) -->
+        <div class="mobile-nav-header">
+          <span style="font-size: 17px; font-weight: 800; color: var(--text-heading);">মেনু</span>
+          <button type="button" class="mobile-nav-close-btn" id="mobileNavCloseBtn" aria-label="মেনু বন্ধ করুন">&times;</button>
+        </div>
+
+        <!-- Menu Links Container -->
+        <div class="mobile-nav-links-wrap">
+          <% if (navMenu && navMenu.length) { %>
+            <% navMenu.forEach(item => { %>
+              <% if (item.subcategories && item.subcategories.length) { %>
+                <div class="nav-item-dropdown">
+                  <a href="<%= item.url %>" class="nav-menu-item dropdown-toggle <%= (typeof currentPath !== 'undefined' && (currentPath === item.url || currentPath.startsWith(item.url + '/') || (item.slug && currentPath.includes(item.slug)))) ? 'current-menu-item' : '' %>">
+                    <span><%= item.title %></span>
+                    <svg class="dropdown-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
                   </a>
-                  <% item.subcategories.forEach(sub => { %>
-                    <a href="<%= sub.url %>" class="dropdown-item <%= (typeof currentPath !== 'undefined' && (currentPath === sub.url || (sub.slug && currentPath.includes(sub.slug)))) ? 'active' : '' %>">
-                      <%= sub.title %>
+                  <div class="nav-dropdown-menu">
+                    <a href="<%= item.url %>" class="dropdown-item dropdown-item-all <%= (typeof currentPath !== 'undefined' && currentPath === item.url) ? 'active' : '' %>">
+                      সকল <%= item.title %>
                     </a>
-                  <% }) %>
+                    <% item.subcategories.forEach(sub => { %>
+                      <a href="<%= sub.url %>" class="dropdown-item <%= (typeof currentPath !== 'undefined' && (currentPath === sub.url || (sub.slug && currentPath.includes(sub.slug)))) ? 'active' : '' %>">
+                        <%= sub.title %>
+                      </a>
+                    <% }) %>
+                  </div>
                 </div>
-              </div>
-            <% } else { %>
-              <a href="<%= item.url %>" class="nav-menu-item <%= (typeof currentPath !== 'undefined' && currentPath === item.url) ? 'current-menu-item' : '' %>"><%= item.title %></a>
-            <% } %>
-          <% }) %>
-        <% } %>
+              <% } else { %>
+                <a href="<%= item.url %>" class="nav-menu-item <%= (typeof currentPath !== 'undefined' && currentPath === item.url) ? 'current-menu-item' : '' %>"><%= item.title %></a>
+              <% } %>
+            <% }) %>
+          <% } %>
+        </div>
+
+        <!-- Mobile Drawer Footer (Settings, Search & Theme Mode) -->
+        <div class="mobile-nav-footer">
+          <!-- Search Bar Button -->
+          <button type="button" class="mobile-footer-search-btn" onclick="const sm = document.getElementById('searchModal'); if(sm){ sm.classList.add('active'); setTimeout(() => { const inp = document.getElementById('liveSearchInput'); if(inp) inp.focus(); }, 100); }">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <span>পণ্য বা রিভিউ খুঁজুন...</span>
+          </button>
+
+          <!-- 3-Segmented Theme Mode Selector -->
+          <div class="mobile-theme-mode-bar">
+            <button type="button" class="theme-pill-btn mode-pill-default" onclick="setSiteThemeDirect('default')">
+              <span>☀️</span>
+              <span>লাইট</span>
+            </button>
+            <button type="button" class="theme-pill-btn mode-pill-sepia" onclick="setSiteThemeDirect('sepia')">
+              <span>📜</span>
+              <span>সেপিয়া</span>
+            </button>
+            <button type="button" class="theme-pill-btn mode-pill-dark" onclick="setSiteThemeDirect('dark')">
+              <span>🌙</span>
+              <span>ডার্ক</span>
+            </button>
+          </div>
+        </div>
       </nav>
     </div>
 
@@ -201,6 +243,9 @@
     </button>
   </div>
 </header>
+
+<!-- Mobile Navigation Backdrop Overlay -->
+<div class="mobile-nav-backdrop" id="mobileNavBackdrop"></div>
 
 <!-- Search Overlay Modal -->
 <div class="search-modal-overlay" id="searchModal">

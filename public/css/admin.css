@@ -1201,3 +1201,29 @@ body.admin-body {
 .ql-snow.ql-toolbar button.ql-active .ql-fill {
   fill: var(--admin-primary, #075603) !important;
 }
+
+/* Admin Panel Footer */
+.admin-panel-footer {
+  margin-top: 40px;
+  padding: 18px 0 6px;
+  border-top: 1px solid var(--admin-border, #e2e8f0);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 13px;
+  color: var(--admin-text-muted, #64748b);
+}
+
+.admin-dev-link {
+  color: var(--admin-primary, #075603);
+  font-weight: 700;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.admin-dev-link:hover {
+  color: var(--admin-accent, #068200);
+  text-decoration: underline;
+}

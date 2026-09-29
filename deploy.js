@@ -22,8 +22,10 @@ const SYNC_DIRS = [
   'middleware',
   'public',
   'routes',
+  'scripts',
   'services',
   'src',
+  'utils',
   'views'
 ];
 
@@ -32,7 +34,8 @@ const SYNC_FILES = [
   'app.js',
   'server.js',
   'package.json',
-  'package-lock.json'
+  'package-lock.json',
+  'AGENTS.md'
 ];
 
 // 4. Exact production runtime packages required by the application
@@ -59,7 +62,8 @@ const REQUIRED_PACKAGES = [
   "side-channel", "side-channel-list", "side-channel-map", "side-channel-weakmap",
   "slugify", "sql-escaper", "statuses", "streamsearch", "string_decoder",
   "toidentifier", "type-is", "typedarray", "uid-safe", "unpipe",
-  "util-deprecate", "vary", "wrappy"
+  "util-deprecate", "vary", "wrappy",
+  "keyword-extractor"
 ];
 
 const SKIP_DIR_NAMES = new Set(['test', 'tests', 'docs', 'example', 'examples', '.github', 'benchmark', 'benchmarks', 'coverage', '.bin', '@types']);
@@ -92,7 +96,8 @@ async function uploadDir(sftp, localDir, remoteDir, isNodeModules = false) {
 }
 
 // Upload required node_modules (skips if already on server for lightning-fast deployments)
-async function syncNodeModules(sftp, forceSync = false) {
+async function syncNodeModules(sftp) {
+  const forceSync = process.argv.includes('--modules');
   const localModulesDir = path.join(__dirname, 'node_modules');
   const remoteModulesDir = path.posix.join(REMOTE_BASE, 'node_modules');
 
@@ -176,7 +181,13 @@ async function deploy() {
     // 3. Upload node_modules
     await syncNodeModules(sftp);
 
-    // 4. Trigger Passenger / LiteSpeed restart
+    // 4. Run Migration on Live Server if requested or automatically
+    if (process.argv.includes('--migrate') || process.argv.includes('-m')) {
+      console.log('\n🔄 Running slug migration on live server database...');
+      await runRemoteSSH(`cd ${REMOTE_BASE} && node scripts/migrate_slugs_to_english.js`);
+    }
+
+    // 5. Trigger Passenger / LiteSpeed restart
     console.log('\n🔄 Restarting application via tmp/restart.txt...');
     const tmpDir = path.posix.join(REMOTE_BASE, 'tmp');
     const restartFile = path.posix.join(tmpDir, 'restart.txt');
@@ -186,7 +197,7 @@ async function deploy() {
 
     console.log('\n🎉 ALL PROJECT FILES DEPLOYED DIRECTLY TO LIVE SERVER!');
     
-    // 5. Verify live site
+    // 6. Verify live site
     await verifyLiveSite();
 
   } catch (err) {
@@ -196,6 +207,34 @@ async function deploy() {
     await sftp.end();
     console.log('\n🔌 Connection closed.');
   }
+}
+
+function runRemoteSSH(command) {
+  const { Client: SSHClient } = require('ssh2');
+  return new Promise((resolve) => {
+    const conn = new SSHClient();
+    conn.on('ready', () => {
+      console.log(`  🖥️ Executing remote command: ${command}`);
+      conn.exec(command, (err, stream) => {
+        if (err) {
+          console.error('  ⚠️ Remote exec error:', err.message);
+          conn.end();
+          return resolve();
+        }
+        stream.on('close', () => {
+          conn.end();
+          resolve();
+        }).on('data', (data) => {
+          process.stdout.write('  [Server] ' + data.toString());
+        }).stderr.on('data', (data) => {
+          process.stderr.write('  [Server Error] ' + data.toString());
+        });
+      });
+    }).on('error', (err) => {
+      console.error('  ⚠️ SSH connection error:', err.message);
+      resolve();
+    }).connect(config);
+  });
 }
 
 deploy();

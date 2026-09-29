@@ -35,6 +35,7 @@ router.post('/posts/new', upload.single('featured_image'), adminController.postN
 router.get('/posts/:id/edit', adminController.getEditPost);
 router.post('/posts/:id/edit', upload.single('featured_image'), adminController.postEditPost);
 router.post('/posts/:id/delete', adminController.deletePost);
+router.post('/posts/migrate-slugs', adminController.postMigrateSlugs);
 
 router.get('/pending', adminController.getPendingPosts);
 router.post('/post/:id/approve', adminController.approvePost);
@@ -42,11 +43,13 @@ router.post('/post/:id/reject', adminController.rejectPost);
 
 router.get('/categories', adminController.getCategories);
 router.post('/categories/add', adminController.postAddCategory);
+router.post('/categories/:id/edit', adminController.postEditCategory);
 router.post('/categories/:id/delete', adminController.deleteCategory);
 
 router.get('/tags', adminController.getTags);
 router.post('/tags/add', adminController.postAddTag);
 router.post('/tags/:id/delete', adminController.deleteTag);
+router.post('/api/suggest-tags', adminController.apiSuggestTags);
 
 // 3. Media
 router.get('/media', adminController.getMedia);
