@@ -1,0 +1,37 @@
+<%
+  let themes = [];
+  try {
+    if (typeof LITERARY_THEMES !== 'undefined' && Array.isArray(LITERARY_THEMES)) {
+      themes = LITERARY_THEMES;
+    } else {
+      const h = require(process.cwd() + '/helpers/literaryThemeHelper');
+      themes = h.LITERARY_THEMES || [];
+    }
+  } catch(e) {}
+  const currentActiveSlug = (typeof activeThemeSlug !== 'undefined') ? activeThemeSlug : '';
+%>
+<% if (themes && themes.length) { %>
+<div class="theme-explorer-section">
+  <div class="theme-explorer-header">
+    <div class="theme-explorer-title-wrap">
+      <span class="theme-explorer-icon">🎭</span>
+      <h3 class="theme-explorer-title">অনুভূতি ও বিষয় অনুযায়ী সাহিত্য</h3>
+    </div>
+    <a href="/themes" class="theme-explorer-all-link">সব বিষয় দেখুন »</a>
+  </div>
+
+  <div class="theme-pills-wrap">
+    <% themes.forEach(t => { 
+      const isActive = currentActiveSlug === t.slug || currentActiveSlug === t.bengaliSlug;
+    %>
+      <a href="/theme/<%= encodeURIComponent(t.slug) %>" 
+         class="theme-pill-item <%= isActive ? 'is-active' : '' %>"
+         style="--pill-color: <%= t.color %>; --pill-bg: <%= t.bgColor %>; --pill-border: <%= t.borderColor %>;"
+         title="<%= t.tagline %>">
+        <span class="theme-pill-icon"><%= t.icon %></span>
+        <span class="theme-pill-name"><%= t.name %></span>
+      </a>
+    <% }) %>
+  </div>
+</div>
+<% } %>

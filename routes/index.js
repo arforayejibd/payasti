@@ -4,11 +4,46 @@ const homeController = require('../controllers/homeController');
 const postController = require('../controllers/postController');
 const authorController = require('../controllers/authorController');
 const bookController = require('../controllers/bookController');
+const themeController = require('../controllers/themeController');
 const { generateSeoMeta, getSpellCheckerSchema } = require('../middleware/seo');
 const { requireAuth } = require('../middleware/auth');
 
 // Homepage
 router.get('/', homeController.getHomePage);
+
+// Literature of the Day & Surprise Me / Random Literature
+router.get([
+  '/daily-literature',
+  '/daily-poem',
+  '/আজকের-সাহিত্য',
+  '/আজকের-কবিতা',
+  encodeURI('/আজকের-সাহিত্য'),
+  encodeURI('/আজকের-কবিতা')
+], postController.getDailyPoemDirect);
+router.get([
+  '/random', 
+  '/random-poem', 
+  '/random-post', 
+  '/অজানা-কবিতা', 
+  '/অজানা-সাহিত্য',
+  encodeURI('/অজানা-কবিতা'),
+  encodeURI('/অজানা-সাহিত্য')
+], postController.getRandomPost);
+
+// Literary Themes & Mood Explorer
+router.get([
+  '/themes', 
+  '/বিষয়', 
+  '/অনুভূতি',
+  encodeURI('/বিষয়'),
+  encodeURI('/অনুভূতি')
+], themeController.getThemesDirectory);
+
+router.get([
+  '/theme/:slug', 
+  '/বিষয়/:slug', 
+  '/অনুভূতি/:slug'
+], themeController.getThemeArchive);
 
 // Authors List & Profile
 router.get([

@@ -1,22 +1,42 @@
 <article class="post-card <%= typeof isSelected !== 'undefined' && isSelected ? 'post-card--featured' : 'post-card--latest' %>">
+  <%
+    let authorBadge = null;
+    try {
+      if (typeof getBadgeByAuthorId === 'function') {
+        authorBadge = getBadgeByAuthorId(post.author_id || post.author_slug || post.author_name);
+      } else {
+        const h = require(process.cwd() + '/helpers/authorBadgeHelper');
+        authorBadge = h.getBadgeByAuthorId(post.author_id || post.author_slug || post.author_name);
+      }
+    } catch(e) {}
+  %>
   <div class="post-card-body">
     <!-- Author Row -->
     <div class="post-card-author-row">
-      <div class="post-card-avatar-wrap">
-        <a href="/author/<%= encodeURIComponent(post.author_slug || '') %>" class="post-card-avatar-link">
-          <% if (post.author_avatar) { %>
-            <img src="<%= post.author_avatar %>" alt="<%= post.author_name %>" class="post-card-avatar-img" loading="lazy">
-          <% } else { %>
-            <div class="post-card-avatar-placeholder">
-              <%= post.author_name ? post.author_name.charAt(0) : 'প' %>
-            </div>
-          <% } %>
-        </a>
+      <div class="avatar-badge-wrap">
+        <div class="post-card-avatar-wrap">
+          <a href="/author/<%= encodeURIComponent(post.author_slug || '') %>" class="post-card-avatar-link">
+            <% if (post.author_avatar) { %>
+              <img src="<%= post.author_avatar %>" alt="<%= post.author_name %>" class="post-card-avatar-img" loading="lazy">
+            <% } else { %>
+              <div class="post-card-avatar-placeholder">
+                <%= post.author_name ? post.author_name.charAt(0) : 'প' %>
+              </div>
+            <% } %>
+          </a>
+        </div>
+        <% if (authorBadge) { %>
+          <div class="avatar-floating-badge <%= authorBadge.tagClass %> badge-size-sm" title="<%= authorBadge.icon %> <%= authorBadge.title %> (<%= authorBadge.tooltip %>)">
+            <span><%= authorBadge.icon %></span>
+          </div>
+        <% } %>
       </div>
       <div class="post-card-titles-wrap">
-        <a href="/author/<%= encodeURIComponent(post.author_slug || '') %>" class="post-card-author-name">
-          <%= post.author_name %>
-        </a>
+        <div class="post-card-author-header">
+          <a href="/author/<%= encodeURIComponent(post.author_slug || '') %>" class="post-card-author-name">
+            <%= post.author_name %>
+          </a>
+        </div>
         <a href="/post/<%= encodeURIComponent(post.slug || '') %>" class="post-card-title" title="<%= post.title %>">
           <%= post.title %>
         </a>

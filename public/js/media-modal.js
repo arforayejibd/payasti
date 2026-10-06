@@ -53,8 +53,8 @@
       modalEl.classList.add('active');
       document.body.style.overflow = 'hidden';
 
-      // Switch to library tab by default
-      switchTab('library');
+      // Switch to requested tab (default: 'library')
+      switchTab(options.tab || 'library');
 
       // Fetch or refresh media list
       fetchMediaFiles(options.currentUrl);
@@ -330,6 +330,8 @@
           // Prepend to files list
           mediaFiles.unshift(data.file);
           selectedFile = data.file;
+
+          window.dispatchEvent(new CustomEvent('payasti:media-uploaded', { detail: data.file }));
 
           // Switch to library tab and select this file
           switchTab('library');

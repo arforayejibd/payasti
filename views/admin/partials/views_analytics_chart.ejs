@@ -1,0 +1,473 @@
+<!-- ==========================================================================
+     VIEWS ANALYTICS & READERSHIP GRAPH MODULE (পয়স্তি সাহিত্য পাঠক বিশ্লেষণ)
+     ========================================================================== -->
+<% if (typeof viewsAnalytics !== 'undefined' && viewsAnalytics) { %>
+<section class="admin-views-analytics-section" id="viewsAnalyticsSection">
+  <div class="views-analytics-card">
+    <!-- 1. Header & Controls -->
+    <div class="analytics-card-header">
+      <div class="analytics-title-group">
+        <div class="analytics-icon-badge">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+          </svg>
+        </div>
+        <div>
+          <h2 class="analytics-title">পাঠক রিচ ও সাহিত্য ভিউ অ্যানালিটিক্স</h2>
+          <p class="analytics-subtitle">দৈনিক পাঠপ্রবণতা, পাঠক সমাগম এবং বিভাগভিত্তিক পাঠকপ্রিয়তার গ্রাফিকাল ওভারভিউ</p>
+        </div>
+      </div>
+
+      <div class="analytics-controls-wrap">
+        <!-- View Mode Tabs -->
+        <div class="analytics-tabs-group" id="analyticsRangeTabs" role="tablist">
+          <button type="button" class="analytics-tab-btn active" data-range="7d" role="tab" aria-selected="true">
+            বিগত ৭ দিন
+          </button>
+          <button type="button" class="analytics-tab-btn" data-range="30d" role="tab" aria-selected="false">
+            বিগত ৩০ দিন
+          </button>
+          <button type="button" class="analytics-tab-btn" data-range="category" role="tab" aria-selected="false">
+            বিভাগভিত্তিক
+          </button>
+          <button type="button" class="analytics-tab-btn" data-range="topPosts" role="tab" aria-selected="false">
+            শীর্ষ সাহিত্য
+          </button>
+        </div>
+
+        <!-- Chart Type Switcher (Line vs Bar) -->
+        <div class="analytics-type-toggle" id="chartTypeToggle" title="চার্ট ফরম্যাট পরিবর্তন করুন">
+          <button type="button" class="chart-type-btn active" data-type="line" title="স্মুথ এরিয়া লাইন চার্ট" aria-label="লাইন চার্ট">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            <span>লাইন</span>
+          </button>
+          <button type="button" class="chart-type-btn" data-type="bar" title="বার চার্ট" aria-label="বার চার্ট">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><rect x="3" y="12" width="4" height="9"/><rect x="10" y="5" width="4" height="16"/><rect x="17" y="9" width="4" height="12"/></svg>
+            <span>বার</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. Fast KPI Summary Ribbon -->
+    <div class="analytics-kpi-strip">
+      <div class="kpi-mini-item">
+        <span class="kpi-mini-label">📅 আজকের পাঠক ভিউ</span>
+        <span class="kpi-mini-val text-primary" id="kpiTodayViews"><%= viewsAnalytics.kpis.todayViewsBn %></span>
+      </div>
+      <div class="kpi-mini-divider"></div>
+      <div class="kpi-mini-item">
+        <span class="kpi-mini-label">📊 বিগত ৭ দিনের ভিউ</span>
+        <span class="kpi-mini-val" id="kpiWeekViews"><%= viewsAnalytics.kpis.sevenDaysViewsBn %></span>
+      </div>
+      <div class="kpi-mini-divider"></div>
+      <div class="kpi-mini-item">
+        <span class="kpi-mini-label">📈 ৩০ দিনের মোট ভিউ</span>
+        <span class="kpi-mini-val" id="kpiMonthViews"><%= viewsAnalytics.kpis.thirtyDaysViewsBn %></span>
+      </div>
+      <div class="kpi-mini-divider"></div>
+      <div class="kpi-mini-item">
+        <span class="kpi-mini-label">⚡ দৈনিক গড় পাঠক</span>
+        <span class="kpi-mini-val" id="kpiDailyAvg"><%= viewsAnalytics.kpis.dailyAverageBn %></span>
+      </div>
+      <div class="kpi-mini-divider"></div>
+      <div class="kpi-mini-item">
+        <span class="kpi-mini-label">👑 সর্বাধিক পঠিত বিভাগ</span>
+        <span class="kpi-mini-val text-highlight" id="kpiTopCat"><%= viewsAnalytics.kpis.topCategoryName %> (<%= viewsAnalytics.kpis.topCategoryViewsBn %>)</span>
+      </div>
+    </div>
+
+    <!-- 3. Dynamic Interactive Canvas Chart Area -->
+    <div class="analytics-canvas-wrapper">
+      <div class="chart-loading-overlay" id="chartLoadingOverlay" style="display: none;">
+        <div class="chart-spinner"></div>
+      </div>
+      <div class="chart-container-box">
+        <canvas id="viewsAnalyticsChart"></canvas>
+      </div>
+    </div>
+
+    <!-- 4. Deep-Dive Split: Category Breakdown & Top Read Literature -->
+    <div class="analytics-insights-split">
+      <!-- Left: Category Distribution Progress Bars -->
+      <div class="analytics-insight-panel">
+        <div class="insight-panel-header">
+          <div class="insight-panel-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="color: var(--admin-primary);"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
+            <span>বিভাগভিত্তিক পাঠকপ্রিয়তার হিসেব</span>
+          </div>
+          <a href="/admin/categories" class="insight-header-link">ক্যাটাগরি পরিচালনা &rarr;</a>
+        </div>
+
+        <div class="category-analytics-list-wrap">
+          <% if (viewsAnalytics.categoryDistribution && viewsAnalytics.categoryDistribution.length > 0) { %>
+            <% viewsAnalytics.categoryDistribution.slice(0, 6).forEach(cat => { %>
+              <div class="cat-analytics-row">
+                <div class="cat-row-header">
+                  <div class="cat-name-pill">
+                    <span class="cat-color-dot" style="background-color: <%= cat.color %>;"></span>
+                    <span class="cat-name-text"><%= cat.name %></span>
+                    <span class="cat-count-sub">(<%= cat.postCountBn %>টি সাহিত্য)</span>
+                  </div>
+                  <div class="cat-stats-pill">
+                    <span class="cat-views-num">👁️ <%= cat.totalViewsBn %> ভিউ</span>
+                    <span class="cat-percent-tag"><%= cat.percentageBn %>%</span>
+                  </div>
+                </div>
+                <div class="cat-progress-track">
+                  <div class="cat-progress-bar" style="width: <%= Math.max(4, cat.percentage) %>%; background-color: <%= cat.color %>;"></div>
+                </div>
+              </div>
+            <% }) %>
+          <% } else { %>
+            <div class="admin-empty-state" style="padding: 24px 0;">কোনো ক্যাটাগরি ডেটা পাওয়া যায়নি</div>
+          <% } %>
+        </div>
+      </div>
+
+      <!-- Right: Top 5 Literature Ranking Table -->
+      <div class="analytics-insight-panel">
+        <div class="insight-panel-header">
+          <div class="insight-panel-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="color: #d97706;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+            <span>সর্বাধিক পঠিত শীর্ষ সাহিত্য</span>
+          </div>
+          <a href="/admin/posts?status=publish" class="insight-header-link">সকল সাহিত্য &rarr;</a>
+        </div>
+
+        <div class="top-articles-list-wrap">
+          <% if (viewsAnalytics.topPosts && viewsAnalytics.topPosts.length > 0) { %>
+            <% viewsAnalytics.topPosts.slice(0, 5).forEach((p, idx) => { %>
+              <div class="top-article-item">
+                <div class="top-rank-badge rank-<%= idx + 1 %>">
+                  <%= p.rankBn %>
+                </div>
+                <div class="top-article-info">
+                  <a href="/post/<%= encodeURIComponent(p.slug) %>" target="_blank" class="top-article-title" title="<%= p.title %>">
+                    <%= p.title %>
+                  </a>
+                  <div class="top-article-meta">
+                    <span class="top-article-cat"><%= p.categoryName %></span>
+                    <span>•</span>
+                    <span class="top-article-author"><%= p.authorName %></span>
+                  </div>
+                </div>
+                <div class="top-article-views-wrap">
+                  <span class="top-article-views-pill" title="মোট পাঠক ভিউ">
+                    <%= p.viewsBn %> ভিউ
+                  </span>
+                  <a href="/post/<%= encodeURIComponent(p.slug) %>" target="_blank" class="top-article-link-icon" title="লাইভ পেজ দেখুন ↗">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                  </a>
+                </div>
+              </div>
+            <% }) %>
+          <% } else { %>
+            <div class="admin-empty-state" style="padding: 24px 0;">কোনো প্রকাশিত সাহিত্য পাওয়া যায়নি</div>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Data Store for Client-Side Reactive Charting -->
+<script type="application/json" id="viewsAnalyticsPayload">
+  <%- JSON.stringify(viewsAnalytics) %>
+</script>
+
+<!-- Chart.js Engine & Bengali Localization Adapter -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script>
+  (function() {
+    let rawAnalytics = null;
+    try {
+      const payloadElem = document.getElementById('viewsAnalyticsPayload');
+      if (payloadElem) {
+        rawAnalytics = JSON.parse(payloadElem.textContent);
+      }
+    } catch (e) {
+      console.error('Failed to parse views analytics JSON:', e);
+      return;
+    }
+
+    if (!rawAnalytics || !window.Chart) return;
+
+    const bnDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+    function toBn(num) {
+      if (num === null || num === undefined) return '';
+      return num.toString().replace(/[0-9]/g, function(d) {
+        return bnDigits[parseInt(d, 10)];
+      });
+    }
+
+    const canvas = document.getElementById('viewsAnalyticsChart');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+
+    let currentRange = '7d'; // '7d' | '30d' | 'category' | 'topPosts'
+    let currentType = 'line'; // 'line' | 'bar'
+    let chartInstance = null;
+
+    // Detect active theme tokens dynamically
+    function getThemeTokens() {
+      const isSepia = document.documentElement.classList.contains('theme-sepia') || (document.body && document.body.classList.contains('theme-sepia'));
+      const isDark = document.documentElement.classList.contains('theme-dark') || (document.body && document.body.classList.contains('theme-dark'));
+
+      if (isDark) {
+        return {
+          textColor: '#94a3b8',
+          gridColor: 'rgba(255, 255, 255, 0.08)',
+          tooltipBg: '#1e293b',
+          tooltipTitle: '#f1f5f9',
+          tooltipBody: '#94a3b8',
+          borderColor: '#10b981',
+          pointBg: '#10b981',
+          pointBorder: '#0f172a',
+          gradientStart: 'rgba(16, 185, 129, 0.35)',
+          gradientEnd: 'rgba(16, 185, 129, 0.00)'
+        };
+      } else if (isSepia) {
+        return {
+          textColor: '#4e3c2b',
+          gridColor: 'rgba(78, 60, 43, 0.12)',
+          tooltipBg: '#342414',
+          tooltipTitle: '#fcf6ee',
+          tooltipBody: '#dfd0bc',
+          borderColor: '#075603',
+          pointBg: '#075603',
+          pointBorder: '#fcf6ee',
+          gradientStart: 'rgba(7, 86, 3, 0.30)',
+          gradientEnd: 'rgba(7, 86, 3, 0.00)'
+        };
+      } else {
+        // Default Light
+        return {
+          textColor: '#64748b',
+          gridColor: 'rgba(15, 23, 42, 0.06)',
+          tooltipBg: '#0f172a',
+          tooltipTitle: '#ffffff',
+          tooltipBody: '#cbd5e1',
+          borderColor: '#075603',
+          pointBg: '#075603',
+          pointBorder: '#ffffff',
+          gradientStart: 'rgba(7, 86, 3, 0.28)',
+          gradientEnd: 'rgba(7, 86, 3, 0.00)'
+        };
+      }
+    }
+
+    function buildChartData(range, chartType) {
+      const tokens = getThemeTokens();
+      let labels = [];
+      let dataValues = [];
+      let backgroundColors = [];
+      let borderColors = [];
+
+      if (range === '7d') {
+        const list = rawAnalytics.sevenDays || [];
+        labels = list.map(item => item.label);
+        dataValues = list.map(item => item.views);
+      } else if (range === '30d') {
+        const list = rawAnalytics.thirtyDays || [];
+        labels = list.map(item => item.label);
+        dataValues = list.map(item => item.views);
+      } else if (range === 'category') {
+        const list = (rawAnalytics.categoryDistribution || []).slice(0, 8);
+        labels = list.map(item => item.name);
+        dataValues = list.map(item => item.totalViews);
+        backgroundColors = list.map(item => item.color);
+        borderColors = list.map(item => item.color);
+      } else if (range === 'topPosts') {
+        const list = (rawAnalytics.topPosts || []).slice(0, 7);
+        labels = list.map(item => item.title.length > 22 ? item.title.substring(0, 22) + '...' : item.title);
+        dataValues = list.map(item => item.views);
+      }
+
+      // Prepare Gradient fill for Line chart
+      let bgFill = tokens.gradientStart;
+      if (chartType === 'line' && ctx) {
+        const gradient = ctx.createLinearGradient(0, 0, 0, 320);
+        gradient.addColorStop(0, tokens.gradientStart);
+        gradient.addColorStop(1, tokens.gradientEnd);
+        bgFill = gradient;
+      } else if (chartType === 'bar') {
+        if (range === 'category' && backgroundColors.length) {
+          bgFill = backgroundColors;
+        } else {
+          bgFill = tokens.borderColor;
+        }
+      }
+
+      const dataset = {
+        label: range === 'category' ? 'বিভাগভিত্তিক ভিউ' : (range === 'topPosts' ? 'সাহিত্যের মোট ভিউ' : 'পাঠক ভিউ'),
+        data: dataValues,
+        backgroundColor: bgFill,
+        borderColor: (range === 'category' && chartType === 'bar') ? borderColors : tokens.borderColor,
+        borderWidth: chartType === 'line' ? 3 : 0,
+        borderRadius: chartType === 'bar' ? 6 : 0,
+        fill: chartType === 'line',
+        tension: 0.38,
+        pointBackgroundColor: tokens.pointBg,
+        pointBorderColor: tokens.pointBorder,
+        pointBorderWidth: 2,
+        pointRadius: range === '30d' ? 3 : 5,
+        pointHoverRadius: 7,
+        pointHoverBackgroundColor: tokens.borderColor,
+        pointHoverBorderColor: '#ffffff',
+        pointHoverBorderWidth: 3
+      };
+
+      return {
+        labels: labels,
+        datasets: [dataset]
+      };
+    }
+
+    function renderChart() {
+      const tokens = getThemeTokens();
+      const chartData = buildChartData(currentRange, currentType);
+
+      if (chartInstance) {
+        chartInstance.destroy();
+      }
+
+      chartInstance = new Chart(ctx, {
+        type: currentType,
+        data: chartData,
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: {
+            mode: 'index',
+            intersect: false
+          },
+          plugins: {
+            legend: {
+              display: false
+            },
+            tooltip: {
+              enabled: true,
+              backgroundColor: tokens.tooltipBg,
+              titleColor: tokens.tooltipTitle,
+              bodyColor: tokens.tooltipBody,
+              padding: 12,
+              cornerRadius: 8,
+              boxPadding: 6,
+              titleFont: {
+                family: "'payasti_uni', 'Hind Siliguri', sans-serif",
+                size: 14,
+                weight: '600'
+              },
+              bodyFont: {
+                family: "'payasti_uni', 'Hind Siliguri', sans-serif",
+                size: 14,
+                weight: '500'
+              },
+              callbacks: {
+                title: function(items) {
+                  if (!items.length) return '';
+                  return items[0].label;
+                },
+                label: function(context) {
+                  const val = context.parsed.y !== undefined ? context.parsed.y : context.parsed;
+                  return ' 👁️ মোট পাঠক ভিউ: ' + toBn(val) + ' জন';
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              grid: {
+                display: false
+              },
+              ticks: {
+                color: tokens.textColor,
+                font: {
+                  family: "'payasti_uni', 'Hind Siliguri', sans-serif",
+                  size: 13,
+                  weight: '500'
+                },
+                maxRotation: currentRange === '30d' ? 45 : 0,
+                autoSkip: currentRange === '30d',
+                maxTicksLimit: currentRange === '30d' ? 12 : 10
+              },
+              border: {
+                display: false
+              }
+            },
+            y: {
+              grid: {
+                color: tokens.gridColor,
+                drawBorder: false
+              },
+              ticks: {
+                color: tokens.textColor,
+                font: {
+                  family: "'payasti_uni', 'Hind Siliguri', sans-serif",
+                  size: 12.5,
+                  weight: '500'
+                },
+                callback: function(val) {
+                  return toBn(val);
+                }
+              },
+              border: {
+                display: false
+              },
+              beginAtZero: true
+            }
+          },
+          animation: {
+            duration: 650,
+            easing: 'easeInOutQuart'
+          }
+        }
+      });
+    }
+
+    // Initial render
+    renderChart();
+
+    // Tab switching listener
+    const rangeBtns = document.querySelectorAll('#analyticsRangeTabs .analytics-tab-btn');
+    rangeBtns.forEach(btn => {
+      btn.addEventListener('click', function() {
+        rangeBtns.forEach(b => {
+          b.classList.remove('active');
+          b.setAttribute('aria-selected', 'false');
+        });
+        this.classList.add('active');
+        this.setAttribute('aria-selected', 'true');
+
+        currentRange = this.getAttribute('data-range') || '7d';
+        renderChart();
+      });
+    });
+
+    // Chart Type (Line vs Bar) listener
+    const typeBtns = document.querySelectorAll('#chartTypeToggle .chart-type-btn');
+    typeBtns.forEach(btn => {
+      btn.addEventListener('click', function() {
+        typeBtns.forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+
+        currentType = this.getAttribute('data-type') || 'line';
+        renderChart();
+      });
+    });
+
+    // Listen for Theme Switcher trigger to dynamically re-theme the chart
+    window.addEventListener('themeChanged', renderChart);
+
+    // Patch global applyThemeToDOM to notify chart of theme transitions
+    const originalApplyTheme = window.applyThemeToDOM;
+    if (typeof originalApplyTheme === 'function') {
+      window.applyThemeToDOM = function(theme) {
+        originalApplyTheme(theme);
+        setTimeout(renderChart, 60);
+      };
+    }
+  })();
+</script>
+<% } %>

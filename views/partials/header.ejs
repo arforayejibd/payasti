@@ -20,6 +20,30 @@
   <link rel="canonical" href="<%= seo.canonical %>">
   <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
 
+  <!-- Search Engine & Webmaster Verifications -->
+  <% 
+    const googleVerifyCode = (typeof seo !== 'undefined' && seo.googleSiteVerification) || (typeof siteSettings !== 'undefined' && siteSettings.google_site_verification);
+    const bingVerifyCode = (typeof seo !== 'undefined' && seo.bingSiteVerification) || (typeof siteSettings !== 'undefined' && siteSettings.bing_site_verification);
+    const gaMeasurementId = (typeof seo !== 'undefined' && seo.googleAnalyticsId) || (typeof siteSettings !== 'undefined' && siteSettings.google_analytics_id);
+  %>
+  <% if (googleVerifyCode) { %>
+    <meta name="google-site-verification" content="<%= googleVerifyCode %>">
+  <% } %>
+  <% if (bingVerifyCode) { %>
+    <meta name="msvalidate.01" content="<%= bingVerifyCode %>">
+  <% } %>
+
+  <!-- Google Analytics (GA4) -->
+  <% if (gaMeasurementId) { %>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=<%= gaMeasurementId %>"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', '<%= gaMeasurementId %>');
+    </script>
+  <% } %>
+
   <!-- Open Graph / Facebook -->
   <meta property="og:type" content="<%= seo.og.type %>">
   <meta property="og:title" content="<%= seo.og.title %>">
@@ -55,7 +79,7 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap">
 
   <link rel="stylesheet" href="/css/tailwind.css">
-  <link rel="stylesheet" href="/css/style.css?v=3.5">
+  <link rel="stylesheet" href="/css/style.css?v=3.8">
   <% if (typeof isDashboard !== 'undefined' && isDashboard) { %>
     <link rel="stylesheet" href="/css/dashboard.css">
   <% } %>

@@ -22,6 +22,15 @@ const {
   renderArticleContent, 
   calculateReadingTime 
 } = require('./middleware/banglaDate');
+const {
+  getAuthorTopBadge,
+  getBadgeByAuthorId,
+  renderAuthorBadgeTag,
+  renderAuthorAvatarBadge
+} = require('./helpers/authorBadgeHelper');
+const { getDailyPoem, extractPoemStanza } = require('./helpers/dailyPoemHelper');
+const { LITERARY_THEMES, getThemeBySlug } = require('./helpers/literaryThemeHelper');
+const { getSiteSettings } = require('./helpers/settingsHelper');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -79,9 +88,22 @@ app.locals.formatDuration = formatDuration;
 app.locals.formatCardExcerpt = formatCardExcerpt;
 app.locals.renderArticleContent = renderArticleContent;
 app.locals.calculateReadingTime = calculateReadingTime;
+app.locals.getAuthorTopBadge = getAuthorTopBadge;
+app.locals.getBadgeByAuthorId = getBadgeByAuthorId;
+app.locals.renderAuthorBadgeTag = renderAuthorBadgeTag;
+app.locals.renderAuthorAvatarBadge = renderAuthorAvatarBadge;
+app.locals.getDailyPoem = getDailyPoem;
+app.locals.extractPoemStanza = extractPoemStanza;
+app.locals.LITERARY_THEMES = LITERARY_THEMES;
+app.locals.getThemeBySlug = getThemeBySlug;
 
 // Global view variables
-app.use((req, res, next) => {
+app.use(async (req, res, next) => {
+  try {
+    res.locals.siteSettings = await getSiteSettings();
+  } catch (e) {
+    res.locals.siteSettings = {};
+  }
   res.locals.currentPath = req.path;
   res.locals.navMenu = NAV_MENU;
   res.locals.editorialBoard = EDITORIAL_BOARD;
@@ -92,6 +114,14 @@ app.use((req, res, next) => {
   res.locals.formatCardExcerpt = formatCardExcerpt;
   res.locals.renderArticleContent = renderArticleContent;
   res.locals.calculateReadingTime = calculateReadingTime;
+  res.locals.getAuthorTopBadge = getAuthorTopBadge;
+  res.locals.getBadgeByAuthorId = getBadgeByAuthorId;
+  res.locals.renderAuthorBadgeTag = renderAuthorBadgeTag;
+  res.locals.renderAuthorAvatarBadge = renderAuthorAvatarBadge;
+  res.locals.getDailyPoem = getDailyPoem;
+  res.locals.extractPoemStanza = extractPoemStanza;
+  res.locals.LITERARY_THEMES = LITERARY_THEMES;
+  res.locals.getThemeBySlug = getThemeBySlug;
   next();
 });
 

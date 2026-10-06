@@ -33,6 +33,17 @@ exports.getSinglePost = async (req, res) => {
     await db.prepare('UPDATE posts SET views = views + 1 WHERE id = ?').run(post.id);
     post.views += 1;
 
+    // Record daily views aggregation
+    try {
+      await db.query(`
+        INSERT INTO daily_views (view_date, views) 
+        VALUES (CURDATE(), 1) 
+        ON DUPLICATE KEY UPDATE views = views + 1
+      `);
+    } catch (viewLogErr) {
+      // Non-blocking view logging
+    }
+
     // Fetch Tags
     const tags = await db.prepare(`
       SELECT t.name, t.slug
@@ -48,7 +59,7 @@ exports.getSinglePost = async (req, res) => {
 
     // Fetch Related Posts (same category)
     const relatedPosts = await db.prepare(`
-      SELECT p.id, p.title, p.slug, p.excerpt, p.content, p.published_at, p.views, p.category_id, p.subcategory_id,
+      SELECT p.id, p.author_id, p.title, p.slug, p.excerpt, p.content, p.published_at, p.views, p.category_id, p.subcategory_id,
              u.display_name AS author_name, u.nicename AS author_slug, u.avatar AS author_avatar,
              c.name AS category_name, c.slug AS category_slug
       FROM posts p
@@ -74,6 +85,25 @@ exports.getSinglePost = async (req, res) => {
       }
     });
 
+    // Author stats for badges
+    let authorTotalViews = 0;
+    let authorPostCount = 0;
+    if (post.author_id) {
+      try {
+        const authorStats = await db.prepare(`
+          SELECT COALESCE(SUM(views), 0) AS total_views, COUNT(id) AS post_count
+          FROM posts
+          WHERE author_id = ? AND status = 'publish'
+        `).get(post.author_id);
+        if (authorStats) {
+          authorTotalViews = Number(authorStats.total_views || 0);
+          authorPostCount = Number(authorStats.post_count || 0);
+        }
+      } catch (e) {
+        // Fallback gracefully
+      }
+    }
+
     // Author details
     const author = {
       id: post.author_id,
@@ -81,7 +111,9 @@ exports.getSinglePost = async (req, res) => {
       username: post.author_slug,
       nicename: post.author_slug,
       avatar: authorAvatar,
-      bio: post.author_bio
+      bio: post.author_bio,
+      total_views: authorTotalViews,
+      post_count: authorPostCount
     };
 
     const category = {
@@ -248,7 +280,7 @@ exports.getCategoryPage = async (req, res) => {
       WHERE p.status = 'publish'
     `;
     let postsQuery = `
-      SELECT DISTINCT p.id, p.title, p.slug, p.excerpt, p.content, p.published_at, p.views, p.category_id, p.subcategory_id,
+      SELECT DISTINCT p.id, p.author_id, p.title, p.slug, p.excerpt, p.content, p.published_at, p.views, p.category_id, p.subcategory_id,
              u.display_name AS author_name, u.nicename AS author_slug, u.avatar AS author_avatar,
              c.name AS category_name, c.slug AS category_slug,
              sc.name AS subcategory_name, sc.slug AS subcategory_slug
@@ -377,7 +409,7 @@ exports.searchPosts = async (req, res) => {
     const totalPages = Math.ceil(totalPosts / limit);
 
     const posts = await db.prepare(`
-      SELECT p.id, p.title, p.slug, p.excerpt, p.content, p.published_at, p.views, p.category_id, p.subcategory_id,
+      SELECT p.id, p.author_id, p.title, p.slug, p.excerpt, p.content, p.published_at, p.views, p.category_id, p.subcategory_id,
              u.display_name AS author_name, u.nicename AS author_slug, u.avatar AS author_avatar,
              c.name AS category_name, c.slug AS category_slug
       FROM posts p
@@ -534,3 +566,61 @@ exports.postRate = async (req, res) => {
     return res.status(500).json({ success: false, message: 'রেটিং সংরক্ষণ করা সম্ভব হয়নি।' });
   }
 };
+
+/**
+ * Surprise Me / Random Post or Poem (/random, /random-poem, /অজানা-কবিতা)
+ */
+exports.getRandomPost = async (req, res) => {
+  try {
+    const isPoemOnly = req.query.type === 'poem' || req.path.includes('poem') || req.path.includes('কবিতা');
+    
+    let randomPost;
+    if (isPoemOnly) {
+      randomPost = await db.prepare(`
+        SELECT p.slug
+        FROM posts p
+        LEFT JOIN categories c ON p.category_id = c.id
+        WHERE p.status = 'publish' 
+          AND (p.category_id IN (4, 11, 14) OR c.name LIKE '%কবিতা%' OR c.name LIKE '%পদ্য%')
+        ORDER BY RAND()
+        LIMIT 1
+      `).get();
+    }
+
+    if (!randomPost) {
+      randomPost = await db.prepare(`
+        SELECT slug
+        FROM posts
+        WHERE status = 'publish'
+        ORDER BY RAND()
+        LIMIT 1
+      `).get();
+    }
+
+    if (randomPost && randomPost.slug) {
+      return res.redirect(`/post/${encodeURIComponent(randomPost.slug)}`);
+    }
+    return res.redirect('/');
+  } catch (err) {
+    console.error('Error in getRandomPost:', err);
+    return res.redirect('/');
+  }
+};
+
+/**
+ * Daily Poem Direct Route (/daily-poem, /আজকের-কবিতা)
+ */
+exports.getDailyPoemDirect = async (req, res) => {
+  try {
+    const { getDailyPoem } = require('../helpers/dailyPoemHelper');
+    const poem = await getDailyPoem();
+    if (poem && poem.slug) {
+      return res.redirect(`/post/${encodeURIComponent(poem.slug)}`);
+    }
+    return res.redirect('/');
+  } catch (err) {
+    console.error('Error in getDailyPoemDirect:', err);
+    return res.redirect('/');
+  }
+};
+

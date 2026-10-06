@@ -1,25 +1,32 @@
 <%- include('partials/header') %>
 
+<%
+  const authorViews = (typeof totalViews !== 'undefined') ? Number(totalViews) : (posts && posts.length ? posts.reduce((sum, p) => sum + (Number(p.views) || 0), 0) : 0);
+  const authorPostCount = (typeof pagination !== 'undefined' && pagination && pagination.totalItems) ? Number(pagination.totalItems) : (posts ? posts.length : 0);
+%>
+
 <main class="page-main-content">
   <div class="site-container" style="padding-top: 30px; padding-bottom: 60px;">
     <!-- Author Header -->
     <div class="author-profile-hero">
-      <div class="author-profile-avatar-wrap">
-        <% if (author.avatar) { %>
-          <img src="<%= author.avatar %>" alt="<%= author.display_name %>" class="author-profile-avatar-img">
-        <% } else { %>
-          <div class="author-profile-avatar-placeholder">
-            <%= author.display_name ? author.display_name.charAt(0) : 'প' %>
-          </div>
-        <% } %>
-      </div>
+      <%- include('partials/author_avatar_badge', { avatar: author.avatar, name: author.display_name, views: authorViews, posts: authorPostCount, size: 'lg' }) %>
       <div>
-        <h1 class="author-profile-name"><%= author.display_name %></h1>
+        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 8px;">
+          <h1 class="author-profile-name" style="margin: 0;"><%= author.display_name %></h1>
+          <%- include('partials/author_badge_tag', { views: authorViews, posts: authorPostCount }) %>
+        </div>
         <p class="author-profile-bio">
           <%= author.bio || 'পয়স্তি সাহিত্য ম্যাগাজিনের নিয়মিত লেখক ও সাহিত্য সাধক।' %>
         </p>
-        <div class="author-profile-count">
-          মোট প্রকাশিত সাহিত্য: <%= toBengaliNumber(pagination.totalItems) %> টি
+        <div class="author-profile-meta-row" style="display: flex; align-items: center; gap: 16px; margin-top: 10px; flex-wrap: wrap;">
+          <div class="author-profile-count">
+            📚 মোট প্রকাশিত সাহিত্য: <%= toBengaliNumber(authorPostCount) %> টি
+          </div>
+          <% if (authorViews > 0) { %>
+            <div class="author-profile-views" style="font-size: 18px; color: var(--text-muted); font-weight: 600;">
+              👁️ মোট পাঠক: <%= toBengaliNumber(authorViews) %> ভিউ
+            </div>
+          <% } %>
         </div>
       </div>
     </div>

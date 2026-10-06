@@ -1,0 +1,47 @@
+<%- include('partials/header') %>
+
+<main class="page-main-content">
+  <div class="site-container" style="padding-top: 30px; padding-bottom: 50px;">
+    
+    <!-- Theme Header Banner -->
+    <div class="theme-page-banner" style="--theme-accent: <%= theme.color %>; --theme-bg: <%= theme.bgColor %>; --theme-border: <%= theme.borderColor %>;">
+      <div class="theme-banner-icon-wrap">
+        <span class="theme-banner-icon"><%= theme.icon %></span>
+      </div>
+      <div class="theme-banner-text">
+        <div class="theme-banner-category-tag">বিষয়ভিত্তিক সংকলন</div>
+        <h1 class="theme-banner-title"><%= theme.name %></h1>
+        <p class="theme-banner-desc"><%= theme.description %></p>
+        <div class="theme-banner-meta">
+          <span>মোট সৃষ্টি: <strong><%= toBengaliNumber(pagination.totalItems) %></strong> টি</span>
+          <span>•</span>
+          <a href="/themes" class="theme-banner-back-link">সকল বিষয় দেখুন »</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Other Themes Quick Pills -->
+    <div class="theme-quick-pills-wrap" style="margin-bottom: 30px;">
+      <%- include('partials/theme_explorer', { activeThemeSlug: theme.slug }) %>
+    </div>
+
+    <!-- Posts Grid -->
+    <div class="posts-grid-4">
+      <% if (posts && posts.length) { %>
+        <% posts.forEach(post => { %>
+          <%- include('partials/post_card', { post: post }) %>
+        <% }) %>
+      <% } else { %>
+        <div style="grid-column: 1 / -1; text-align: center; padding: 60px 0; background: #fff; border-radius: 8px; border: 1px solid #e5e7eb;">
+          <div style="font-size: 40px; margin-bottom: 10px;"><%= theme.icon %></div>
+          <h3 style="font-size: 20px; color: #333;">এই বিষয়ে এখনো কোনো লেখা যুক্ত করা হয়নি</h3>
+          <p style="font-size: 16px; color: #888; margin-top: 4px;">শীঘ্রই নতুন সাহিত্য সৃষ্টি যুক্ত হবে। অন্যান্য বিষয়গুলো ঘুরে দেখতে পারেন।</p>
+        </div>
+      <% } %>
+    </div>
+
+    <%- include('partials/pagination', { pagination: pagination }) %>
+  </div>
+</main>
+
+<%- include('partials/footer') %>

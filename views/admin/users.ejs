@@ -6,74 +6,71 @@
 
 <!-- Status & Role Tabs & Search Filter -->
 <div class="admin-card" style="margin-bottom: 20px;">
-  <div style="padding: 16px 20px; display: flex; flex-direction: column; gap: 14px;">
+  <div class="admin-filter-bar-stacked">
     
     <!-- Top Row: Status Tabs & Quick Approval Access -->
-    <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; border-bottom: 1px solid #edf2f7; padding-bottom: 14px;">
-      <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+    <div class="admin-filter-row">
+      <div class="admin-filter-tabs">
         <!-- All Users -->
         <a href="/admin/users?status=all&role=all&q=<%= searchQuery %>" 
-           class="btn-view-site" 
-           style="<%= (statusFilter === 'all' && roleFilter === 'all') ? 'background: var(--admin-primary); color: #fff; border-color: var(--admin-primary);' : '' %>">
+           class="btn-view-site admin-tab-btn-pill <%= (statusFilter === 'all' && roleFilter === 'all') ? 'active' : '' %>">
           সকল ইউজার (<%= toBengaliNumber(userStats.total) %>)
         </a>
 
         <!-- Pending Approval Tab (highlighted if any exists) -->
         <a href="/admin/users?status=pending_approval&q=<%= searchQuery %>" 
-           class="btn-view-site" 
-           style="<%= statusFilter === 'pending_approval' ? 'background: #d97706; color: #fff; border-color: #d97706;' : (userStats.pendingApproval > 0 ? 'background: #fffbeb; color: #b45309; border-color: #fde68a; font-weight: 700;' : '') %>">
+           class="btn-view-site admin-tab-btn-pill warning <%= statusFilter === 'pending_approval' ? 'active' : (userStats.pendingApproval > 0 ? 'highlight' : '') %>">
           ⏳ অনুমোদনের অপেক্ষায় (<%= toBengaliNumber(userStats.pendingApproval) %>)
         </a>
 
         <!-- Pending Verification Tab -->
         <a href="/admin/users?status=pending_verification&q=<%= searchQuery %>" 
-           class="btn-view-site" 
-           style="<%= statusFilter === 'pending_verification' ? 'background: #4b5563; color: #fff; border-color: #4b5563;' : '' %>">
+           class="btn-view-site admin-tab-btn-pill muted <%= statusFilter === 'pending_verification' ? 'active' : '' %>">
           ✉️ ভেরিফিকেশন বাকি (<%= toBengaliNumber(userStats.pendingVerification) %>)
         </a>
 
         <!-- Active Users -->
         <a href="/admin/users?status=active&q=<%= searchQuery %>" 
-           class="btn-view-site" 
-           style="<%= statusFilter === 'active' ? 'background: #16a34a; color: #fff; border-color: #16a34a;' : '' %>">
+           class="btn-view-site admin-tab-btn-pill success <%= statusFilter === 'active' ? 'active' : '' %>">
           ✓ সক্রিয় ইউজার
         </a>
       </div>
 
       <!-- Search Form -->
-      <form action="/admin/users" method="GET" style="display: flex; gap: 8px;">
+      <form action="/admin/users" method="GET" class="admin-filter-form">
         <input type="hidden" name="role" value="<%= roleFilter %>">
         <input type="hidden" name="status" value="<%= statusFilter %>">
-        <input 
-          type="text" 
-          name="q" 
-          value="<%= searchQuery %>" 
-          class="admin-form-input" 
-          placeholder="নাম, ইউজারনেম বা ইমেইল..." 
-          style="width: 240px; padding: 7px 12px; font-size: 15px;"
-        >
-        <button type="submit" class="btn-view-site" style="padding: 7px 14px; font-size: 15px;">অনুসন্ধান</button>
-        <% if (searchQuery || roleFilter !== 'all' || statusFilter !== 'all') { %>
-          <a href="/admin/users" class="btn-view-site" style="padding: 7px 12px; color: #dc2626; font-size: 15px;" title="ফিল্টার রিসেট">✕ রিসেট</a>
-        <% } %>
+        <div class="admin-search-group">
+          <input 
+            type="text" 
+            name="q" 
+            value="<%= searchQuery %>" 
+            class="admin-form-input admin-search-input" 
+            placeholder="নাম, ইউজারনেম বা ইমেইল..." 
+          >
+          <button type="submit" class="btn-view-site admin-search-btn">অনুসন্ধান</button>
+          <% if (searchQuery || roleFilter !== 'all' || statusFilter !== 'all') { %>
+            <a href="/admin/users" class="btn-view-site admin-reset-btn" title="ফিল্টার রিসেট">✕</a>
+          <% } %>
+        </div>
       </form>
     </div>
 
     <!-- Bottom Row: Role Sub-filters -->
-    <div style="display: flex; gap: 6px; align-items: center; font-size: 14px; color: var(--admin-text-muted);">
+    <div class="admin-subfilter-row">
       <span style="font-weight: 600;">রোল অনুযায়ী:</span>
       <a href="/admin/users?role=admin&status=<%= statusFilter %>&q=<%= searchQuery %>" 
-         style="text-decoration: none; padding: 3px 10px; border-radius: 4px; font-size: 13px; <%= roleFilter === 'admin' ? 'background: #fef2f2; color: #dc2626; font-weight: 700;' : 'color: var(--admin-text-muted);' %>">
+         class="admin-subfilter-link <%= roleFilter === 'admin' ? 'active-admin' : '' %>">
         এডমিন (<%= toBengaliNumber(userStats.admins) %>)
       </a>
-      •
+      <span>•</span>
       <a href="/admin/users?role=editor&status=<%= statusFilter %>&q=<%= searchQuery %>" 
-         style="text-decoration: none; padding: 3px 10px; border-radius: 4px; font-size: 13px; <%= roleFilter === 'editor' ? 'background: #eff6ff; color: #2563eb; font-weight: 700;' : 'color: var(--admin-text-muted);' %>">
+         class="admin-subfilter-link <%= roleFilter === 'editor' ? 'active-editor' : '' %>">
         সম্পাদক (<%= toBengaliNumber(userStats.editors) %>)
       </a>
-      •
+      <span>•</span>
       <a href="/admin/users?role=author&status=<%= statusFilter %>&q=<%= searchQuery %>" 
-         style="text-decoration: none; padding: 3px 10px; border-radius: 4px; font-size: 13px; <%= roleFilter === 'author' ? 'background: #f0fdf4; color: #16a34a; font-weight: 700;' : 'color: var(--admin-text-muted);' %>">
+         class="admin-subfilter-link <%= roleFilter === 'author' ? 'active-author' : '' %>">
         লেখক (<%= toBengaliNumber(userStats.authors) %>)
       </a>
     </div>
@@ -108,8 +105,8 @@
         <% if (users && users.length > 0) { %>
           <% users.forEach(u => { %>
             <% 
-              const isPendingApproval = (u.status === 'pending_approval') || (u.role === 'author' && (!u.is_approved || u.is_approved == 0) && (u.email_verified == 1));
-              const isPendingVerification = (u.status === 'pending_verification') || (u.role === 'author' && (!u.email_verified || u.email_verified == 0));
+              const isPendingApproval = (u.status === 'pending_approval' || u.status === 'pending_verification') || (u.role === 'author' && (!u.is_approved || u.is_approved == 0));
+              const isPendingVerification = (u.status === 'pending_verification') && !isPendingApproval;
               const isSuspended = (u.status === 'suspended');
             %>
             <tr style="<%= isPendingApproval ? 'background-color: #fffdf5;' : '' %>">

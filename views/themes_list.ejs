@@ -1,0 +1,38 @@
+<%- include('partials/header') %>
+
+<main class="page-main-content">
+  <div class="site-container" style="padding-top: 36px; padding-bottom: 50px;">
+    
+    <!-- Hero Header -->
+    <div class="themes-directory-hero">
+      <span class="themes-hero-badge">🎭 সাহিত্যের অনুভূতি ও রূপ</span>
+      <h1 class="themes-hero-title">অনুভূতি ও বিষয়ভিত্তিক সাহিত্য অন্বেষণ</h1>
+      <p class="themes-hero-desc">মনের ভাব ও মানবিক অনুভূতির রঙে সাজানো সাহিত্যের অমূল্য সম্ভার। আপনার পছন্দের বিষয় বা অনুভূতিটি বেছে নিয়ে হারিয়ে যান শব্দের মায়াজালে।</p>
+    </div>
+
+    <!-- Themes Grid -->
+    <div class="themes-cards-grid">
+      <% themes.forEach(t => { %>
+        <a href="/theme/<%= encodeURIComponent(t.slug) %>" 
+           class="theme-featured-card"
+           style="--theme-accent: <%= t.color %>; --theme-bg: <%= t.bgColor %>; --theme-border: <%= t.borderColor %>;">
+          <div class="theme-card-icon-wrap">
+            <span class="theme-card-icon"><%= t.icon %></span>
+          </div>
+          <div class="theme-card-content">
+            <h2 class="theme-card-title"><%= t.name %></h2>
+            <p class="theme-card-tagline"><%= t.tagline %></p>
+            <p class="theme-card-desc"><%= t.description %></p>
+          </div>
+          <div class="theme-card-arrow">
+            <span>লেখাগুলো পড়ুন</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+          </div>
+        </a>
+      <% }) %>
+    </div>
+
+  </div>
+</main>
+
+<%- include('partials/footer') %>

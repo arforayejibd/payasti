@@ -1,0 +1,89 @@
+<%
+  if (typeof poem !== 'undefined' && poem) {
+    let authorBadge = null;
+    try {
+      if (typeof getBadgeByAuthorId === 'function') {
+        authorBadge = getBadgeByAuthorId(poem.author_id || poem.author_slug || poem.author_name);
+      } else {
+        const h = require(process.cwd() + '/helpers/authorBadgeHelper');
+        authorBadge = h.getBadgeByAuthorId(poem.author_id || poem.author_slug || poem.author_name);
+      }
+    } catch(e) {}
+
+    let stanza = '';
+    try {
+      if (typeof extractPoemStanza === 'function') {
+        stanza = extractPoemStanza(poem.content, 2);
+      } else {
+        const h = require(process.cwd() + '/helpers/dailyPoemHelper');
+        stanza = h.extractPoemStanza(poem.content, 2);
+      }
+    } catch(e) {
+      stanza = poem.excerpt || (poem.content ? poem.content.substring(0, 120) : '');
+    }
+%>
+<div class="daily-poem-showcase-card">
+  <div class="daily-poem-showcase-main">
+    <!-- Top Pill & Date inside card -->
+    <div class="daily-poem-top-strip">
+      <span class="daily-poem-pill-tag">📜 আজকের সাহিত্য</span>
+      <time class="daily-poem-date-tag"><%= typeof formatBengaliDate === 'function' ? formatBengaliDate(new Date()) : '' %></time>
+    </div>
+
+    <!-- Author & Meta Header -->
+    <div class="daily-poem-author-row">
+      <div class="avatar-badge-wrap">
+        <div class="post-card-avatar-wrap">
+          <a href="/author/<%= encodeURIComponent(poem.author_slug || '') %>" class="post-card-avatar-link">
+            <% if (poem.author_avatar) { %>
+              <img src="<%= poem.author_avatar %>" alt="<%= poem.author_name %>" class="post-card-avatar-img" loading="lazy">
+            <% } else { %>
+              <div class="post-card-avatar-placeholder">
+                <%= poem.author_name ? poem.author_name.charAt(0) : 'প' %>
+              </div>
+            <% } %>
+          </a>
+        </div>
+        <% if (authorBadge) { %>
+          <div class="avatar-floating-badge <%= authorBadge.tagClass %> badge-size-sm" title="<%= authorBadge.icon %> <%= authorBadge.title %> (<%= authorBadge.tooltip %>)">
+            <span><%= authorBadge.icon %></span>
+          </div>
+        <% } %>
+      </div>
+
+      <div class="daily-poem-header-meta">
+        <div class="daily-poem-author-name-wrap">
+          <a href="/author/<%= encodeURIComponent(poem.author_slug || '') %>" class="daily-poem-author-name">
+            <%= poem.author_name %>
+          </a>
+          <span class="daily-poem-meta-bullet">•</span>
+          <span class="daily-poem-category-badge"><%= poem.category_name || 'সাহিত্য' %></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Title -->
+    <h3 class="daily-poem-showcase-title">
+      <a href="/post/<%= encodeURIComponent(poem.slug || '') %>"><%= poem.title %></a>
+    </h3>
+
+    <!-- Stanza / Excerpt Lines -->
+    <% if (stanza) { %>
+      <div class="daily-poem-showcase-stanza">
+        <%- stanza %>
+      </div>
+    <% } %>
+  </div>
+
+  <!-- Actions -->
+  <div class="daily-poem-showcase-actions">
+    <a href="/post/<%= encodeURIComponent(poem.slug || '') %>" class="daily-poem-primary-btn">
+      <span>সম্পূর্ণ লেখা পড়ুন</span>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+    </a>
+    <a href="/random" class="daily-poem-secondary-btn" title="আর্কাইভ থেকে আরেকটি অজানা সাহিত্য পড়ুন">
+      <span>🎲</span> অজানা সাহিত্য
+    </a>
+  </div>
+</div>
+<% } %>

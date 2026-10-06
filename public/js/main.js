@@ -1,20 +1,68 @@
 document.addEventListener('DOMContentLoaded', () => {
-  // Mobile Hamburger Menu Toggle
+  // Mobile Hamburger Menu Toggle & Navigation Handler
   const mobileMenuToggle = document.getElementById('mobileMenuToggle');
   const mainNav = document.getElementById('mainNav');
 
   if (mobileMenuToggle && mainNav) {
-    mobileMenuToggle.addEventListener('click', () => {
-      mainNav.classList.toggle('mobile-open');
-      mainNav.classList.toggle('active');
+    function toggleMobileNav() {
+      const isOpening = !mainNav.classList.contains('active');
+      mainNav.classList.toggle('mobile-open', isOpening);
+      mainNav.classList.toggle('active', isOpening);
+      mobileMenuToggle.classList.toggle('active', isOpening);
+      document.body.classList.toggle('mobile-nav-locked', isOpening);
+    }
+
+    function closeMobileNav() {
+      mainNav.classList.remove('mobile-open', 'active');
+      mobileMenuToggle.classList.remove('active');
+      document.body.classList.remove('mobile-nav-locked');
+    }
+
+    mobileMenuToggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleMobileNav();
     });
 
-    // Close mobile menu when clicking a nav link
-    mainNav.querySelectorAll('.nav-menu-item, .nav-link').forEach(link => {
-      link.addEventListener('click', () => {
-        mainNav.classList.remove('mobile-open');
-        mainNav.classList.remove('active');
+    // Handle dropdown toggles on mobile as accordions
+    const dropdownToggles = mainNav.querySelectorAll('.nav-item-dropdown > .dropdown-toggle');
+    dropdownToggles.forEach(toggle => {
+      toggle.addEventListener('click', (e) => {
+        if (window.innerWidth <= 991) {
+          e.preventDefault();
+          e.stopPropagation();
+          const parent = toggle.closest('.nav-item-dropdown');
+          if (parent) {
+            // Close other open dropdowns inside mainNav for accordion effect
+            mainNav.querySelectorAll('.nav-item-dropdown').forEach(other => {
+              if (other !== parent) other.classList.remove('open');
+            });
+            parent.classList.toggle('open');
+          }
+        }
       });
+    });
+
+    // Close mobile menu when clicking direct nav links or dropdown sub-items
+    mainNav.querySelectorAll('.dropdown-item, .nav-menu-item:not(.dropdown-toggle), .btn-author-panel').forEach(link => {
+      link.addEventListener('click', () => {
+        closeMobileNav();
+      });
+    });
+
+    // Close when clicking outside the menu
+    document.addEventListener('click', (e) => {
+      if (window.innerWidth <= 991 && mainNav.classList.contains('active')) {
+        if (!mainNav.contains(e.target) && !mobileMenuToggle.contains(e.target)) {
+          closeMobileNav();
+        }
+      }
+    });
+
+    // Close mobile menu when resizing to desktop
+    window.addEventListener('resize', () => {
+      if (window.innerWidth > 991 && mainNav.classList.contains('active')) {
+        closeMobileNav();
+      }
     });
   }
 
@@ -155,12 +203,14 @@ document.addEventListener('DOMContentLoaded', () => {
   // Single Post: Font Size Controls
   // ==========================================
   const articleBody = document.querySelector('.single-article-content-body');
-  const defaultFontSize = 26; // default base size (upgraded)
-  let currentFontSize = parseInt(localStorage.getItem('payasti_reader_fontsize')) || defaultFontSize;
+  const defaultFontSize = 21.5; // default base size matching homepage readability standard (21.5px)
+  let savedSize = parseFloat(localStorage.getItem('payasti_reader_fontsize'));
+  // If no saved size or legacy 26px+ setting was saved, use standard default
+  let currentFontSize = (!savedSize || savedSize >= 25) ? defaultFontSize : savedSize;
 
   function applyFontSize(size) {
     if (!articleBody) return;
-    currentFontSize = Math.min(40, Math.max(20, size));
+    currentFontSize = Math.min(34, Math.max(17, size));
     articleBody.style.fontSize = `${currentFontSize}px`;
     localStorage.setItem('payasti_reader_fontsize', currentFontSize);
   }

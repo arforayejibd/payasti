@@ -18,7 +18,7 @@ exports.getHomePage = async (req, res) => {
 
     // 2. Fetch Featured Posts (4 posts for the 4-column grid, newest first)
     const cardFields = `
-      p.id, p.title, p.slug, p.excerpt, p.content, p.published_at, p.views, p.category_id, p.subcategory_id,
+      p.id, p.author_id, p.title, p.slug, p.excerpt, p.content, p.published_at, p.views, p.category_id, p.subcategory_id,
       u.display_name AS author_name, u.nicename AS author_slug, u.avatar AS author_avatar,
       c.name AS category_name, c.slug AS category_slug
     `;
@@ -65,10 +65,17 @@ exports.getHomePage = async (req, res) => {
       schema: getWebsiteSchema()
     });
 
+    // 4. Fetch Poem of the Day (Poetry Foundation style)
+    const { getDailyPoem } = require('../helpers/dailyPoemHelper');
+    const { LITERARY_THEMES } = require('../helpers/literaryThemeHelper');
+    const dailyPoem = await getDailyPoem();
+
     res.render('home', {
       books,
       featuredPosts,
       latestPosts,
+      dailyPoem,
+      themes: LITERARY_THEMES,
       seo,
       toBengaliNumber,
       formatBengaliDate,

@@ -13,12 +13,29 @@
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preload" href="/fonts/8029Payasti_uni.woff2" as="font" type="font/woff2" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
   
   <style>
     @font-face {
       font-family: 'payasti_uni';
       src: url('/fonts/8029Payasti_uni.woff2') format('woff2');
+      font-weight: 100 900;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'payasti_uni';
+      src: url('/fonts/8029Payasti_uni.woff2') format('woff2');
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'payasti_uni';
+      src: url('/fonts/8029Payasti_uni.woff2') format('woff2');
+      font-weight: bold;
+      font-style: normal;
       font-display: swap;
     }
 
@@ -39,10 +56,23 @@
       box-sizing: border-box;
       margin: 0;
       padding: 0;
+      font-synthesis: weight;
+      -webkit-font-synthesis: weight;
+      -webkit-font-smoothing: subpixel-antialiased;
+      -moz-osx-font-smoothing: auto;
+      text-rendering: optimizeLegibility;
+      text-shadow: 0 0 0.35px currentColor;
+    }
+
+    ::selection {
+      background-color: #075603 !important;
+      color: #ffffff !important;
+      text-shadow: none !important;
     }
 
     body {
-      font-family: 'Hind Siliguri', sans-serif;
+      font-family: 'payasti_uni', 'Hind Siliguri', sans-serif;
+      font-weight: 500;
       background-color: var(--bg-page);
       color: var(--text-main);
       min-height: 100vh;
@@ -370,8 +400,8 @@
           </form>
         </div>
 
-      <% } else if (type === 'verified_pending_approval') { %>
-        <!-- Case 2: Email verified, waiting for admin approval -->
+      <% } else if (type === 'verified_pending_approval' || type === 'registered_pending_approval') { %>
+        <!-- Case 2: Waiting for admin approval -->
         <div class="icon-wrapper warning">
           <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="10"></circle>
@@ -379,9 +409,13 @@
           </svg>
         </div>
 
-        <h1 class="notice-title">ইমেইল যাচাই সফল হয়েছে!</h1>
+        <h1 class="notice-title"><%= type === 'registered_pending_approval' ? 'নিবন্ধন সফল হয়েছে!' : 'ইমেইল যাচাই সফল হয়েছে!' %></h1>
         <p class="notice-desc">
-          আপনার ইমেইল ঠিকানা সফলভাবে নিশ্চিত করা হয়েছে। গুণগত মান ও সুরক্ষা বজায় রাখতে পয়েন্ট ম্যাগাজিনে <strong>অ্যাডমিন অনুমোদন</strong> প্রয়োজন হয়।
+          <% if (type === 'registered_pending_approval') { %>
+            আপনার লেখক অ্যাকাউন্টটি সফলভাবে তৈরি হয়েছে। মানসম্মত সাহিত্য ও লেখার নিরাপত্তা বজায় রাখতে প্রতিটি নতুন লেখক অ্যাকাউন্ট <strong>অ্যাডমিন অনুমোদন</strong> সাপেক্ষে সক্রিয় করা হয়।
+          <% } else { %>
+            আপনার ইমেইল ঠিকানা সফলভাবে নিশ্চিত করা হয়েছে। গুণগত মান ও সুরক্ষা বজায় রাখতে পয়স্তি ম্যাগাজিনে <strong>অ্যাডমিন অনুমোদন</strong> প্রয়োজন হয়।
+          <% } %>
         </p>
 
         <div class="steps-box" style="background: #fffdf5; border-color: #fef3c7;">
@@ -389,10 +423,10 @@
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
             </svg>
-            অ্যাকাউন্ট স্ট্যাটাস: পর্যালোচনার অপেক্ষায়
+            অ্যাকাউন্ট স্ট্যাটাস: অ্যাডমিন পর্যালোচনার অপেক্ষায়
           </h4>
           <p style="color: #78350f; line-height: 1.6; margin-top: 4px;">
-            আমাদের মডারেশন টিম শীঘ্রই আপনার প্রোফাইলটি পর্যালোচনা করে অনুমোদন সম্পন্ন করবে। অনুমোদিত হলে আপনি আপনার ইউজারনেম ও পাসওয়ার্ড দিয়ে লগইন করে লেখা প্রকাশ করতে পারবেন।
+            আমাদের মডারেশন টিম শীঘ্রই আপনার প্রোফাইলটি পর্যালোচনা করে অনুমোদন সম্পন্ন করবে। অনুমোদিত হলে আপনি আপনার ইউজারনেম ও পাসওয়ার্ড দিয়ে লগইন করে লেখা ও কবিতা প্রকাশ করতে পারবেন।
           </p>
         </div>
 

@@ -24,21 +24,43 @@
     options = options || {};
     const Delta = Quill.import('delta');
 
-    const defaultToolbar = [
+    const defaultToolbarOptions = [
       [{ 'header': [2, 3, false] }],
       ['bold', 'italic', 'underline', 'strike'],
       [{ 'color': [] }, { 'background': [] }],
       [{ 'align': [] }],
       [{ 'list': 'ordered' }, { 'list': 'bullet' }],
       ['blockquote', 'code-block'],
-      ['link', 'clean']
+      ['link', 'image', 'clean']
     ];
 
     const quill = new Quill(selector, {
       theme: 'snow',
       placeholder: options.placeholder || 'এখানে আপনার মূল সাহিত্য বা লেখা লিখুন...',
       modules: {
-        toolbar: options.toolbar || defaultToolbar,
+        toolbar: {
+          container: options.toolbar || defaultToolbarOptions,
+          handlers: {
+            image: function() {
+              if (window.PayastiMediaModal && typeof window.PayastiMediaModal.open === 'function') {
+                const range = quill.getSelection(true) || { index: 0, length: 0 };
+                window.PayastiMediaModal.open({
+                  onSelect: function(file) {
+                    quill.insertEmbed(range.index, 'image', file.url, Quill.sources.USER);
+                    quill.setSelection(range.index + 1, Quill.sources.SILENT);
+                  }
+                });
+              } else {
+                const url = prompt('ছবির সরাসরি ওয়েব লিংক (URL) দিন:');
+                if (url) {
+                  const range = quill.getSelection(true) || { index: 0, length: 0 };
+                  quill.insertEmbed(range.index, 'image', url.trim(), Quill.sources.USER);
+                  quill.setSelection(range.index + 1, Quill.sources.SILENT);
+                }
+              }
+            }
+          }
+        },
         keyboard: {
           bindings: {
             shiftEnter: {

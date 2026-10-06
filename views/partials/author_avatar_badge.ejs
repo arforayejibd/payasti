@@ -1,0 +1,44 @@
+<%
+  const v = (typeof views !== 'undefined') ? Number(views) : 0;
+  const p = (typeof posts !== 'undefined') ? Number(posts) : 0;
+  
+  // Safe calculation using centralized helper or fallback
+  let badge = null;
+  if (typeof getAuthorTopBadge === 'function') {
+    badge = getAuthorTopBadge(v, p);
+  } else {
+    if (v >= 10000) badge = { icon: '👑', title: 'জনপ্রিয় সাহিত্যিক', tagClass: 'badge-viral', tooltip: '১০,০০০+ পাঠক' };
+    else if (v >= 1000) badge = { icon: '🌟', title: 'পাঠকপ্রিয়', tagClass: 'badge-popular', tooltip: '১,০০০+ পাঠক' };
+    else if (p >= 15) badge = { icon: '🏆', title: 'সিদ্ধহস্ত লেখক', tagClass: 'badge-master', tooltip: '১৫টির বেশি লেখা' };
+    else if (p >= 5) badge = { icon: '📜', title: 'শব্দসাধক', tagClass: 'badge-rising', tooltip: '৫টির বেশি লেখা' };
+  }
+
+  const sz = typeof size !== 'undefined' ? size : 'lg';
+  const sizeClass = sz === 'sm' ? 'badge-size-sm' : (sz === 'md' ? 'badge-size-md' : 'badge-size-lg');
+  const avatarClass = typeof wrapClass !== 'undefined' ? wrapClass : 'author-profile-avatar-wrap';
+  const avatarLink = typeof link !== 'undefined' ? link : null;
+%>
+<div class="avatar-badge-wrap">
+  <% if (avatarLink) { %>
+    <a href="<%= avatarLink %>" class="<%= avatarClass %>">
+  <% } else { %>
+    <div class="<%= avatarClass %>">
+  <% } %>
+    <% if (avatar) { %>
+      <img src="<%= avatar %>" alt="<%= name || 'লেখক' %>" class="author-profile-avatar-img">
+    <% } else { %>
+      <div class="author-profile-avatar-placeholder">
+        <%= name ? name.charAt(0) : 'প' %>
+      </div>
+    <% } %>
+  <% if (avatarLink) { %>
+    </a>
+  <% } else { %>
+    </div>
+  <% } %>
+  <% if (badge) { %>
+    <div class="avatar-floating-badge <%= badge.tagClass %> <%= sizeClass %>" title="<%= badge.icon %> <%= badge.title %> (<%= badge.tooltip %>)">
+      <span><%= badge.icon %></span>
+    </div>
+  <% } %>
+</div>

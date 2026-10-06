@@ -4,8 +4,9 @@ const slugify = require('slugify');
 const bcrypt = require('bcryptjs');
 const db = require('../config/database');
 const { generateSeoMeta } = require('../middleware/seo');
-const { toBengaliNumber, formatBengaliDate, generateCleanExcerpt } = require('../middleware/banglaDate');
+const { toBengaliNumber, formatBengaliDate, generateCleanExcerpt, calculateReadingTime } = require('../middleware/banglaDate');
 const { sendAccountApprovedEmail } = require('../services/mailService');
+const { getViewsAnalytics } = require('../helpers/adminAnalyticsHelper');
 
 // ==========================================
 // 1. DASHBOARD OVERVIEW
@@ -29,6 +30,9 @@ exports.getDashboard = async (req, res) => {
     const pendingUsersRow = await db.prepare("SELECT COUNT(1) AS total FROM users WHERE status IN ('pending_approval', 'pending_verification') OR (role = 'author' AND is_approved = 0)").get();
     const pendingUsersCount = pendingUsersRow ? pendingUsersRow.total : 0;
 
+    // View Analytics Data for Chart & Metrics
+    const viewsAnalytics = await getViewsAnalytics();
+
     // Recent pending submissions
     const recentPending = await db.prepare(`
       SELECT p.*, u.display_name AS author_name, u.email AS author_email, c.name AS category_name
@@ -36,7 +40,7 @@ exports.getDashboard = async (req, res) => {
       LEFT JOIN users u ON p.author_id = u.id
       LEFT JOIN categories c ON p.category_id = c.id
       WHERE p.status = 'pending'
-      ORDER BY p.id DESC LIMIT 5
+      ORDER BY p.id DESC LIMIT 8
     `).all();
 
     // Recent published submissions
@@ -46,14 +50,14 @@ exports.getDashboard = async (req, res) => {
       LEFT JOIN users u ON p.author_id = u.id
       LEFT JOIN categories c ON p.category_id = c.id
       WHERE p.status = 'publish'
-      ORDER BY p.id DESC LIMIT 5
+      ORDER BY p.id DESC LIMIT 6
     `).all();
 
     // Recent registered users
     const recentUsers = await db.prepare(`
       SELECT id, display_name, username, email, role, registered_at, created_at
       FROM users
-      ORDER BY id DESC LIMIT 5
+      ORDER BY id DESC LIMIT 6
     `).all();
 
     const seo = generateSeoMeta({ title: 'এডমিন ড্যাশবোর্ড ও মডারেশন' });
@@ -69,13 +73,15 @@ exports.getDashboard = async (req, res) => {
         books: booksCount,
         totalViews: totalViews
       },
+      viewsAnalytics,
       recentPending,
       recentPublished,
       recentUsers,
       activeMenu: 'admin_dashboard',
       seo,
       toBengaliNumber,
-      formatBengaliDate
+      formatBengaliDate,
+      calculateReadingTime
     });
   } catch (err) {
     console.error('Error in getDashboard:', err);
@@ -441,7 +447,7 @@ exports.getUsers = async (req, res) => {
     }
 
     if (statusFilter === 'pending_approval') {
-      whereClauses.push("(u.status = 'pending_approval' OR (u.role = 'author' AND u.is_approved = 0 AND u.email_verified = 1))");
+      whereClauses.push("(u.status IN ('pending_approval', 'pending_verification') OR (u.role = 'author' AND u.is_approved = 0))");
     } else if (statusFilter === 'pending_verification') {
       whereClauses.push("(u.status = 'pending_verification' OR u.email_verified = 0)");
     } else if (statusFilter === 'active') {
@@ -471,7 +477,7 @@ exports.getUsers = async (req, res) => {
     const adminRow = await db.prepare("SELECT COUNT(*) AS total FROM users WHERE role = 'admin'").get();
     const editorRow = await db.prepare("SELECT COUNT(*) AS total FROM users WHERE role = 'editor'").get();
     const authorRow = await db.prepare("SELECT COUNT(*) AS total FROM users WHERE role = 'author'").get();
-    const pendingApprovalRow = await db.prepare("SELECT COUNT(*) AS total FROM users WHERE status = 'pending_approval' OR (role = 'author' AND is_approved = 0 AND email_verified = 1)").get();
+    const pendingApprovalRow = await db.prepare("SELECT COUNT(*) AS total FROM users WHERE status IN ('pending_approval', 'pending_verification') OR (role = 'author' AND is_approved = 0)").get();
     const pendingVerificationRow = await db.prepare("SELECT COUNT(*) AS total FROM users WHERE status = 'pending_verification' OR email_verified = 0").get();
 
     const totalUsers = totalRow ? totalRow.total : 0;
@@ -978,12 +984,16 @@ exports.getSettings = async (req, res) => {
       settingsMap[row.key] = row.value;
     });
 
-    const seo = generateSeoMeta({ title: 'সাইট সেটিংস - এডমিন' });
+    const noticeRow = await db.prepare("SELECT * FROM notices WHERE type = 'notice' ORDER BY id DESC LIMIT 1").get();
+
+    const seo = generateSeoMeta({ title: 'সাইট সেটিংস ও সার্চ কনসোল - এডমিন' });
 
     res.render('admin/settings', {
       user: req.user,
       settings: settingsMap,
+      notice: noticeRow || null,
       success: req.query.saved === '1',
+      activeTab: req.query.tab || 'seo',
       activeMenu: 'settings',
       seo,
       toBengaliNumber
@@ -996,7 +1006,28 @@ exports.getSettings = async (req, res) => {
 
 exports.postSettings = async (req, res) => {
   try {
-    const { site_title, site_tagline, site_description, contact_email, contact_phone, facebook_url } = req.body;
+    const { 
+      site_title, site_tagline, site_description, contact_email, contact_phone, facebook_url,
+      google_site_verification, google_analytics_id, bing_site_verification,
+      og_image, active_tab,
+      notice_title, notice_content, notice_active
+    } = req.body;
+
+    function cleanVerificationCode(raw) {
+      if (!raw) return '';
+      const str = raw.trim();
+      const match = str.match(/content=["']([^"']+)["']/i);
+      if (match && match[1]) {
+        return match[1].trim();
+      }
+      return str;
+    }
+
+    // Resolve Universal OG Image: File upload takes priority, otherwise text input
+    let finalOgImage = og_image ? og_image.trim() : '';
+    if (req.file && req.file.filename) {
+      finalOgImage = `/uploads/${req.file.filename}`;
+    }
 
     const updates = [
       { key: 'site_title', value: site_title || '' },
@@ -1004,16 +1035,48 @@ exports.postSettings = async (req, res) => {
       { key: 'site_description', value: site_description || '' },
       { key: 'contact_email', value: contact_email || '' },
       { key: 'contact_phone', value: contact_phone || '' },
-      { key: 'facebook_url', value: facebook_url || '' }
+      { key: 'facebook_url', value: facebook_url || '' },
+      { key: 'google_site_verification', value: cleanVerificationCode(google_site_verification) },
+      { key: 'google_analytics_id', value: google_analytics_id ? google_analytics_id.trim() : '' },
+      { key: 'bing_site_verification', value: cleanVerificationCode(bing_site_verification) },
+      { key: 'og_image', value: finalOgImage }
     ];
 
     for (const item of updates) {
       await db.prepare('REPLACE INTO settings (`key`, `value`) VALUES (?, ?)').run(item.key, item.value.trim());
     }
 
-    res.redirect('/admin/settings?saved=1');
+    // Invalidate and refresh cache immediately
+    const { refreshSiteSettings } = require('../helpers/settingsHelper');
+    if (typeof refreshSiteSettings === 'function') {
+      refreshSiteSettings();
+    }
+
+    // Update or Insert Notice
+    const isActive = (notice_active === '1' || notice_active === 'on' || notice_active === true || notice_active === 'true') ? 1 : 0;
+    const cleanNoticeTitle = notice_title ? notice_title.trim() : 'বিজ্ঞপ্তি';
+    const cleanNoticeContent = notice_content ? notice_content.trim() : '';
+
+    const existingNotice = await db.prepare("SELECT id FROM notices WHERE type = 'notice' ORDER BY id DESC LIMIT 1").get();
+    if (existingNotice) {
+      await db.prepare("UPDATE notices SET title = ?, content = ?, is_active = ? WHERE id = ?").run(
+        cleanNoticeTitle,
+        cleanNoticeContent,
+        isActive,
+        existingNotice.id
+      );
+    } else {
+      await db.prepare("INSERT INTO notices (title, content, type, is_active) VALUES (?, ?, 'notice', ?)").run(
+        cleanNoticeTitle,
+        cleanNoticeContent,
+        isActive
+      );
+    }
+
+    const redirectTab = active_tab || 'notice';
+    res.redirect(`/admin/settings?saved=1&tab=${encodeURIComponent(redirectTab)}`);
   } catch (err) {
     console.error('Error in postSettings:', err);
-    res.redirect('/admin/settings');
+    res.redirect('/admin/settings?tab=notice');
   }
 };

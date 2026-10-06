@@ -1,66 +1,573 @@
 <%- include('partials/admin_layout_start', { 
-  pageTitle: 'সাইট সাধারণ সেটিংস (Settings)', 
+  pageTitle: 'সাইট সেটিংস ও এসইও সার্চ কনসোল (Settings)', 
   pageBreadcrumb: 'Settings'
 }) %>
 
-<div class="admin-card" style="max-width: 800px; margin: 0 auto;">
-  <div class="admin-card-header">
-    <div class="admin-card-title">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--admin-primary);">
-        <circle cx="12" cy="12" r="3"></circle>
-        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-      </svg>
-      <span>পয়স্তি ম্যাগাজিন ওয়েবসাইট সেটিংস</span>
+<%
+  const currentTab = (typeof activeTab !== 'undefined' && activeTab) ? activeTab : 'seo';
+  const s = (typeof settings !== 'undefined' && settings) ? settings : {};
+  const n = (typeof notice !== 'undefined' && notice) ? notice : null;
+  const isSuccess = (typeof success !== 'undefined' && success);
+%>
+
+<div class="settings-page-wrapper">
+  <!-- Top Banner / Header -->
+  <div class="settings-header-banner">
+    <div class="settings-header-left">
+      <div class="settings-header-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+        </svg>
+      </div>
+      <div>
+        <h1 class="settings-header-title">ওয়েবসাইট কনফিগারেশন ও এসইও সেটিংস</h1>
+        <p class="settings-header-desc">গুগল সার্চ কনসোল, সাইটব্যাপী সার্বজনীন OG ইমেজ, সাইটম্যাপ ও নোটিশ বোর্ড পরিচালনা করুন</p>
+      </div>
+    </div>
+
+    <div>
+      <% if (s && s.google_site_verification) { %>
+        <span class="settings-status-pill status-connected">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          সার্চ কনসোল সক্রিয়
+        </span>
+      <% } else { %>
+        <span class="settings-status-pill status-disconnected">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          সার্চ কনসোল ডিসকানেক্টেড
+        </span>
+      <% } %>
     </div>
   </div>
 
-  <div class="admin-card-body">
-    <% if (typeof success !== 'undefined' && success) { %>
-      <div style="background: #f0fdf4; border: 1px solid #bbf7d0; color: #15803d; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; font-weight: 500;">
-        ✓ সেটিংস সফলভাবে সংরক্ষিত ও আপডেট হয়েছে!
-      </div>
-    <% } %>
-
-    <form action="/admin/settings" method="POST">
-      <div class="admin-form-group">
-        <label class="admin-form-label">ওয়েবসাইট শিরোনাম (Site Title) *</label>
-        <input type="text" name="site_title" value="<%= settings.site_title || '' %>" class="admin-form-input" required>
-      </div>
-
-      <div class="admin-form-group">
-        <label class="admin-form-label">ট্যাগলাইন (Site Tagline)</label>
-        <input type="text" name="site_tagline" value="<%= settings.site_tagline || '' %>" class="admin-form-input">
-      </div>
-
-      <div class="admin-form-group">
-        <label class="admin-form-label">ওয়েবসাইট পরিচিতি / মেটা বিবরণ (Description)</label>
-        <textarea name="site_description" class="admin-form-textarea" rows="3"><%= settings.site_description || '' %></textarea>
-      </div>
-
-      <div class="admin-form-grid">
-        <div class="admin-form-group">
-          <label class="admin-form-label">অফিসিয়াল ইমেইল</label>
-          <input type="email" name="contact_email" value="<%= settings.contact_email || '' %>" class="admin-form-input">
+  <% if (isSuccess) { %>
+    <div style="background: #f0fdf4; border: 1.5px solid #86efac; color: #166534; padding: 14px 20px; border-radius: 12px; margin-bottom: 24px; font-weight: 600; display: flex; align-items: center; justify-content: space-between; gap: 12px; box-shadow: var(--admin-shadow-sm);">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <div style="width: 28px; height: 28px; border-radius: 50%; background: #22c55e; color: #ffffff; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
         </div>
-
-        <div class="admin-form-group">
-          <label class="admin-form-label">যোগাযোগের মোবাইল নম্বর</label>
-          <input type="text" name="contact_phone" value="<%= settings.contact_phone || '' %>" class="admin-form-input">
-        </div>
+        <span style="font-size: 15px;">সকল সেটিংস, সার্চ কনসোল টোকেন ও সার্বজনীন OG ইমেজ সফলভাবে সংরক্ষিত ও আপডেট হয়েছে!</span>
       </div>
+      <button type="button" onclick="this.parentElement.remove()" style="background: none; border: none; cursor: pointer; color: #166534; font-size: 18px; line-height: 1;">✕</button>
+    </div>
+  <% } %>
 
-      <div class="admin-form-group">
-        <label class="admin-form-label">ফেসবুক পেজ লিংক</label>
-        <input type="url" name="facebook_url" value="<%= settings.facebook_url || '' %>" class="admin-form-input">
-      </div>
-
-      <div style="text-align: right; padding-top: 20px; border-top: 1px solid var(--admin-border);">
-        <button type="submit" class="btn-new-action" style="padding: 11px 30px; font-size: 17px;">
-          সেটিংস সংরক্ষণ করুন
-        </button>
-      </div>
-    </form>
+  <!-- Settings Tabs Navigation -->
+  <div class="settings-tabs-nav">
+    <button type="button" class="settings-tab-btn <%= (currentTab === 'seo') ? 'active' : '' %>" data-target="tab-seo">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <span>এসইও ও সার্চ কনসোল (SEO)</span>
+    </button>
+    <button type="button" class="settings-tab-btn <%= (currentTab === 'general') ? 'active' : '' %>" data-target="tab-general">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+      <span>সাধারণ সাইট তথ্য</span>
+    </button>
+    <button type="button" class="settings-tab-btn <%= (currentTab === 'notice') ? 'active' : '' %>" data-target="tab-notice">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      <span>লেখক প্যানেল নোটিশ</span>
+    </button>
   </div>
+
+  <form action="/admin/settings" method="POST" enctype="multipart/form-data" id="settingsForm">
+    <input type="hidden" name="active_tab" id="active_tab_input" value="<%= currentTab %>">
+
+    <!-- ========================================== -->
+    <!-- TAB 1: SEO, SEARCH CONSOLE & UNIVERSAL OG  -->
+    <!-- ========================================== -->
+    <div class="settings-tab-panel <%= (currentTab === 'seo') ? 'active' : '' %>" id="tab-seo">
+      
+      <!-- 1.1 Google Search Console Verification Card -->
+      <div class="settings-section-card">
+        <div class="settings-section-head">
+          <div class="settings-section-head-left">
+            <div class="settings-section-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+            </div>
+            <div>
+              <h2 class="settings-section-title">গুগল সার্চ কনসোল কানেকশন (Google Search Console)</h2>
+              <p class="settings-section-subtitle">গুগল সার্চে সাইটের উপস্থিতি, ইনডেক্সিং এবং সার্চ অ্যানালিটিক্স নিরীক্ষণের মূল ভেরিফিকেশন</p>
+            </div>
+          </div>
+          <a href="https://search.google.com/search-console" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; gap: 6px; font-size: 13.5px; font-weight: 600; color: var(--admin-primary); text-decoration: none; padding: 7px 14px; border-radius: 8px; background: var(--admin-primary-light);">
+            <span>সার্চ কনসোল ওপেন করুন</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          </a>
+        </div>
+
+        <div class="admin-form-group">
+          <label class="admin-form-label" style="display: flex; justify-content: space-between; align-items: center;">
+            <span>গুগল সাইট ভেরিফিকেশন কোড (Google Site Verification Code / HTML Tag)</span>
+            <% if (s && s.google_site_verification) { %>
+              <span style="font-size: 12.5px; color: #059669; font-weight: 600;">✓ বর্তমানে সক্রিয় রয়েছে</span>
+            <% } %>
+          </label>
+          <input 
+            type="text" 
+            name="google_site_verification" 
+            value="<%= (s && s.google_site_verification) ? s.google_site_verification : '' %>" 
+            class="admin-form-input" 
+            placeholder="উদাহরণ: 4hB7... বা <meta name='google-site-verification' content='...' />"
+            style="font-family: monospace; font-size: 14.5px;"
+          >
+          <span style="font-size: 13px; color: var(--admin-text-muted); display: block; margin-top: 6px;">
+            💡 <strong>টিপস:</strong> আপনি শুধুমাত্র ভেরিফিকেশন টোকেন অথবা পুরো HTML ট্যাগটি এখানে পেস্ট করতে পারেন। সংরক্ষণ করার সময় সিস্টেম স্বয়ংক্রিয়ভাবে সঠিক টোকেনটি সংগ্রহ করে হেডারে বসিয়ে দেবে।
+          </span>
+        </div>
+
+        <!-- Step by Step Setup Box -->
+        <div class="console-verify-box">
+          <h4 style="font-size: 14.5px; font-weight: 700; color: var(--admin-text-main); margin: 0 0 6px;">
+            সার্চ কনসোলে সাইট যুক্ত করার ৪টি সহজ ধাপ:
+          </h4>
+          <div class="console-guide-steps">
+            <div class="console-step-item">
+              <span class="console-step-num">১</span>
+              <div class="console-step-text">
+                <a href="https://search.google.com/search-console" target="_blank" style="color: var(--admin-primary); font-weight: 600;">Google Search Console</a>-এ গিয়ে জিমেইল দিয়ে সাইন-ইন করুন।
+              </div>
+            </div>
+            <div class="console-step-item">
+              <span class="console-step-num">২</span>
+              <div class="console-step-text">
+                'Add Property'-তে গিয়ে <strong>URL prefix</strong> অপশনে <code>https://payasti.com</code> লিখুন।
+              </div>
+            </div>
+            <div class="console-step-item">
+              <span class="console-step-num">৩</span>
+              <div class="console-step-text">
+                Verification অপশন থেকে <strong>HTML tag</strong> বেছে নিয়ে কোডটি কপি করে উপরের বক্সে পেস্ট করুন এবং সেভ করুন।
+              </div>
+            </div>
+            <div class="console-step-item">
+              <span class="console-step-num">৪</span>
+              <div class="console-step-text">
+                সার্চ কনসোলে ফিরে গিয়ে <strong>VERIFY</strong> বাটনে ক্লিক করলেই আপনার সাইট ভেরিফাই হয়ে যাবে।
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- XML Sitemap Helper Box -->
+        <div class="sitemap-pill-box">
+          <div>
+            <div style="font-size: 14px; font-weight: 700; color: var(--admin-text-main); margin-bottom: 2px;">
+              সাইটের XML সাইটম্যাপ (Search Engine Sitemap)
+            </div>
+            <div style="font-size: 13px; color: var(--admin-text-muted);">
+              গুগল সার্চ কনসোলে সাইট ভেরিফাই করার পর 'Sitemaps' মেনুতে গিয়ে নিচের লিংকটি সাবমিট করুন:
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span class="sitemap-url-code" id="sitemapUrlText">https://payasti.com/sitemap.xml</span>
+            <button type="button" onclick="copySitemapUrl()" id="copySitemapBtn" style="padding: 7px 14px; background: var(--admin-card-bg); border: 1px solid var(--admin-border); border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; color: var(--admin-text-main); display: inline-flex; align-items: center; gap: 5px;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              <span>কপি করুন</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 1.2 Universal OG Image Card (Strict Requirement) -->
+      <div class="settings-section-card">
+        <div class="settings-section-head">
+          <div class="settings-section-head-left">
+            <div class="settings-section-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            </div>
+            <div>
+              <h2 class="settings-section-title">সার্বজনীন Open Graph (OG) শেয়ারিং ব্যানার ইমেজ</h2>
+              <p class="settings-section-subtitle">প্রতিটি পেজ এবং লেখার সোশ্যাল মিডিয়া প্রিভিউ ও থাম্বনেইল হিসেবে এই ছবিটি ব্যবহৃত হবে</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Universal Notice Callout -->
+        <div class="og-universal-banner">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--admin-primary); flex-shrink: 0; margin-top: 2px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+          <div>
+            <span class="og-universal-badge">সাইটব্যাপী সার্বজনীন নির্ধারণ (Universal OG Image)</span>
+            <div style="font-size: 14px; color: var(--admin-text-main); font-weight: 500; line-height: 1.5;">
+              এখানে আপনি যে ছবিটি আপলোড বা লিংক করবেন, ফেসবুক, এক্স (টুইটার), হোয়াটসঅ্যাপ, টেলিগ্রাম বা যেকোনো প্ল্যাটফর্মে <strong>হোমপেজ, ক্যাটাগরি এবং প্রতিটি একক লেখার লিংক</strong> শেয়ার করলে স্বয়ংক্রিয়ভাবে এই ছবিটি প্রিভিউ হিসেবে দৃশ্যমান হবে।
+            </div>
+          </div>
+        </div>
+
+        <div class="og-preview-grid">
+          <!-- Left: Live Preview Card (Clickable to open Media Modal) -->
+          <div class="og-preview-card" id="ogPreviewClickCard" style="cursor: pointer; position: relative;" title="মিডিয়া লাইব্রেরি থেকে ছবি বাছতে এখানে ক্লিক করুন">
+            <div class="og-preview-img-wrap" id="ogImagePreviewContainer">
+              <% if (s && s.og_image) { %>
+                <img src="<%= s.og_image %>" alt="Universal OG Preview" id="ogLivePreviewImg" onerror="this.onerror=null; this.src='/images/payasti-og-banner.png';">
+              <% } else { %>
+                <img src="/images/payasti-og-banner.png" alt="Universal OG Preview" id="ogLivePreviewImg">
+              <% } %>
+              <div class="og-preview-hover-overlay" style="position: absolute; inset: 0; background: rgba(0,0,0,0.55); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; color: #fff; opacity: 0; transition: opacity 0.2s ease;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                <span style="font-size: 13px; font-weight: 600;">মিডিয়া লাইব্রেরি ওপেন করুন</span>
+              </div>
+            </div>
+            <div class="og-preview-footer">
+              <span style="font-weight: 600; display: flex; align-items: center; gap: 6px;">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                সোশ্যাল প্রিভিউ কার্ড
+              </span>
+              <span style="font-family: monospace; color: var(--admin-text-sub);">1200 × 630 px</span>
+            </div>
+          </div>
+
+          <!-- Right: Upload and URL controls -->
+          <div class="og-upload-zone">
+            <!-- 1. Primary Action: Open Media Library Modal -->
+            <button type="button" id="btnOpenOgMediaModal" style="display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; padding: 13px 20px; background: var(--admin-primary); color: #ffffff; border: none; border-radius: 12px; font-size: 15.5px; font-weight: 700; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 14px rgba(7, 86, 3, 0.28);">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                <polyline points="21 15 16 10 5 21"></polyline>
+              </svg>
+              <span>মিডিয়া লাইব্রেরি থেকে ছবি বাছুন / আপলোড করুন</span>
+            </button>
+
+            <!-- 2. Direct File Drop/Browse Trigger -->
+            <div>
+              <label class="file-drop-label" for="og_image_file_input" style="padding: 14px 18px;">
+                <div class="file-drop-icon" style="width: 32px; height: 32px;">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                </div>
+                <div style="font-size: 14px; font-weight: 600; color: var(--admin-text-main);">
+                  অথবা ডিভাইস থেকে সরাসরি ফাইল নির্বাচন করুন
+                </div>
+                <div id="selectedFileName" style="font-size: 12.5px; font-weight: 600; color: var(--admin-primary); margin-top: 2px; display: none;"></div>
+              </label>
+              <input type="file" name="og_image_file" id="og_image_file_input" accept="image/*" style="display: none;">
+            </div>
+
+            <!-- 3. Direct URL Input -->
+            <div class="admin-form-group" style="margin-bottom: 0;">
+              <label class="admin-form-label" style="font-size: 13.5px;">সার্বজনীন ইমেজের সরাসরি URL / পাথ</label>
+              <input 
+                type="text" 
+                name="og_image" 
+                id="og_image_text_input" 
+                value="<%= (s && s.og_image) ? s.og_image : '' %>" 
+                class="admin-form-input" 
+                placeholder="যেমন: /uploads/og-banner.jpg অথবা https://payasti.com/..."
+                style="font-family: monospace; font-size: 14px;"
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 1.3 Other Search Engines & Analytics Card -->
+      <div class="settings-section-card">
+        <div class="settings-section-head">
+          <div class="settings-section-head-left">
+            <div class="settings-section-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            </div>
+            <div>
+              <h2 class="settings-section-title">অন্যান্য সার্চ ইঞ্জিন ও ভিজিটর অ্যানালিটিক্স</h2>
+              <p class="settings-section-subtitle">গুগল অ্যানালিটিক্স (GA4) এবং বিং ওয়েবমাস্টার কানেকশন</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="admin-form-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+          <div class="admin-form-group">
+            <label class="admin-form-label">গুগল অ্যানালিটিক্স মেজারমেন্ট আইডি (GA4 ID)</label>
+            <input 
+              type="text" 
+              name="google_analytics_id" 
+              value="<%= (s && s.google_analytics_id) ? s.google_analytics_id : '' %>" 
+              class="admin-form-input" 
+              placeholder="উদাহরণ: G-XXXXXXXXXX"
+              style="font-family: monospace;"
+            >
+            <span style="font-size: 12.5px; color: var(--admin-text-muted); display: block; margin-top: 5px;">
+              রিয়েল-টাইম ভিজিটর ট্র্যাকিং ও অ্যানালিটিক্স সক্রিয় করতে গুগল অ্যানালিটিক্স আইডি দিন।
+            </span>
+          </div>
+
+          <div class="admin-form-group">
+            <label class="admin-form-label">বিং ওয়েবমাস্টার ভেরিফিকেশন (Bing / Microsoft)</label>
+            <input 
+              type="text" 
+              name="bing_site_verification" 
+              value="<%= (s && s.bing_site_verification) ? s.bing_site_verification : '' %>" 
+              class="admin-form-input" 
+              placeholder="Bing authentication token"
+              style="font-family: monospace;"
+            >
+            <span style="font-size: 12.5px; color: var(--admin-text-muted); display: block; margin-top: 5px;">
+              মাইক্রোসফট বিং ও ইয়াহু সার্চ ইঞ্জিনে ইনডেক্সিং দ্রুত করতে এই কোড ব্যবহৃত হয়।
+            </span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ========================================== -->
+    <!-- TAB 2: GENERAL SITE INFORMATION           -->
+    <!-- ========================================== -->
+    <div class="settings-tab-panel <%= (currentTab === 'general') ? 'active' : '' %>" id="tab-general">
+      <div class="settings-section-card">
+        <div class="settings-section-head">
+          <div class="settings-section-head-left">
+            <div class="settings-section-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+            </div>
+            <div>
+              <h2 class="settings-section-title">পয়স্তি ম্যাগাজিন সাধারণ সাইট তথ্য</h2>
+              <p class="settings-section-subtitle">হেডার, ফুটার এবং এসইও মেটা ট্যাগে ব্যবহৃত প্রাথমিক ব্র্যান্ড তথ্য</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="admin-form-group">
+          <label class="admin-form-label">ওয়েবসাইট শিরোনাম (Site Title) *</label>
+          <input type="text" name="site_title" value="<%= (s && s.site_title) ? s.site_title : 'পয়স্তি ম্যাগাজিন' %>" class="admin-form-input" required>
+        </div>
+
+        <div class="admin-form-group">
+          <label class="admin-form-label">ট্যাগলাইন (Site Tagline)</label>
+          <input type="text" name="site_tagline" value="<%= (s && s.site_tagline) ? s.site_tagline : 'সাহিত্য স্মারক' %>" class="admin-form-input">
+        </div>
+
+        <div class="admin-form-group">
+          <label class="admin-form-label">ওয়েবসাইট পরিচিতি / মেটা বিবরণ (Description)</label>
+          <textarea name="site_description" class="admin-form-textarea" rows="3"><%= (s && s.site_description) ? s.site_description : '' %></textarea>
+        </div>
+
+        <div class="admin-form-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
+          <div class="admin-form-group">
+            <label class="admin-form-label">অফিসিয়াল ইমেইল</label>
+            <input type="email" name="contact_email" value="<%= (s && s.contact_email) ? s.contact_email : '' %>" class="admin-form-input">
+          </div>
+
+          <div class="admin-form-group">
+            <label class="admin-form-label">যোগাযোগের মোবাইল নম্বর</label>
+            <input type="text" name="contact_phone" value="<%= (s && s.contact_phone) ? s.contact_phone : '' %>" class="admin-form-input">
+          </div>
+        </div>
+
+        <div class="admin-form-group" style="margin-bottom: 0;">
+          <label class="admin-form-label">অফিসিয়াল ফেসবুক পেজ লিংক</label>
+          <input type="url" name="facebook_url" value="<%= (s && s.facebook_url) ? s.facebook_url : '' %>" class="admin-form-input">
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- TAB 3: AUTHOR NOTICE BOARD                -->
+    <!-- ========================================== -->
+    <div class="settings-tab-panel <%= (currentTab === 'notice') ? 'active' : '' %>" id="tab-notice">
+      <div class="settings-section-card">
+        <div class="settings-section-head">
+          <div class="settings-section-head-left">
+            <div class="settings-section-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            </div>
+            <div>
+              <h2 class="settings-section-title">লেখক প্যানেল ঘোষণা ও নোটিশ বোর্ড (Notice Board)</h2>
+              <p class="settings-section-subtitle">সকল নিবন্ধিত লেখকদের ড্যাশবোর্ডের শীর্ষে ব্যানার আকারে প্রদর্শিত হবে</p>
+            </div>
+          </div>
+
+          <label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14.5px; font-weight: 600; color: var(--admin-text-main); background: var(--admin-border-light); padding: 7px 15px; border-radius: 9999px; border: 1px solid var(--admin-border);">
+            <input type="checkbox" name="notice_active" id="notice_active_check" value="1" <%= (n && (n.is_active == 1 || n.is_active === '1' || n.is_active === true)) ? 'checked' : '' %> style="width: 17px; height: 17px; accent-color: var(--admin-primary); cursor: pointer;">
+            <span>বিজ্ঞপ্তিটি সক্রিয় রাখুন</span>
+          </label>
+        </div>
+
+        <div class="admin-form-group">
+          <label class="admin-form-label">বিজ্ঞপ্তির শিরোনাম (Title)</label>
+          <input type="text" name="notice_title" id="notice_title_input" value="<%= (n && n.title) ? n.title : 'বিজ্ঞপ্তি' %>" class="admin-form-input" placeholder="বিজ্ঞপ্তির বিষয় বা শিরোনাম">
+        </div>
+
+        <div class="admin-form-group">
+          <label class="admin-form-label">বিজ্ঞপ্তির মূল বক্তব্য (Content)</label>
+          <textarea name="notice_content" id="notice_content_input" class="admin-form-textarea" rows="4" placeholder="সকল লেখক ও সদস্যদের উদ্দেশ্যে বার্তা লিখুন..."><%= (n && n.content) ? n.content : '' %></textarea>
+          <span style="font-size: 13px; color: var(--admin-text-muted); display: block; margin-top: 5px;">
+            টিপস: কোনো জরুরি ঘোষণা না থাকলে চেকমার্কটি তুলে দিন। কোনো নোটিশ না দিলে লেখক ড্যাশবোর্ডে ফাঁকা বা ডেমো নোটিশ দেখানো হবে না।
+          </span>
+        </div>
+
+        <!-- Live Notice Preview -->
+        <div style="margin-top: 24px; padding-top: 20px; border-top: 1px dashed var(--admin-border);">
+          <div style="font-size: 14px; font-weight: 700; color: var(--admin-text-muted); margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            <span>লেখক ড্যাশবোর্ডে যেমন দেখাবে (Live Preview):</span>
+          </div>
+
+          <div id="noticePreviewBox" style="background: linear-gradient(135deg, rgba(7, 86, 3, 0.04) 0%, rgba(6, 130, 0, 0.02) 100%); border: 1.5px solid rgba(7, 86, 3, 0.2); border-radius: 12px; padding: 16px 20px; display: flex; align-items: flex-start; gap: 14px;">
+            <div style="width: 38px; height: 38px; border-radius: 10px; background: var(--admin-primary-light); color: var(--admin-primary); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            </div>
+            <div>
+              <h4 id="previewNoticeTitle" style="font-size: 16.5px; font-weight: 700; color: var(--admin-primary); margin: 0 0 4px;">
+                <%= (n && n.title) ? n.title : 'বিজ্ঞপ্তি' %>
+              </h4>
+              <p id="previewNoticeContent" style="font-size: 14px; color: var(--admin-text-main); margin: 0; line-height: 1.55;">
+                <%= (n && n.content) ? n.content : 'সকল নির্বাচিত লেখকদের জন্য জরুরি নোটিশ এখানে দেখা যাবে।' %>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sticky Footer Save Button -->
+    <div class="settings-sticky-footer">
+      <div style="font-size: 14px; color: var(--admin-text-muted);">
+        যেকোনো পরিবর্তন কার্যকর করতে <strong>"সংরক্ষণ করুন"</strong> বাটনে চাপুন।
+      </div>
+      <button type="submit" class="btn-settings-save">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        <span>সকল সেটিংস সংরক্ষণ করুন</span>
+      </button>
+    </div>
+  </form>
 </div>
+
+<script>
+  // Tab Switcher
+  const tabBtns = document.querySelectorAll('.settings-tab-btn');
+  const tabPanels = document.querySelectorAll('.settings-tab-panel');
+  const activeTabInput = document.getElementById('active_tab_input');
+
+  tabBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const targetId = btn.getAttribute('data-target');
+      
+      tabBtns.forEach(b => b.classList.remove('active'));
+      tabPanels.forEach(p => p.classList.remove('active'));
+
+      btn.classList.add('active');
+      const targetPanel = document.getElementById(targetId);
+      if (targetPanel) {
+        targetPanel.classList.add('active');
+      }
+
+      // Update hidden input so on submit we stay on same tab
+      const tabKey = targetId.replace('tab-', '');
+      if (activeTabInput) {
+        activeTabInput.value = tabKey;
+      }
+    });
+  });
+
+  // XML Sitemap Copy Helper
+  function copySitemapUrl() {
+    const text = document.getElementById('sitemapUrlText').innerText;
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = document.getElementById('copySitemapBtn');
+      const origHtml = btn.innerHTML;
+      btn.innerHTML = '<span>✓ কপি হয়েছে!</span>';
+      btn.style.color = '#059669';
+      btn.style.borderColor = '#059669';
+      setTimeout(() => {
+        btn.innerHTML = origHtml;
+        btn.style.color = '';
+        btn.style.borderColor = '';
+      }, 2500);
+    }).catch(err => {
+      console.error('Failed to copy sitemap URL:', err);
+    });
+  }
+
+  // Universal OG Image Instant Live Preview
+  const ogFileInput = document.getElementById('og_image_file_input');
+  const ogTextInput = document.getElementById('og_image_text_input');
+  const ogImgPreview = document.getElementById('ogLivePreviewImg');
+  const fileNameDisplay = document.getElementById('selectedFileName');
+
+  if (ogFileInput) {
+    ogFileInput.addEventListener('change', function(e) {
+      const file = e.target.files && e.target.files[0];
+      if (file) {
+        fileNameDisplay.textContent = 'নির্বাচিত ফাইল: ' + file.name;
+        fileNameDisplay.style.display = 'block';
+
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+          if (ogImgPreview) {
+            ogImgPreview.src = evt.target.result;
+          }
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+  }
+
+  if (ogTextInput) {
+    ogTextInput.addEventListener('input', function(e) {
+      const val = e.target.value.trim();
+      if (val && ogImgPreview) {
+        ogImgPreview.src = val;
+      }
+    });
+  }
+
+  // Media Library Modal Trigger for OG Image
+  const btnOpenOgMedia = document.getElementById('btnOpenOgMediaModal');
+  const previewCardArea = document.getElementById('ogPreviewClickCard');
+
+  function openMediaModalForOg() {
+    if (window.PayastiMediaModal && typeof window.PayastiMediaModal.open === 'function') {
+      window.PayastiMediaModal.open({
+        currentUrl: ogTextInput ? ogTextInput.value : '',
+        onSelect: function(file) {
+          if (file && file.url) {
+            if (ogTextInput) ogTextInput.value = file.url;
+            if (ogImgPreview) ogImgPreview.src = file.url;
+            if (fileNameDisplay) {
+              fileNameDisplay.textContent = 'মিডিয়া লাইব্রেরি থেকে নির্বাচিত: ' + file.filename;
+              fileNameDisplay.style.display = 'block';
+            }
+          }
+        }
+      });
+    }
+  }
+
+  if (btnOpenOgMedia) btnOpenOgMedia.addEventListener('click', openMediaModalForOg);
+  if (previewCardArea) {
+    previewCardArea.addEventListener('click', openMediaModalForOg);
+    previewCardArea.addEventListener('mouseenter', () => {
+      const overlay = previewCardArea.querySelector('.og-preview-hover-overlay');
+      if (overlay) overlay.style.opacity = '1';
+    });
+    previewCardArea.addEventListener('mouseleave', () => {
+      const overlay = previewCardArea.querySelector('.og-preview-hover-overlay');
+      if (overlay) overlay.style.opacity = '0';
+    });
+  }
+
+  // Real-time Notice Live Preview
+  const noticeTitleInput = document.getElementById('notice_title_input');
+  const noticeContentInput = document.getElementById('notice_content_input');
+  const previewTitle = document.getElementById('previewNoticeTitle');
+  const previewContent = document.getElementById('previewNoticeContent');
+  const noticeActiveCheck = document.getElementById('notice_active_check');
+  const noticePreviewBox = document.getElementById('noticePreviewBox');
+
+  function updateNoticePreview() {
+    if (previewTitle && noticeTitleInput) {
+      previewTitle.textContent = noticeTitleInput.value.trim() || 'বিজ্ঞপ্তি';
+    }
+    if (previewContent && noticeContentInput) {
+      previewContent.textContent = noticeContentInput.value.trim() || 'সকল নির্বাচিত লেখকদের জন্য জরুরি নোটিশ এখানে দেখা যাবে।';
+    }
+    if (noticePreviewBox && noticeActiveCheck) {
+      noticePreviewBox.style.opacity = noticeActiveCheck.checked ? '1' : '0.4';
+    }
+  }
+
+  if (noticeTitleInput) noticeTitleInput.addEventListener('input', updateNoticePreview);
+  if (noticeContentInput) noticeContentInput.addEventListener('input', updateNoticePreview);
+  if (noticeActiveCheck) noticeActiveCheck.addEventListener('change', updateNoticePreview);
+</script>
 
 <%- include('partials/admin_layout_end') %>

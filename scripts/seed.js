@@ -688,10 +688,10 @@ async function runSeed() {
     INSERT INTO notices (title, content, type, is_active) VALUES (?, ?, ?, ?)
   `);
   insertNotice.run(
-    'পয়স্তি সাহিত্য প্রতিযোগিতার ফলাফল ও পুরস্কার বিতরণী',
-    'সকল নির্বাচিত লেখকদের আগামী ১৫ সেপ্টেম্বর সাহিত্য স্মারক সম্মাননা ও বিশেষ সনদ প্রদান করা হবে।',
+    'পয়স্তি সাহিত্য নোটিশ',
+    '',
     'notice',
-    1
+    0
   );
   insertNotice.run(
     'পয়স্তি প্রকাশন বিশেষ ছাড়',

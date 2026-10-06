@@ -15,7 +15,7 @@
 @font-face {
   font-family: 'payasti_uni';
   src: url('/fonts/8029Payasti_uni.woff2') format('woff2');
-  font-weight: normal;
+  font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
@@ -23,7 +23,31 @@
 @font-face {
   font-family: 'payasti_uni';
   src: url('/fonts/8029Payasti_uni.woff2') format('woff2');
-  font-weight: bold;
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'payasti_uni';
+  src: url('/fonts/8029Payasti_uni.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'payasti_uni';
+  src: url('/fonts/8029Payasti_uni.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'payasti_uni';
+  src: url('/fonts/8029Payasti_uni.woff2') format('woff2');
+  font-weight: 800;
   font-style: normal;
   font-display: swap;
 }
@@ -132,6 +156,21 @@ html.theme-dark {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  font-synthesis: weight;
+  -webkit-font-synthesis: weight;
+}
+
+/* Clean, Beautiful Selection on Brand Green (Zero black border) */
+::selection {
+  background-color: var(--brand-primary, #068200) !important;
+  color: #ffffff !important;
+  text-shadow: none !important;
+}
+
+::-moz-selection {
+  background-color: var(--brand-primary, #068200) !important;
+  color: #ffffff !important;
+  text-shadow: none !important;
 }
 
 html, body {
@@ -139,6 +178,8 @@ html, body {
   font-weight: 500;
   font-feature-settings: "ss01" 1;
   -webkit-font-feature-settings: "ss01" 1;
+  font-synthesis: weight;
+  -webkit-font-synthesis: weight;
   background-color: var(--bg-body);
   color: var(--text-main);
   font-size: 23px;
@@ -146,14 +187,16 @@ html, body {
   -webkit-font-smoothing: subpixel-antialiased;
   -moz-osx-font-smoothing: auto;
   text-rendering: optimizeLegibility;
+  text-shadow: 0 0 0.35px currentColor;
   transition: background-color 0.25s ease, color 0.25s ease;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1, h2, h3, h4, h5, h6, b, strong, th {
   font-family: var(--font-base) !important;
   color: var(--text-heading);
   font-weight: 700;
   line-height: 1.3;
+  text-shadow: 0 0 0.45px currentColor;
 }
 
 a {
@@ -855,7 +898,7 @@ button, input, textarea, select {
 }
 
 .article-author-name {
-  font-size: 24px;
+  font-size: 20px;
   font-weight: 700;
   color: var(--brand-primary);
 }
@@ -872,7 +915,7 @@ button, input, textarea, select {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 17.5px;
+  font-size: 16px;
   font-weight: 600;
   color: var(--brand-primary);
   background: var(--brand-light);
@@ -885,7 +928,7 @@ button, input, textarea, select {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 17.5px;
+  font-size: 16px;
   font-weight: 600;
   color: #b45309;
   background: #fef3c7;
@@ -905,7 +948,7 @@ button, input, textarea, select {
 }
 
 .article-title {
-  font-size: 43px;
+  font-size: 33px;
   font-weight: 700;
   color: var(--text-heading);
   line-height: 1.35;
@@ -976,26 +1019,230 @@ button, input, textarea, select {
   border-radius: var(--radius-md);
 }
 
-/* Article Body Content Typography */
+/* Article Body Content Typography & Headings Hierarchy */
 .article-content-body,
 .single-article-content-body {
-  font-size: 26px;
+  font-size: 21.5px;
   font-weight: 500;
-  line-height: 2.0;
+  line-height: 1.62;
   color: var(--text-main);
+  word-wrap: break-word;
 }
 
-.article-content-body p {
-  margin-bottom: 22px;
+/* Headings inside Article Body */
+.article-content-body h1,
+.single-article-content-body h1 {
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--text-heading);
+  margin-top: 32px;
+  margin-bottom: 16px;
 }
 
-.article-content-body blockquote {
+.article-content-body h2,
+.single-article-content-body h2 {
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--text-heading);
+  margin-top: 28px;
+  margin-bottom: 14px;
+}
+
+.article-content-body h3,
+.single-article-content-body h3 {
+  font-size: 23px;
+  font-weight: 700;
+  line-height: 1.38;
+  color: var(--text-heading);
+  margin-top: 24px;
+  margin-bottom: 12px;
+}
+
+.article-content-body h4,
+.single-article-content-body h4 {
+  font-size: 20.5px;
+  font-weight: 700;
+  line-height: 1.4;
+  color: var(--text-heading);
+  margin-top: 20px;
+  margin-bottom: 10px;
+}
+
+.article-content-body h5,
+.single-article-content-body h5 {
+  font-size: 18.5px;
+  font-weight: 600;
+  line-height: 1.45;
+  color: var(--text-heading);
+  margin-top: 18px;
+  margin-bottom: 8px;
+}
+
+.article-content-body h6,
+.single-article-content-body h6 {
+  font-size: 16.5px;
+  font-weight: 600;
+  line-height: 1.45;
+  color: var(--text-muted);
+  margin-top: 16px;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.article-content-body h1:first-child,
+.article-content-body h2:first-child,
+.article-content-body h3:first-child,
+.article-content-body h4:first-child,
+.article-content-body h5:first-child,
+.article-content-body h6:first-child,
+.single-article-content-body h1:first-child,
+.single-article-content-body h2:first-child,
+.single-article-content-body h3:first-child,
+.single-article-content-body h4:first-child,
+.single-article-content-body h5:first-child,
+.single-article-content-body h6:first-child {
+  margin-top: 0;
+}
+
+.article-content-body p,
+.single-article-content-body p {
+  margin-bottom: 14px;
+}
+
+.article-content-body p:last-child,
+.single-article-content-body p:last-child {
+  margin-bottom: 0;
+}
+
+.article-content-body p:empty,
+.single-article-content-body p:empty {
+  display: none;
+}
+
+.article-content-body a,
+.single-article-content-body a {
+  color: var(--brand-primary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color 0.15s ease;
+}
+
+.article-content-body a:hover,
+.single-article-content-body a:hover {
+  color: var(--brand-primary-hover);
+}
+
+.article-content-body strong,
+.article-content-body b,
+.single-article-content-body strong,
+.single-article-content-body b {
+  font-weight: 700;
+  color: var(--text-heading);
+}
+
+.article-content-body em,
+.article-content-body i,
+.single-article-content-body em,
+.single-article-content-body i {
+  font-style: italic;
+}
+
+.article-content-body blockquote,
+.single-article-content-body blockquote {
   border-left: 4px solid var(--brand-primary);
-  padding: 12px 20px;
+  padding: 14px 22px;
   margin: 24px 0;
   background-color: var(--bg-muted);
   font-style: italic;
   border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  color: var(--text-main);
+}
+
+.article-content-body blockquote p,
+.single-article-content-body blockquote p {
+  margin-bottom: 0;
+}
+
+.article-content-body ul,
+.single-article-content-body ul {
+  list-style-type: disc;
+  padding-left: 28px;
+  margin: 16px 0 20px;
+}
+
+.article-content-body ol,
+.single-article-content-body ol {
+  list-style-type: decimal;
+  padding-left: 28px;
+  margin: 16px 0 20px;
+}
+
+.article-content-body li,
+.single-article-content-body li {
+  margin-bottom: 8px;
+  line-height: 1.55;
+}
+
+.article-content-body hr,
+.single-article-content-body hr {
+  border: none;
+  border-top: 1px solid var(--border-color);
+  margin: 32px 0;
+}
+
+.article-content-body img,
+.single-article-content-body img {
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--radius-md);
+  margin: 20px auto;
+  display: block;
+}
+
+.article-content-body figure,
+.single-article-content-body figure {
+  margin: 24px 0;
+  text-align: center;
+}
+
+.article-content-body figcaption,
+.single-article-content-body figcaption {
+  font-size: 15.5px;
+  color: var(--text-muted);
+  margin-top: 8px;
+  font-style: italic;
+}
+
+.article-content-body table,
+.single-article-content-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 24px 0;
+  font-size: 18px;
+}
+
+.article-content-body th,
+.article-content-body td,
+.single-article-content-body th,
+.single-article-content-body td {
+  padding: 10px 14px;
+  border: 1px solid var(--border-color);
+  text-align: left;
+}
+
+.article-content-body th,
+.single-article-content-body th {
+  background-color: var(--bg-muted);
+  font-weight: 700;
+  color: var(--text-heading);
+}
+
+.article-content-body tr:nth-child(even),
+.single-article-content-body tr:nth-child(even) {
+  background-color: var(--bg-muted);
 }
 
 /* Article Reader Rating Widget */
@@ -1391,43 +1638,140 @@ button, input, textarea, select {
 
 .sidebar-author-profile {
   display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sidebar-author-header {
+  display: flex;
   align-items: center;
   gap: 14px;
+  width: 100%;
 }
 
-.sidebar-author-avatar-img,
-.sidebar-author-avatar-placeholder {
-  width: 70px;
-  height: 70px;
-  border-radius: var(--radius-full);
+.sidebar-author-avatar-wrap {
+  width: 64px;
+  height: 64px;
+  min-width: 64px;
+  max-width: 64px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  display: block;
+  background: var(--bg-muted);
+  border: 2.5px solid var(--brand-primary);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.sidebar-author-avatar-wrap:hover {
+  transform: scale(1.04);
+}
+
+.sidebar-author-avatar-wrap img,
+.sidebar-author-avatar-wrap .author-profile-avatar-img,
+.sidebar-author-avatar-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
   object-fit: cover;
+  display: block;
 }
 
+.sidebar-author-avatar-wrap .author-profile-avatar-placeholder,
 .sidebar-author-avatar-placeholder {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   background-color: rgba(6, 130, 0, 0.12);
   color: var(--brand-primary);
-  font-size: 28px;
+  font-size: 24px;
   font-weight: 700;
+}
+
+.sidebar-author-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  flex: 1;
 }
 
 .sidebar-author-name-link {
   font-size: 22px;
   font-weight: 700;
   color: var(--text-heading);
+  line-height: 1.3;
+  text-decoration: none;
+  transition: color 0.15s ease;
+  word-break: break-word;
 }
 
 .sidebar-author-name-link:hover {
   color: var(--brand-primary);
 }
 
-.sidebar-author-bio-text {
-  font-size: 15px;
+.sidebar-author-badge-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.sidebar-author-role-pill {
+  display: inline-flex;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 600;
   color: var(--text-muted);
-  margin-top: 4px;
-  line-height: 1.5;
+  background: var(--bg-muted);
+  padding: 2px 9px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-color);
+  line-height: 1.4;
+}
+
+.sidebar-author-bio-text {
+  font-size: 18.5px;
+  font-weight: 500;
+  color: var(--text-main);
+  opacity: 0.92;
+  line-height: 1.75;
+  margin-top: 6px;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: break-word;
+}
+
+.sidebar-author-view-profile {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 16.5px;
+  font-weight: 700;
+  color: var(--brand-primary);
+  text-decoration: none;
+  margin-top: 6px;
+  transition: gap 0.2s ease, color 0.15s ease;
+}
+
+.sidebar-author-view-profile:hover {
+  color: var(--brand-dark);
+  gap: 9px;
+}
+
+.sidebar-author-view-profile svg {
+  transition: transform 0.2s ease;
+}
+
+.sidebar-author-view-profile:hover svg {
+  transform: translateX(3px);
 }
 
 .sidebar-divider {
@@ -1815,8 +2159,14 @@ button, input, textarea, select {
 }
 
 .footer-logo-img {
-  max-width: 140px;
-  margin-bottom: 14px;
+  max-width: 200px;
+  margin-bottom: 18px;
+  filter: brightness(0);
+  transition: filter 0.25s ease;
+}
+
+.theme-dark .footer-logo-img {
+  filter: none;
 }
 
 .footer-about-text {
@@ -2014,25 +2364,36 @@ button, input, textarea, select {
 }
 
 .author-card-avatar-wrap {
+  width: 68px;
+  height: 68px;
+  min-width: 68px;
+  max-width: 68px;
+  border-radius: 50%;
+  overflow: hidden;
   flex-shrink: 0;
   display: block;
+  background: var(--bg-muted);
+  border: 2.5px solid var(--brand-primary);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
+.author-card-avatar-wrap img,
+.author-card-avatar-wrap .author-profile-avatar-img,
 .author-card-avatar-img {
-  width: 68px;
-  height: 68px;
+  width: 100% !important;
+  height: 100% !important;
   border-radius: 50%;
   object-fit: cover;
-  border: 2px solid var(--brand-primary);
   display: block;
 }
 
+.author-card-avatar-wrap .author-profile-avatar-placeholder,
 .author-card-avatar-placeholder {
-  width: 68px;
-  height: 68px;
+  width: 100% !important;
+  height: 100% !important;
   border-radius: 50%;
   background: var(--bg-muted);
-  border: 2px solid var(--border-color);
+  border: none;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2163,10 +2524,167 @@ button, input, textarea, select {
 }
 
 .author-profile-count {
-  margin-top: 10px;
   font-size: 18px;
   color: var(--brand-primary);
   font-weight: 700;
+}
+
+.author-badge-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.4;
+  vertical-align: middle;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.author-badge-tag.badge-viral {
+  background: #ffffff;
+  color: #b45309;
+  border: 1px solid #fde68a;
+  box-shadow: 0 1px 4px rgba(180, 83, 9, 0.12);
+}
+
+.author-badge-tag.badge-popular {
+  background: #ffffff;
+  color: #6d28d9;
+  border: 1px solid #ddd6fe;
+  box-shadow: 0 1px 4px rgba(109, 40, 217, 0.12);
+}
+
+.author-badge-tag.badge-master {
+  background: #ffffff;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+}
+
+.author-badge-tag.badge-rising {
+  background: #ffffff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+}
+
+[data-theme="dark"] .author-badge-tag {
+  background: #1e293b;
+  border-color: #334155;
+  box-shadow: none;
+}
+
+[data-theme="dark"] .author-badge-tag.badge-viral {
+  background: #1e293b;
+  color: #fbbf24;
+  border-color: rgba(251, 191, 36, 0.35);
+}
+
+[data-theme="dark"] .author-badge-tag.badge-popular {
+  background: #1e293b;
+  color: #c084fc;
+  border-color: rgba(192, 132, 252, 0.35);
+}
+
+[data-theme="dark"] .author-badge-tag.badge-master {
+  background: #1e293b;
+  color: #34d399;
+  border-color: rgba(52, 211, 153, 0.35);
+}
+
+[data-theme="dark"] .author-badge-tag.badge-rising {
+  background: #1e293b;
+  color: #60a5fa;
+  border-color: rgba(96, 165, 250, 0.35);
+}
+
+[data-theme="sepia"] .author-badge-tag {
+  background: #fbf7ee;
+  border-color: #e4d8c5;
+}
+
+[data-theme="sepia"] .author-badge-tag.badge-viral {
+  background: #fbf7ee;
+  color: #92400e;
+  border-color: #fcd34d;
+}
+
+[data-theme="sepia"] .author-badge-tag.badge-popular {
+  background: #fbf7ee;
+  color: #5b21b6;
+  border-color: #c4b5fd;
+}
+
+/* ==========================================================================
+   UNIQUE AUTHOR AVATAR FLOATING BADGES (WHITE BACKGROUND)
+   ========================================================================== */
+.avatar-badge-wrap {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+.avatar-floating-badge {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 1.5px solid #cbd5e1;
+  z-index: 5;
+  line-height: 1;
+  user-select: none;
+  cursor: default;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.avatar-floating-badge:hover {
+  transform: scale(1.2);
+}
+
+.avatar-floating-badge.badge-viral,
+.avatar-floating-badge.badge-popular,
+.avatar-floating-badge.badge-master {
+  background: #ffffff;
+}
+
+/* Size Variants */
+.badge-size-lg {
+  width: 32px;
+  height: 32px;
+  font-size: 17px;
+  bottom: -4px;
+  right: -4px;
+}
+
+.badge-size-md {
+  width: 26px;
+  height: 26px;
+  font-size: 13px;
+  bottom: -4px;
+  right: -4px;
+}
+
+.badge-size-sm {
+  width: 20px;
+  height: 20px;
+  font-size: 11px;
+  bottom: -3px;
+  right: -3px;
+}
+
+[data-theme="dark"] .avatar-floating-badge {
+  background: #1e293b;
+  border-color: #475569;
+}
+
+[data-theme="sepia"] .avatar-floating-badge {
+  background: #fbf7ee;
+  border-color: #d6c7b2;
 }
 
 /* 16. Responsive Media Queries */
@@ -2189,23 +2707,106 @@ button, input, textarea, select {
     top: 70px;
     left: 0;
     right: 0;
+    bottom: 0;
+    height: calc(100vh - 70px);
+    height: calc(100dvh - 70px);
+    max-height: calc(100dvh - 70px);
     background-color: var(--bg-surface);
     border-bottom: 1px solid var(--border-color);
     flex-direction: column;
-    align-items: flex-start;
-    padding: 20px;
-    gap: 12px;
+    align-items: stretch;
+    padding: 16px 20px 48px;
+    gap: 6px;
     display: none;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-    z-index: 999;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+    z-index: 1050;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+    touch-action: pan-y;
   }
   
-  .main-nav-menu.active {
+  .main-nav-menu.active,
+  .main-nav-menu.mobile-open {
+    display: flex !important;
+  }
+
+  .nav-item-dropdown {
+    width: 100%;
+    position: static;
+  }
+
+  .nav-item-dropdown .dropdown-toggle {
     display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    cursor: pointer;
+  }
+
+  .nav-item-dropdown .nav-dropdown-menu {
+    position: static;
+    box-shadow: none;
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-muted);
+    border-radius: var(--radius-md);
+    margin-top: 4px;
+    margin-bottom: 8px;
+    padding: 6px 0;
+    width: 100%;
+    display: none;
+    animation: none;
+  }
+
+  .nav-item-dropdown.open .nav-dropdown-menu {
+    display: block;
+  }
+
+  .nav-item-dropdown.open .dropdown-chevron {
+    transform: rotate(180deg);
+  }
+
+  .nav-menu-item {
+    width: 100%;
+    padding: 11px 14px;
+    font-size: 21px;
+    border-radius: var(--radius-md);
+  }
+
+  .dropdown-item {
+    padding: 9px 18px;
+    font-size: 19.5px;
+  }
+
+  .btn-author-panel {
+    width: 100%;
+    margin: 12px 0 10px 0;
+    justify-content: center;
+    padding: 12px 16px;
+    font-size: 19.5px;
+    border-radius: var(--radius-md);
   }
   
   .mobile-nav-toggle {
     display: flex;
+    position: relative;
+    z-index: 1060;
+  }
+
+  .mobile-nav-toggle.active span:nth-child(1) {
+    transform: translateY(8.5px) rotate(45deg);
+  }
+  .mobile-nav-toggle.active span:nth-child(2) {
+    opacity: 0;
+    transform: scaleX(0);
+  }
+  .mobile-nav-toggle.active span:nth-child(3) {
+    transform: translateY(-8.5px) rotate(-45deg);
+  }
+
+  body.mobile-nav-locked {
+    overflow: hidden !important;
+    touch-action: none;
   }
   
   .article-layout-grid {
@@ -2248,7 +2849,7 @@ button, input, textarea, select {
   }
   
   .article-title {
-    font-size: 35px;
+    font-size: 27px;
   }
   
   .article-main {
@@ -2285,3 +2886,698 @@ button, input, textarea, select {
     text-align: center;
   }
 }
+
+/* ==========================================================================
+   POETRY FOUNDATION FEATURES: POEM OF THE DAY, THEME EXPLORER, SURPRISE ME
+   ========================================================================== */
+
+/* 1. Header Surprise Me Button */
+.header-random-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  background: rgba(6, 130, 0, 0.08);
+  border: 1px solid rgba(6, 130, 0, 0.2);
+  border-radius: 20px;
+  color: var(--brand-primary);
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  line-height: 1;
+}
+.header-random-btn:hover {
+  background: var(--brand-primary);
+  color: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(6, 130, 0, 0.2);
+}
+.header-random-icon {
+  font-size: 16px;
+}
+
+/* 2. POEM OF THE DAY FRONT PAGE SHOWCASE */
+.section-daily-poem {
+  background-color: var(--bg-body);
+}
+
+.daily-poem-showcase-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 28px;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  padding: 22px 28px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.25s ease;
+}
+
+.daily-poem-showcase-card:hover {
+  box-shadow: var(--shadow-hover);
+}
+
+.daily-poem-showcase-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.daily-poem-top-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px dashed var(--border-color);
+}
+
+.daily-poem-pill-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background-color: rgba(6, 130, 0, 0.09);
+  color: var(--brand-primary);
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 13.5px;
+  font-weight: 700;
+}
+
+.daily-poem-author-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.daily-poem-header-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.daily-poem-author-name-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.daily-poem-author-name {
+  font-size: 18.5px;
+  font-weight: 700;
+  color: var(--text-heading);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.daily-poem-author-name:hover {
+  color: var(--brand-primary);
+}
+
+.daily-poem-meta-bullet {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.daily-poem-category-badge {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--brand-dark);
+}
+
+.daily-poem-date-tag {
+  font-size: 14.5px;
+  color: var(--text-muted);
+}
+
+.daily-poem-showcase-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-heading);
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+
+.daily-poem-showcase-title a {
+  color: inherit;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.daily-poem-showcase-title a:hover {
+  color: var(--brand-primary);
+}
+
+.daily-poem-showcase-stanza {
+  font-size: 20px;
+  line-height: 1.8;
+  color: var(--text-main);
+  font-style: italic;
+  padding-left: 14px;
+  border-left: 3px solid var(--brand-primary);
+  margin-top: 6px;
+}
+
+.daily-poem-showcase-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+  flex-shrink: 0;
+  min-width: 170px;
+}
+
+.daily-poem-primary-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 20px;
+  background-color: var(--brand-primary);
+  color: #ffffff;
+  border-radius: var(--radius-sm);
+  font-size: 16px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.daily-poem-primary-btn:hover {
+  background-color: var(--brand-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(6, 130, 0, 0.25);
+}
+
+.daily-poem-secondary-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.daily-poem-secondary-btn:hover {
+  background-color: var(--border-color);
+  color: var(--text-heading);
+}
+
+@media (max-width: 768px) {
+  .daily-poem-showcase-card {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 18px 16px;
+  }
+  .daily-poem-showcase-actions {
+    flex-direction: row;
+    margin-top: 14px;
+  }
+  .daily-poem-primary-btn {
+    flex: 1;
+  }
+}
+
+/* 3. OPTION 1: 4-COLUMN GRID INTEGRATED DAILY POEM CARD */
+.post-card--daily-poem {
+  border: 1.5px solid rgba(6, 130, 0, 0.35) !important;
+  background: #ffffff !important;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+.daily-poem-card-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 14px;
+  background: rgba(6, 130, 0, 0.07);
+  border-bottom: 1px solid rgba(6, 130, 0, 0.15);
+}
+.daily-poem-topbar-pill {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--brand-primary);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.daily-poem-topbar-date {
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 500;
+}
+.daily-poem-grid-stanza {
+  font-style: italic;
+  line-height: 1.7;
+  color: #334155;
+  border-left: 2px solid rgba(6, 130, 0, 0.3);
+  padding-left: 8px;
+  margin-top: 6px;
+}
+.daily-poem-grid-link {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--brand-primary);
+  text-decoration: none;
+}
+.daily-poem-grid-link:hover {
+  text-decoration: underline;
+}
+
+/* Sepia & Dark Theme Adaptations for Option 1 & 2 */
+[data-theme="sepia"] .daily-poem-strip,
+.theme-sepia .daily-poem-strip,
+[data-theme="sepia"] .post-card--daily-poem,
+.theme-sepia .post-card--daily-poem {
+  background: #fbf7ee !important;
+  border-color: #e5dec9 !important;
+}
+[data-theme="sepia"] .daily-poem-strip-title,
+.theme-sepia .daily-poem-strip-title {
+  color: #433422;
+}
+[data-theme="sepia"] .daily-poem-card-topbar,
+.theme-sepia .daily-poem-card-topbar {
+  background: rgba(180, 130, 60, 0.1);
+  border-color: #e5dec9;
+}
+
+[data-theme="dark"] .daily-poem-strip,
+.theme-dark .daily-poem-strip,
+[data-theme="dark"] .post-card--daily-poem,
+.theme-dark .post-card--daily-poem {
+  background: #1e293b !important;
+  border-color: #334155 !important;
+}
+[data-theme="dark"] .daily-poem-strip-title,
+.theme-dark .daily-poem-strip-title {
+  color: #f8fafc;
+}
+[data-theme="dark"] .daily-poem-strip-author,
+.theme-dark .daily-poem-strip-author {
+  color: #cbd5e1;
+}
+[data-theme="dark"] .daily-poem-card-topbar,
+.theme-dark .daily-poem-card-topbar {
+  background: rgba(6, 130, 0, 0.15);
+  border-color: #334155;
+}
+[data-theme="dark"] .daily-poem-grid-stanza,
+.theme-dark .daily-poem-grid-stanza {
+  color: #cbd5e1;
+}
+  font-weight: 700;
+  color: #0f172a;
+  text-decoration: none;
+}
+.daily-poem-author-name:hover {
+  color: var(--brand-primary);
+}
+.daily-poem-cat-tag {
+  font-size: 13px;
+  color: #64748b;
+}
+.daily-poem-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding-top: 18px;
+  border-top: 1px solid #f1f5f9;
+}
+.daily-poem-read-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 20px;
+  background: var(--brand-primary);
+  color: #ffffff;
+  border-radius: 24px;
+  font-size: 16px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+.daily-poem-read-btn:hover {
+  background: #046300;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(6, 130, 0, 0.25);
+}
+.daily-poem-random-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  color: #475569;
+  border-radius: 20px;
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+.daily-poem-random-btn:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+/* 3. Theme Explorer Pills & Bar */
+.theme-explorer-section {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 22px 26px;
+  margin: 10px 0 20px 0;
+}
+.theme-explorer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+.theme-explorer-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.theme-explorer-icon {
+  font-size: 20px;
+}
+.theme-explorer-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+}
+.theme-explorer-all-link {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--brand-primary);
+  text-decoration: none;
+}
+.theme-explorer-all-link:hover {
+  text-decoration: underline;
+}
+.theme-pills-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.theme-pill-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 16px;
+  background: var(--pill-bg, rgba(6, 130, 0, 0.08));
+  border: 1.5px solid var(--pill-border, rgba(6, 130, 0, 0.25));
+  border-radius: 24px;
+  color: #1e293b;
+  font-size: 16px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.theme-pill-item:hover {
+  transform: translateY(-2px);
+  background: var(--pill-color, var(--brand-primary));
+  color: #ffffff;
+  border-color: var(--pill-color, var(--brand-primary));
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+.theme-pill-item.is-active {
+  background: var(--pill-color, var(--brand-primary));
+  color: #ffffff;
+  border-color: var(--pill-color, var(--brand-primary));
+}
+.theme-pill-icon {
+  font-size: 16px;
+}
+
+/* 4. Themes Directory Page Layout */
+.themes-directory-hero {
+  text-align: center;
+  max-width: 750px;
+  margin: 0 auto 40px auto;
+}
+.themes-hero-badge {
+  display: inline-block;
+  background: rgba(6, 130, 0, 0.1);
+  color: var(--brand-primary);
+  padding: 4px 14px;
+  border-radius: 20px;
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+.themes-hero-title {
+  font-size: 34px;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 12px;
+}
+.themes-hero-desc {
+  font-size: 20px;
+  color: #475569;
+  line-height: 1.7;
+}
+.themes-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+.theme-featured-card {
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  border: 1.5px solid var(--theme-border, #e2e8f0);
+  border-radius: 12px;
+  padding: 26px;
+  text-decoration: none;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+  overflow: hidden;
+}
+.theme-featured-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+  border-color: var(--theme-accent, var(--brand-primary));
+}
+.theme-card-icon-wrap {
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  background: var(--theme-bg, rgba(6, 130, 0, 0.1));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  margin-bottom: 16px;
+}
+.theme-card-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 6px;
+}
+.theme-card-tagline {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--theme-accent, var(--brand-primary));
+  margin-bottom: 10px;
+}
+.theme-card-desc {
+  font-size: 16.5px;
+  color: #64748b;
+  line-height: 1.6;
+  margin-bottom: 18px;
+  flex: 1;
+}
+.theme-card-arrow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--theme-accent, var(--brand-primary));
+}
+
+/* 5. Theme Archive Page Banner */
+.theme-page-banner {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  background: var(--theme-bg, #ffffff);
+  border: 1.5px solid var(--theme-border, #e2e8f0);
+  border-radius: 14px;
+  padding: 30px 36px;
+  margin-bottom: 30px;
+}
+.theme-banner-icon-wrap {
+  width: 76px;
+  height: 76px;
+  border-radius: 18px;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 38px;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+.theme-banner-category-tag {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--theme-accent, var(--brand-primary));
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+.theme-banner-title {
+  font-size: 32px;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 8px;
+}
+.theme-banner-desc {
+  font-size: 19px;
+  color: #475569;
+  line-height: 1.6;
+  margin-bottom: 12px;
+}
+.theme-banner-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 16px;
+  color: #64748b;
+}
+.theme-banner-back-link {
+  color: var(--theme-accent, var(--brand-primary));
+  font-weight: 600;
+  text-decoration: none;
+}
+.theme-banner-back-link:hover {
+  text-decoration: underline;
+}
+
+/* 6. Sepia & Dark Theme Adaptations */
+[data-theme="sepia"] .daily-poem-card,
+.theme-sepia .daily-poem-card,
+[data-theme="sepia"] .theme-explorer-section,
+.theme-sepia .theme-explorer-section,
+[data-theme="sepia"] .theme-featured-card,
+.theme-sepia .theme-featured-card {
+  background: #fbf7ee;
+  border-color: #e5dec9;
+}
+[data-theme="sepia"] .daily-poem-title a,
+.theme-sepia .daily-poem-title a,
+[data-theme="sepia"] .theme-explorer-title,
+.theme-sepia .theme-explorer-title,
+[data-theme="sepia"] .theme-card-title,
+.theme-sepia .theme-card-title,
+[data-theme="sepia"] .theme-banner-title,
+.theme-sepia .theme-banner-title {
+  color: #433422;
+}
+[data-theme="sepia"] .daily-poem-stanza,
+.theme-sepia .daily-poem-stanza {
+  color: #5c4730;
+}
+[data-theme="sepia"] .theme-pill-item,
+.theme-sepia .theme-pill-item {
+  color: #433422;
+}
+
+[data-theme="dark"] .daily-poem-card,
+.theme-dark .daily-poem-card,
+[data-theme="dark"] .theme-explorer-section,
+.theme-dark .theme-explorer-section,
+[data-theme="dark"] .theme-featured-card,
+.theme-dark .theme-featured-card {
+  background: #1e293b;
+  border-color: #334155;
+}
+[data-theme="dark"] .daily-poem-title a,
+.theme-dark .daily-poem-title a,
+[data-theme="dark"] .theme-explorer-title,
+.theme-dark .theme-explorer-title,
+[data-theme="dark"] .theme-card-title,
+.theme-dark .theme-card-title,
+[data-theme="dark"] .theme-banner-title,
+.theme-dark .theme-banner-title {
+  color: #f8fafc;
+}
+[data-theme="dark"] .daily-poem-stanza,
+.theme-dark .daily-poem-stanza {
+  color: #cbd5e1;
+}
+[data-theme="dark"] .theme-pill-item,
+.theme-dark .theme-pill-item {
+  color: #f1f5f9;
+}
+[data-theme="dark"] .daily-poem-header,
+.theme-dark .daily-poem-header {
+  border-color: #334155;
+}
+[data-theme="dark"] .daily-poem-footer,
+.theme-dark .daily-poem-footer {
+  border-color: #334155;
+}
+[data-theme="dark"] .daily-poem-random-btn,
+.theme-dark .daily-poem-random-btn {
+  background: #334155;
+  border-color: #475569;
+  color: #e2e8f0;
+}
+[data-theme="dark"] .theme-banner-icon-wrap,
+.theme-dark .theme-banner-icon-wrap {
+  background: #1e293b;
+}
+
+/* Responsive queries */
+@media (max-width: 992px) {
+  .themes-cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 768px) {
+  .daily-poem-card {
+    padding: 20px 18px;
+  }
+  .daily-poem-title {
+    font-size: 22px;
+  }
+  .daily-poem-stanza {
+    font-size: 18px;
+  }
+  .themes-cards-grid {
+    grid-template-columns: 1fr;
+  }
+  .theme-page-banner {
+    flex-direction: column;
+    text-align: center;
+    padding: 24px 18px;
+  }
+  .theme-banner-meta {
+    justify-content: center;
+  }
+  .header-random-text {
+    display: none;
+  }
+}
+

@@ -188,6 +188,16 @@ async function initDatabase() {
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
       `);
 
+      await connection.query(`
+        CREATE TABLE IF NOT EXISTS daily_views (
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          view_date DATE NOT NULL UNIQUE,
+          views INT DEFAULT 0,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          INDEX idx_daily_views_date (view_date)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+      `);
+
       // Ensure rating columns exist on posts table
       try {
         const [postCols] = await connection.query(`
@@ -226,6 +236,17 @@ async function initDatabase() {
         console.warn('⚠️ Column check on users table warning:', colErr.message);
       }
 
+      // Deactivate outdated demo/seed notices on startup
+      try {
+        await connection.query(`
+          UPDATE notices 
+          SET is_active = 0, content = '' 
+          WHERE type = 'notice' AND (content LIKE '%১৫ সেপ্টেম্বর%' OR title LIKE '%সাহিত্য প্রতিযোগিতার ফলাফল%')
+        `);
+      } catch (e) {
+        // Silently continue if table doesn't have rows
+      }
+
       isInitialized = true;
       console.log('✅ MySQL schema initialized successfully.');
     } finally {
@@ -237,12 +258,13 @@ async function initDatabase() {
 }
 
 // Auto initialize on first import
-initDatabase();
+const initPromise = initDatabase();
 
 // Clean async helper functions matching SQLite ergonomics
 const db = {
   pool,
   initDatabase,
+  ensureInitialized: () => initPromise,
 
   query: async (sql, params = []) => {
     const [results] = await pool.query(sql, params);

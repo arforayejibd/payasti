@@ -13,12 +13,29 @@
   <!-- Google Fonts & Custom Font -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preload" href="/fonts/8029Payasti_uni.woff2" as="font" type="font/woff2" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
   
   <style>
     @font-face {
       font-family: 'payasti_uni';
       src: url('/fonts/8029Payasti_uni.woff2') format('woff2');
+      font-weight: 100 900;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'payasti_uni';
+      src: url('/fonts/8029Payasti_uni.woff2') format('woff2');
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'payasti_uni';
+      src: url('/fonts/8029Payasti_uni.woff2') format('woff2');
+      font-weight: bold;
+      font-style: normal;
       font-display: swap;
     }
 
@@ -41,6 +58,18 @@
       font-family: var(--font-family);
       font-feature-settings: "ss01" 1;
       -webkit-font-feature-settings: "ss01" 1;
+      font-synthesis: weight;
+      -webkit-font-synthesis: weight;
+      -webkit-font-smoothing: subpixel-antialiased;
+      -moz-osx-font-smoothing: auto;
+      text-rendering: optimizeLegibility;
+      text-shadow: 0 0 0.35px currentColor;
+    }
+
+    ::selection {
+      background-color: var(--primary, #075603) !important;
+      color: #ffffff !important;
+      text-shadow: none !important;
     }
 
     body {
@@ -55,6 +84,7 @@
       position: relative;
       overflow-x: hidden;
       font-size: 18px;
+      font-weight: 500;
     }
 
     /* Ambient literary background accents */

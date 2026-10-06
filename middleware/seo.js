@@ -1,4 +1,5 @@
 const { SITE_NAME, TAGLINE, SITE_SUBTITLE, SITE_URL, DEFAULT_DESCRIPTION, OG_IMAGE } = require('../config/constants');
+const { getCachedSettings } = require('../helpers/settingsHelper');
 
 function generateSeoMeta(options = {}) {
   const {
@@ -12,8 +13,11 @@ function generateSeoMeta(options = {}) {
     modifiedTime,
     keywords = [],
     schema = null,
-    exactTitle = null
+    exactTitle = null,
+    googleSiteVerification = null
   } = options;
+
+  const settings = getCachedSettings();
 
   const pageTitle = exactTitle || (title 
     ? `${title} | ${SITE_NAME} - ${TAGLINE}` 
@@ -26,13 +30,27 @@ function generateSeoMeta(options = {}) {
     .substring(0, 160);
 
   const canonicalUrl = url ? `${SITE_URL}${url}` : `${SITE_URL}/`;
-  const ogImage = image || OG_IMAGE;
+
+  // Universal OG Image: Admin configured global OG image overrides/provides for every page and article
+  const globalOgImage = (settings.og_image && settings.og_image.trim()) ? settings.og_image.trim() : null;
+  let rawOgImage = globalOgImage || image || OG_IMAGE;
+  let ogImage = rawOgImage;
+  if (ogImage && !ogImage.startsWith('http://') && !ogImage.startsWith('https://')) {
+    ogImage = `${SITE_URL}${ogImage.startsWith('/') ? '' : '/'}${ogImage}`;
+  }
+
+  const gVerification = googleSiteVerification || settings.google_site_verification || null;
+  const bingVerification = settings.bing_site_verification || null;
+  const gaId = settings.google_analytics_id || null;
 
   return {
     title: pageTitle,
     description: metaDesc,
     keywords: keywords,
     canonical: canonicalUrl,
+    googleSiteVerification: gVerification,
+    bingSiteVerification: bingVerification,
+    googleAnalyticsId: gaId,
     og: {
       title: pageTitle,
       description: metaDesc,
@@ -59,6 +77,13 @@ function generateSeoMeta(options = {}) {
 
 // Generate Google Structured Data (JSON-LD)
 function getArticleSchema(post, author, category) {
+  const settings = getCachedSettings();
+  const globalOgImage = (settings.og_image && settings.og_image.trim()) ? settings.og_image.trim() : null;
+  let resolvedArticleImage = globalOgImage || post.featured_image || `${SITE_URL}/images/payasti-og-banner.png`;
+  if (resolvedArticleImage && !resolvedArticleImage.startsWith('http://') && !resolvedArticleImage.startsWith('https://')) {
+    resolvedArticleImage = `${SITE_URL}${resolvedArticleImage.startsWith('/') ? '' : '/'}${resolvedArticleImage}`;
+  }
+
   const schema = {
     '@context': 'https://schema.org',
     '@type': 'BlogPosting',
@@ -68,7 +93,7 @@ function getArticleSchema(post, author, category) {
     },
     'headline': post.title,
     'description': post.excerpt || post.title,
-    'image': post.featured_image ? [post.featured_image] : [`${SITE_URL}/images/payasti-og-banner.png`],
+    'image': [resolvedArticleImage],
     'datePublished': post.published_at || post.created_at,
     'dateModified': post.updated_at || post.published_at || post.created_at,
     'inLanguage': 'bn-BD',

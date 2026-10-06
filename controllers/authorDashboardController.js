@@ -3,7 +3,7 @@ const slugify = require('slugify');
 const bcrypt = require('bcryptjs');
 const db = require('../config/database');
 const { generateSeoMeta } = require('../middleware/seo');
-const { toBengaliNumber, formatBengaliDate, formatDuration, generateCleanExcerpt } = require('../middleware/banglaDate');
+const { toBengaliNumber, formatBengaliDate, formatDuration, generateCleanExcerpt, calculateReadingTime } = require('../middleware/banglaDate');
 const { SITE_NAME, TAGLINE, NAV_MENU, EDITORIAL_BOARD, CONTACT } = require('../config/constants');
 
 // Author Dashboard Overview (/author/dashboard)
@@ -37,16 +37,16 @@ exports.getDashboard = async (req, res) => {
     const pendingCountRow = await db.prepare("SELECT COUNT(*) AS total FROM posts WHERE author_id = ? AND status = 'pending'").get(userId);
     const draftCountRow = await db.prepare("SELECT COUNT(*) AS total FROM posts WHERE author_id = ? AND status = 'draft'").get(userId);
 
-    const approvedCount = approvedCountRow ? approvedCountRow.total : 0;
-    const pendingCount = pendingCountRow ? pendingCountRow.total : 0;
-    const draftCount = draftCountRow ? draftCountRow.total : 0;
+    const approvedCount = Number(approvedCountRow ? approvedCountRow.total : 0);
+    const pendingCount = Number(pendingCountRow ? pendingCountRow.total : 0);
+    const draftCount = Number(draftCountRow ? draftCountRow.total : 0);
 
     // Duration
     const registeredDuration = formatDuration(req.user.registered_at);
 
     // 2. Author Readership Analytics
     const totalViewsRow = await db.prepare("SELECT COALESCE(SUM(views), 0) AS total FROM posts WHERE author_id = ? AND status = 'publish'").get(userId);
-    const totalViews = totalViewsRow ? totalViewsRow.total : 0;
+    const totalViews = Number(totalViewsRow ? totalViewsRow.total : 0);
 
     // Top 5 posts with category information
     const topPosts = await db.prepare(`
@@ -64,7 +64,7 @@ exports.getDashboard = async (req, res) => {
       JOIN posts p ON c.post_id = p.id
       WHERE p.author_id = ? AND (c.status = 'approved' OR c.status IS NULL)
     `).get(userId);
-    const totalComments = totalCommentsRow ? totalCommentsRow.total : 0;
+    const totalComments = Number(totalCommentsRow ? totalCommentsRow.total : 0);
 
     const recentComments = await db.prepare(`
       SELECT c.id, c.author_name, c.content, c.created_at, p.title AS post_title, p.slug AS post_slug
@@ -74,20 +74,59 @@ exports.getDashboard = async (req, res) => {
       ORDER BY c.id DESC LIMIT 3
     `).all(userId);
 
-    // 4. Latest post for editorial status tracking
-    const latestPost = await db.prepare(`
-      SELECT p.id, p.title, p.slug, p.status, p.created_at, p.published_at, c.name AS category_name
+    // 4. Recent posts for author's works stream & editorial status
+    const recentPosts = await db.prepare(`
+      SELECT p.id, p.title, p.slug, p.status, p.created_at, p.published_at, p.views, p.excerpt, p.content, c.name AS category_name
       FROM posts p
       LEFT JOIN categories c ON p.category_id = c.id
       WHERE p.author_id = ?
-      ORDER BY p.id DESC LIMIT 1
-    `).get(userId);
+      ORDER BY p.id DESC LIMIT 6
+    `).all(userId);
 
-    // 5. Notices & Ads
-    const notices = await db.prepare("SELECT * FROM notices WHERE type = 'notice' AND is_active = 1 ORDER BY id DESC LIMIT 1").all();
+    const latestPost = recentPosts[0] || null;
+
+    // 5. Category Breakdown & Reader Stats
+    const categoryStats = await db.prepare(`
+      SELECT c.name AS category_name, COUNT(p.id) AS post_count, COALESCE(SUM(p.views), 0) AS total_views
+      FROM posts p
+      LEFT JOIN categories c ON p.category_id = c.id
+      WHERE p.author_id = ? AND p.status = 'publish'
+      GROUP BY p.category_id, c.name
+      ORDER BY post_count DESC LIMIT 6
+    `).all(userId);
+
+    // 6. Author Milestones & Badges
+    const badges = [
+      { id: 'first_post', title: 'নবীন কলম', desc: '১ম সাহিত্য প্রকাশ', icon: '✍️', unlocked: approvedCount >= 1, color: '#10b981', current: approvedCount, target: 1 },
+      { id: 'rising_writer', title: 'শব্দসাধক', desc: '৫টি সাহিত্য প্রকাশ', icon: '📜', unlocked: approvedCount >= 5, color: '#3b82f6', current: approvedCount, target: 5 },
+      { id: 'master_writer', title: 'সিদ্ধহস্ত লেখক', desc: '১৫টি সাহিত্য প্রকাশ', icon: '🏆', unlocked: approvedCount >= 15, color: '#f59e0b', current: approvedCount, target: 15 },
+      { id: 'reader_favorite', title: 'পাঠকপ্রিয়', desc: '১,০০০+ পাঠক', icon: '🌟', unlocked: totalViews >= 1000, color: '#8b5cf6', current: totalViews, target: 1000 },
+      { id: 'viral_author', title: 'জনপ্রিয় সাহিত্যিক', desc: '১০,০০০+ পাঠক', icon: '👑', unlocked: totalViews >= 10000, color: '#ec4899', current: totalViews, target: 10000 },
+      { id: 'engaging_author', title: 'আড্ডার মধ্যমণি', desc: '৫+ পাঠক মন্তব্য', icon: '💬', unlocked: totalComments >= 5, color: '#06b6d4', current: totalComments, target: 5 }
+    ];
+
+    // Find next milestone to unlock
+    const nextMilestone = badges.find(b => !b.unlocked) || null;
+
+    // 7. Daily Curated Literary Quote
+    const LITERARY_QUOTES = [
+      { quote: "চিত্ত যেথা ভয়শূন্য, উচ্চ যেথা শির, জ্ঞান যেথা মুক্ত, যেথা গৃহের প্রাচীর আপন প্রাঙ্গণতলে দিবসশর্বরী বসুধারে রাখে নাই খণ্ড ক্ষুদ্র করি...", author: "রবীন্দ্রনাথ ঠাকুর" },
+      { quote: "গাহি সাম্যের গান— যেখানে আসিয়া এক হয়ে গেছে সব বাধা-নিষেধ, যেখানে মিশেছে নিখিল মানব প্রাণ।", author: "কাজী নজরুল ইসলাম" },
+      { quote: "সুরঞ্জনা, ওইখানে যেয়ো নাকো তুমি, বোলো নাকো কথা ওই যুবকের সাথে; ফিরে এসো সুরঞ্জনা...", author: "জীবনানন্দ দাশ" },
+      { quote: "মানুষ মূলত একা। একাকীত্বের হাত থেকে বাঁচার জন্যই সে শব্দ আর সাহিত্যের আশ্রয় নেয়।", author: "হুমায়ূন আহমেদ" },
+      { quote: "স্মৃতির শহরে মেঘ জমলে শব্দেরা কবিতা হয়ে মনের অলিন্দে ঝরে পড়ে...", author: "সুনীল গঙ্গোপাধ্যায়" },
+      { quote: "তোমাকে পাওয়ার জন্যে, হে স্বাধীনতা, তোমাকে পাওয়ার জন্যে আর কতবার ভাসতে হবে রক্তগঙ্গায়?", author: "শামসুর রাহমান" },
+      { quote: "হাড়ের ভিতর কাঁপে নিঃশব্দ সুর, কলমের ডগায় জেগে ওঠে নতুন ভোর।", author: "সৈয়দ শামসুল হক" },
+      { quote: "এ বিশ্বকে এ শিশুর বাসযোগ্য ক’রে যাব আমি— নবজাতকের কাছে এ আমার দৃঢ় অঙ্গীকার।", author: "সুকান্ত ভট্টাচার্য" }
+    ];
+    const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / 1000 / 60 / 60 / 24);
+    const dailyQuote = LITERARY_QUOTES[dayOfYear % LITERARY_QUOTES.length];
+
+    // 8. Notices & Ads (only active notices with valid text)
+    const notices = await db.prepare("SELECT * FROM notices WHERE type = 'notice' AND is_active = 1 AND TRIM(content) != '' ORDER BY id DESC LIMIT 1").all();
     const ads = await db.prepare("SELECT * FROM notices WHERE type = 'ad' AND is_active = 1 ORDER BY id DESC LIMIT 1").all();
 
-    // 6. Books Showcase (all books for carousel)
+    // 9. Books Showcase (all books for carousel)
     const books = await db.prepare('SELECT * FROM books ORDER BY id DESC LIMIT 24').all();
 
     const seo = generateSeoMeta({
@@ -106,9 +145,14 @@ exports.getDashboard = async (req, res) => {
         totalViews: totalViews,
         totalComments: totalComments
       },
+      categoryStats,
+      badges,
+      nextMilestone,
+      dailyQuote,
       topPosts,
       recentComments,
       latestPost,
+      recentPosts,
       notices,
       ads,
       books,
@@ -116,6 +160,7 @@ exports.getDashboard = async (req, res) => {
       seo,
       toBengaliNumber,
       formatBengaliDate,
+      calculateReadingTime,
       navMenu: NAV_MENU,
       editorialBoard: EDITORIAL_BOARD,
       contact: CONTACT

@@ -621,3 +621,98 @@
     gap: 10px;
   }
 }
+
+/* ==========================================================================
+   THEME OVERRIDES FOR DROPZONE & MEDIA MODAL
+   ========================================================================== */
+html.theme-sepia .payasti-image-dropzone,
+body.theme-sepia .payasti-image-dropzone {
+  background-color: var(--admin-input-bg, #fbf3e6);
+  border-color: var(--admin-border, #dfd0bc);
+}
+html.theme-sepia .dropzone-title,
+body.theme-sepia .dropzone-title {
+  color: var(--admin-text-main, #342414);
+}
+html.theme-sepia .dropzone-hint,
+body.theme-sepia .dropzone-hint {
+  color: var(--admin-text-muted, #4e3c2b);
+}
+html.theme-sepia .dropzone-icon,
+body.theme-sepia .dropzone-icon {
+  background: #fcf6ee;
+  color: #075603;
+  border: 1px solid #dfd0bc;
+}
+html.theme-sepia .payasti-media-window,
+body.theme-sepia .payasti-media-window {
+  background: #fcf6ee;
+  border: 1px solid #dfd0bc;
+  color: #342414;
+}
+html.theme-sepia .media-modal-header,
+body.theme-sepia .media-modal-header,
+html.theme-sepia .media-modal-footer,
+body.theme-sepia .media-modal-footer {
+  background: #ede2d1;
+  border-color: #dfd0bc;
+}
+
+/* Dark Mode Modal */
+html.theme-dark .payasti-image-dropzone,
+body.theme-dark .payasti-image-dropzone {
+  background-color: var(--admin-input-bg, #0d1117);
+  border-color: var(--admin-border, #30363d);
+}
+html.theme-dark .dropzone-title,
+body.theme-dark .dropzone-title {
+  color: var(--admin-text-main, #f0f6fc);
+}
+html.theme-dark .dropzone-hint,
+body.theme-dark .dropzone-hint {
+  color: var(--admin-text-muted, #9ba7b4);
+}
+html.theme-dark .dropzone-icon,
+body.theme-dark .dropzone-icon {
+  background: #161b22;
+  color: #10b981;
+  border: 1px solid #30363d;
+}
+html.theme-dark .payasti-media-window,
+body.theme-dark .payasti-media-window {
+  background: #161b22;
+  border: 1px solid #30363d;
+  color: #f0f6fc;
+}
+html.theme-dark .media-modal-header,
+body.theme-dark .media-modal-header,
+html.theme-dark .media-modal-footer,
+body.theme-dark .media-modal-footer {
+  background: #0d1117;
+  border-color: #30363d;
+}
+html.theme-dark .media-tab-nav,
+body.theme-dark .media-tab-nav {
+  background: #21262d;
+}
+html.theme-dark .btn-media-tab,
+body.theme-dark .btn-media-tab {
+  color: #9ba7b4;
+}
+html.theme-dark .btn-media-tab.active,
+body.theme-dark .btn-media-tab.active {
+  background: #161b22;
+  color: #f0f6fc;
+}
+html.theme-dark .media-details-sidebar,
+body.theme-dark .media-details-sidebar {
+  background: #0d1117;
+  border-color: #30363d;
+  color: #f0f6fc;
+}
+html.theme-dark .btn-media-cancel,
+body.theme-dark .btn-media-cancel {
+  background: #21262d;
+  border-color: #30363d;
+  color: #f0f6fc;
+}

@@ -1,0 +1,17 @@
+<%
+  const v = (typeof views !== 'undefined') ? Number(views) : 0;
+  const p = (typeof posts !== 'undefined') ? Number(posts) : 0;
+  
+  let badge = null;
+  if (typeof getAuthorTopBadge === 'function') {
+    badge = getAuthorTopBadge(v, p);
+  } else {
+    if (v >= 10000) badge = { icon: '👑', title: 'জনপ্রিয় সাহিত্যিক', tagClass: 'badge-viral', tooltip: '১০,০০০+ পাঠক' };
+    else if (v >= 1000) badge = { icon: '🌟', title: 'পাঠকপ্রিয়', tagClass: 'badge-popular', tooltip: '১,০০০+ পাঠক' };
+    else if (p >= 15) badge = { icon: '🏆', title: 'সিদ্ধহস্ত লেখক', tagClass: 'badge-master', tooltip: '১৫টির বেশি লেখা' };
+    else if (p >= 5) badge = { icon: '📜', title: 'শব্দসাধক', tagClass: 'badge-rising', tooltip: '৫টির বেশি লেখা' };
+  }
+%>
+<% if (badge) { %>
+  <span class="author-badge-tag <%= badge.tagClass %>" title="<%= badge.tooltip %>"><%= badge.icon %> <%= badge.title %></span>
+<% } %>

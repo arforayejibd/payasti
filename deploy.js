@@ -17,6 +17,7 @@ const SYNC_DIRS = [
   'config',
   'controllers',
   'data',
+  'helpers',
   'middleware',
   'public',
   'routes',

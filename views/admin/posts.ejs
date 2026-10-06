@@ -6,36 +6,32 @@
 
 <!-- Filter Bar & Tabs -->
 <div class="admin-card" style="margin-bottom: 20px;">
-  <div style="padding: 16px 20px; display: flex; flex-wrap: wrap; gap: 16px; align-items: center; justify-content: space-between;">
+  <div class="admin-filter-bar">
     <!-- Status Tabs -->
-    <div style="display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px;">
+    <div class="admin-filter-tabs">
       <a href="/admin/posts?status=all&category=<%= categoryFilter %>&q=<%= searchQuery %>" 
-         class="btn-view-site" 
-         style="<%= statusFilter === 'all' ? 'background: var(--admin-primary); color: #fff; border-color: var(--admin-primary);' : '' %>">
+         class="btn-view-site admin-tab-btn-pill <%= statusFilter === 'all' ? 'active' : '' %>">
         সকল লেখা (<%= toBengaliNumber(counts.all) %>)
       </a>
       <a href="/admin/posts?status=publish&category=<%= categoryFilter %>&q=<%= searchQuery %>" 
-         class="btn-view-site" 
-         style="<%= statusFilter === 'publish' ? 'background: var(--admin-primary); color: #fff; border-color: var(--admin-primary);' : '' %>">
+         class="btn-view-site admin-tab-btn-pill <%= statusFilter === 'publish' ? 'active' : '' %>">
         প্রকাশিত (<%= toBengaliNumber(counts.publish) %>)
       </a>
       <a href="/admin/posts?status=pending&category=<%= categoryFilter %>&q=<%= searchQuery %>" 
-         class="btn-view-site" 
-         style="<%= statusFilter === 'pending' ? 'background: #f59e0b; color: #fff; border-color: #f59e0b;' : '' %>">
+         class="btn-view-site admin-tab-btn-pill warning <%= statusFilter === 'pending' ? 'active' : '' %>">
         পেন্ডিং (<%= toBengaliNumber(counts.pending) %>)
       </a>
       <a href="/admin/posts?status=draft&category=<%= categoryFilter %>&q=<%= searchQuery %>" 
-         class="btn-view-site" 
-         style="<%= statusFilter === 'draft' ? 'background: #64748b; color: #fff; border-color: #64748b;' : '' %>">
+         class="btn-view-site admin-tab-btn-pill muted <%= statusFilter === 'draft' ? 'active' : '' %>">
         ড্রাফট (<%= toBengaliNumber(counts.draft) %>)
       </a>
     </div>
 
     <!-- Category Filter & Search Form -->
-    <form action="/admin/posts" method="GET" style="display: flex; gap: 10px; flex-wrap: wrap;">
+    <form action="/admin/posts" method="GET" class="admin-filter-form">
       <input type="hidden" name="status" value="<%= statusFilter %>">
 
-      <select name="category" class="admin-form-select" style="width: auto; padding: 8px 14px; font-size: 16px;" onchange="this.form.submit()">
+      <select name="category" class="admin-form-select admin-filter-select" onchange="this.form.submit()">
         <option value="all">সকল বিভাগ</option>
         <% if (categories && categories.length) { %>
           <% categories.forEach(c => { %>
@@ -44,18 +40,17 @@
         <% } %>
       </select>
 
-      <div style="display: flex; gap: 6px;">
+      <div class="admin-search-group">
         <input 
           type="text" 
           name="q" 
           value="<%= searchQuery %>" 
-          class="admin-form-input" 
+          class="admin-form-input admin-search-input" 
           placeholder="শিরোনাম বা লেখক খুঁজুন..." 
-          style="width: 220px; padding: 8px 14px; font-size: 16px;"
         >
-        <button type="submit" class="btn-view-site" style="padding: 8px 16px; font-size: 16px;">অনুসন্ধান</button>
+        <button type="submit" class="btn-view-site admin-search-btn">অনুসন্ধান</button>
         <% if (searchQuery || categoryFilter !== 'all' || statusFilter !== 'all') { %>
-          <a href="/admin/posts" class="btn-view-site" style="padding: 8px 14px; color: #dc2626; font-size: 16px;" title="ফিল্টার রিসেট">✕</a>
+          <a href="/admin/posts" class="btn-view-site admin-reset-btn" title="ফিল্টার রিসেট">✕</a>
         <% } %>
       </div>
     </form>

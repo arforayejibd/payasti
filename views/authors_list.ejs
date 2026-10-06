@@ -28,15 +28,15 @@
         <div class="authors-grid">
           <% authors.forEach(author => { %>
             <div class="author-card">
-              <a href="/author/<%= encodeURIComponent(author.nicename || author.username) %>/" class="author-card-avatar-wrap">
-                <% if (author.avatar) { %>
-                  <img src="<%= author.avatar %>" alt="<%= author.display_name %>" class="author-card-avatar-img">
-                <% } else { %>
-                  <div class="author-card-avatar-placeholder">
-                    <%= author.display_name ? author.display_name.charAt(0) : 'প' %>
-                  </div>
-                <% } %>
-              </a>
+              <%- include('partials/author_avatar_badge', { 
+                avatar: author.avatar, 
+                name: author.display_name, 
+                views: author.total_views, 
+                posts: author.post_count, 
+                size: 'md', 
+                wrapClass: 'author-card-avatar-wrap',
+                link: `/author/${encodeURIComponent(author.nicename || author.username)}/`
+              }) %>
               <div class="author-meta">
                 <h3 class="author-card-name">
                   <a href="/author/<%= encodeURIComponent(author.nicename || author.username) %>/">

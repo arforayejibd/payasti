@@ -5,6 +5,7 @@ const { generateToken } = require('../middleware/auth');
 const { generateSeoMeta } = require('../middleware/seo');
 const { toBengaliNumber, formatBengaliDate } = require('../middleware/banglaDate');
 const { SITE_NAME, TAGLINE, NAV_MENU, EDITORIAL_BOARD, CONTACT, SITE_URL } = require('../config/constants');
+const { LITERARY_THEMES } = require('../helpers/literaryThemeHelper');
 const { sendPasswordResetEmail, sendEmailVerificationMail } = require('../services/mailService');
 
 // Login Page GET
@@ -95,21 +96,8 @@ exports.postLogin = async (req, res) => {
     }
 
     if (user.role !== 'admin') {
-      // 1. Check Email Verification
-      if (user.email_verified === 0 || user.status === 'pending_verification') {
-        return res.render('login', {
-          redirect: redirect || '/author/dashboard',
-          error: `আপনার ইমেইল (${user.email}) এখনও যাচাই করা হয়নি। অনুগ্রহ করে ইনবক্স চেক করে ভেরিফিকেশন সম্পন্ন করুন।`,
-          resendEmail: user.email,
-          seo: generateSeoMeta({ title: 'লেখক লগইন' }),
-          navMenu: NAV_MENU,
-          editorialBoard: EDITORIAL_BOARD,
-          contact: CONTACT
-        });
-      }
-
-      // 2. Check Admin Approval
-      if (user.is_approved === 0 || user.status === 'pending_approval') {
+      // Check Admin Approval (Email verification is bypassed; admin approval is required)
+      if (user.is_approved === 0 || user.status === 'pending_approval' || user.status === 'pending_verification') {
         return res.render('login', {
           redirect: redirect || '/author/dashboard',
           error: 'আপনার লেখক অ্যাকাউন্টটি অ্যাডমিন পর্যালোচনার অপেক্ষায় রয়েছে। অ্যাডমিন অনুমোদন দিলে আপনি লগইন করতে পারবেন।',
@@ -165,9 +153,9 @@ exports.postRegister = async (req, res) => {
       console.warn(`[SPAM BOT BLOCKED] Honeypot triggered for username: ${username}, email: ${email}`);
       // Return deceptive success page to prevent bots from retrying with other strategies
       return res.render('verify_notice', {
-        type: 'verify_sent',
-        email: email || 'your@email.com',
-        title: 'ইমেইল যাচাইকরণ | পয়স্তি ম্যাগাজিন'
+        type: 'registered_pending_approval',
+        email: email || '',
+        title: 'নিবন্ধন সম্পন্ন হয়েছে | পয়স্তি ম্যাগাজিন'
       });
     }
 
@@ -209,39 +197,17 @@ exports.postRegister = async (req, res) => {
     const hashedPassword = bcrypt.hashSync(password, 10);
     const nicename = username.trim().toLowerCase().replace(/\s+/g, '-');
 
-    // 2. Create user with pending status, email_verified = 0, is_approved = 0
-    const info = await db.prepare(`
+    // 2. Create user with status 'pending_approval' (Email verification bypassed, admin approval retained)
+    await db.prepare(`
       INSERT INTO users (username, email, password, display_name, nicename, role, bio, status, email_verified, is_approved, registered_at)
-      VALUES (?, ?, ?, ?, ?, 'author', ?, 'pending_verification', 0, 0, NOW())
+      VALUES (?, ?, ?, ?, ?, 'author', ?, 'pending_approval', 1, 0, NOW())
     `).run(username.trim(), email.trim(), hashedPassword, display_name.trim(), nicename, (bio || '').trim());
 
-    const newUserId = info.lastInsertRowid;
-
-    // 3. Generate secure verification token (valid for 24 hours)
-    const verificationToken = crypto.randomBytes(32).toString('hex');
-    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
-    const expiresAtStr = expiresAt.toISOString().slice(0, 19).replace('T', ' ');
-
-    await db.prepare(`
-      INSERT INTO email_verifications (user_id, token, expires_at)
-      VALUES (?, ?, ?)
-    `).run(newUserId, verificationToken, expiresAtStr);
-
-    // 4. Send verification email via mailService
-    const verifyBaseUrl = process.env.SITE_URL || `${req.protocol}://${req.get('host')}`;
-    const verifyUrl = `${verifyBaseUrl}/verify-email?token=${verificationToken}`;
-    const newUser = { id: newUserId, display_name: display_name.trim(), username: username.trim(), email: email.trim() };
-    
-    // Asynchronously send email without blocking the response
-    sendEmailVerificationMail(newUser, verifyUrl).catch(e => {
-      console.error('[MAIL ERROR] postRegister verification email failed:', e);
-    });
-
-    // 5. Render informative verify notice card
+    // 3. Render informative notice card for admin approval
     res.render('verify_notice', {
-      type: 'verify_sent',
+      type: 'registered_pending_approval',
       email: email.trim(),
-      title: 'ইমেইল যাচাইকরণ | পয়স্তি ম্যাগাজিন'
+      title: 'নিবন্ধন সম্পন্ন হয়েছে | পয়স্তি ম্যাগাজিন'
     });
   } catch (err) {
     console.error('Error in postRegister:', err);
@@ -444,43 +410,71 @@ exports.getTerms = (req, res) => {
 // Dynamic XML Sitemap for Google Ranking (/sitemap.xml)
 exports.getSitemap = async (req, res) => {
   try {
-    res.header('Content-Type', 'application/xml');
+    res.header('Content-Type', 'application/xml; charset=utf-8');
 
     const posts = await db.prepare("SELECT slug, published_at, updated_at FROM posts WHERE status = 'publish' ORDER BY published_at DESC").all();
     const categories = await db.prepare("SELECT slug FROM categories").all();
     const authors = await db.prepare("SELECT nicename, username FROM users WHERE role IN ('author', 'editor', 'admin')").all();
     const books = await db.prepare("SELECT slug, created_at FROM books").all();
 
+    function escapeXml(unsafe) {
+      if (!unsafe) return '';
+      return String(unsafe)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&apos;');
+    }
+
     let xml = `<?xml version="1.0" encoding="UTF-8"?>\n`;
     xml += `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n`;
 
     // Static Pages
     xml += `  <url><loc>${SITE_URL}/</loc><changefreq>daily</changefreq><priority>1.0</priority></url>\n`;
+    xml += `  <url><loc>${SITE_URL}/daily-literature</loc><changefreq>daily</changefreq><priority>0.95</priority></url>\n`;
     xml += `  <url><loc>${SITE_URL}/bangla-spell</loc><changefreq>daily</changefreq><priority>0.95</priority></url>\n`;
     xml += `  <url><loc>${SITE_URL}/spelling-rules</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>\n`;
+    xml += `  <url><loc>${SITE_URL}/themes</loc><changefreq>daily</changefreq><priority>0.9</priority></url>\n`;
     xml += `  <url><loc>${SITE_URL}/authors</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>\n`;
     xml += `  <url><loc>${SITE_URL}/books</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>\n`;
     xml += `  <url><loc>${SITE_URL}/terms</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>\n`;
 
+    // Literary Themes
+    if (Array.isArray(LITERARY_THEMES)) {
+      LITERARY_THEMES.forEach(t => {
+        xml += `  <url><loc>${SITE_URL}/theme/${escapeXml(encodeURIComponent(t.slug))}</loc><changefreq>daily</changefreq><priority>0.85</priority></url>\n`;
+      });
+    }
+
     // Categories
     categories.forEach(c => {
-      xml += `  <url><loc>${SITE_URL}/category/${c.slug}</loc><changefreq>daily</changefreq><priority>0.8</priority></url>\n`;
+      if (c.slug) {
+        xml += `  <url><loc>${SITE_URL}/category/${escapeXml(encodeURIComponent(c.slug))}</loc><changefreq>daily</changefreq><priority>0.8</priority></url>\n`;
+      }
     });
 
     // Posts
     posts.forEach(p => {
-      const lastmod = (p.updated_at || p.published_at || new Date().toISOString()).split(' ')[0];
-      xml += `  <url><loc>${SITE_URL}/post/${p.slug}</loc><lastmod>${lastmod}</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>\n`;
+      if (p.slug) {
+        const lastmod = (p.updated_at || p.published_at || new Date().toISOString()).split(' ')[0];
+        xml += `  <url><loc>${SITE_URL}/post/${escapeXml(encodeURIComponent(p.slug))}</loc><lastmod>${escapeXml(lastmod)}</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>\n`;
+      }
     });
 
     // Books
     books.forEach(b => {
-      xml += `  <url><loc>${SITE_URL}/book/${b.slug}</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>\n`;
+      if (b.slug) {
+        xml += `  <url><loc>${SITE_URL}/book/${escapeXml(encodeURIComponent(b.slug))}</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>\n`;
+      }
     });
 
     // Authors
     authors.forEach(a => {
-      xml += `  <url><loc>${SITE_URL}/author/${a.nicename || a.username}</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>\n`;
+      const authorSlug = a.nicename || a.username;
+      if (authorSlug) {
+        xml += `  <url><loc>${SITE_URL}/author/${escapeXml(encodeURIComponent(authorSlug))}</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>\n`;
+      }
     });
 
     xml += `</urlset>`;

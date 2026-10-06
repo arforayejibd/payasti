@@ -3,61 +3,87 @@
   pageBreadcrumb: 'Media Library'
 }) %>
 
-<!-- Upload Media Card -->
-<div class="admin-card" style="margin-bottom: 24px;">
-  <div class="admin-card-header">
-    <div class="admin-card-title">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--admin-primary);">
+<!-- Media Page Header Banner -->
+<div style="background: var(--admin-card-bg); border: 1px solid var(--admin-border); border-radius: 16px; padding: 22px 26px; margin-bottom: 24px; box-shadow: var(--admin-shadow-sm); display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;">
+  <div style="display: flex; align-items: center; gap: 14px;">
+    <div style="width: 48px; height: 48px; border-radius: 12px; background: var(--admin-primary-light); color: var(--admin-primary); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
         <circle cx="8.5" cy="8.5" r="1.5"></circle>
         <polyline points="21 15 16 10 5 21"></polyline>
       </svg>
-      <span>নতুন ছবি বা ফাইল আপলোড</span>
+    </div>
+    <div>
+      <h1 style="font-size: 22px; font-weight: 700; color: var(--admin-text-main); margin: 0 0 3px;">
+        মিডিয়া লাইব্রেরি ও ফাইল গ্যালারি
+      </h1>
+      <p style="font-size: 14px; color: var(--admin-text-muted); margin: 0;">
+        সাইটের সকল লেখার ফিচার্ড ছবি, ব্যানার ও আপলোডকৃত ছবি এক নজরে পরিচালনা করুন
+      </p>
     </div>
   </div>
-  <div class="admin-card-body">
-    <form action="/admin/media/upload" method="POST" enctype="multipart/form-data" style="display: flex; gap: 14px; align-items: center; flex-wrap: wrap;">
-      <input type="file" name="media_file" class="admin-form-input" required accept="image/*" style="max-width: 380px;">
-      <button type="submit" class="btn-new-action" style="padding: 10px 20px;">
-        আপলোড করুন
-      </button>
-    </form>
+
+  <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+    <button type="button" class="btn-new-action" id="btnOpenMediaUpload" style="padding: 10px 20px; font-size: 15px; display: inline-flex; align-items: center; gap: 8px;">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+      <span>নতুন ছবি আপলোড করুন</span>
+    </button>
+    <button type="button" class="btn-view-site" id="btnOpenMediaLibrary" style="padding: 10px 18px; font-size: 15px; display: inline-flex; align-items: center; gap: 8px;">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+      <span>পপআপ গ্যালারি ব্রাউজ করুন</span>
+    </button>
   </div>
 </div>
 
-<!-- Media Grid -->
+
+<!-- Uploaded Media Grid Card -->
 <div class="admin-card">
-  <div class="admin-card-header">
-    <div class="admin-card-title">
+  <div class="admin-card-header" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;">
+    <div class="admin-card-title" style="display: flex; align-items: center; gap: 10px;">
       <span>আপলোডকৃত ছবিসমূহ</span>
-      <span class="admin-card-badge"><%= toBengaliNumber(mediaFiles.length) %> টি ফাইল</span>
+      <span class="admin-card-badge" id="totalFilesCountBadge">
+        <%= toBengaliNumber(mediaFiles.length) %> টি ছবি
+      </span>
+    </div>
+
+    <!-- Live Search Input -->
+    <div style="min-width: 260px; max-width: 360px; flex: 1;">
+      <input type="text" id="mediaFilterInput" class="admin-form-input" placeholder="ছবির নাম দিয়ে খুঁজুন..." style="padding: 8px 14px; font-size: 14px;">
     </div>
   </div>
 
   <div class="admin-card-body">
     <% if (mediaFiles && mediaFiles.length) { %>
-      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px;">
+      <div id="mediaGridContainer" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 20px;">
         <% mediaFiles.forEach(file => { %>
-          <div style="border: 1px solid var(--admin-border); border-radius: 10px; overflow: hidden; background: #fff; box-shadow: var(--admin-shadow-sm); display: flex; flex-direction: column;">
-            <div style="height: 140px; background: #f8fafc; display: flex; align-items: center; justify-content: center; overflow: hidden;">
-              <img src="<%= file.url %>" alt="" style="width: 100%; height: 100%; object-fit: cover;">
+          <div class="media-file-item-card" data-filename="<%= file.filename.toLowerCase() %>" style="border: 1px solid var(--admin-border); border-radius: 12px; overflow: hidden; background: var(--admin-card-bg); box-shadow: var(--admin-shadow-sm); display: flex; flex-direction: column; transition: transform 0.2s ease, box-shadow 0.2s ease;">
+            <!-- Clickable image preview to open in Media Modal -->
+            <div class="media-thumb-area" onclick="openMediaDetailModal('<%= file.url %>')" style="height: 150px; background: #000; position: relative; cursor: pointer; display: flex; align-items: center; justify-content: center; overflow: hidden;" title="মিডিয়া পপআপে বড় করে দেখুন">
+              <img src="<%= file.url %>" alt="<%= file.filename %>" style="width: 100%; height: 100%; object-fit: cover; display: block;">
+              <div class="media-thumb-overlay" style="position: absolute; inset: 0; background: rgba(0,0,0,0.5); opacity: 0; transition: opacity 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 6px; color: #fff; font-size: 13px; font-weight: 600;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <span>পপআপে দেখুন</span>
+              </div>
             </div>
-            <div style="padding: 12px; flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
+
+            <div style="padding: 12px 14px; flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
               <div>
-                <div style="font-size: 15px; font-weight: 600; color: var(--admin-text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="<%= file.filename %>">
+                <div style="font-size: 14.5px; font-weight: 600; color: var(--admin-text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="<%= file.filename %>">
                   <%= file.filename %>
                 </div>
-                <div style="font-size: 13px; color: var(--admin-text-sub); margin-top: 4px;">
-                  <%= file.size %>
+                <div style="font-size: 12.5px; color: var(--admin-text-sub); margin-top: 4px; display: flex; justify-content: space-between;">
+                  <span><%= file.size %></span>
+                  <span style="color: var(--admin-primary); font-weight: 600; cursor: pointer;" onclick="openMediaDetailModal('<%= file.url %>')">বিস্তারিত ↗</span>
                 </div>
               </div>
-              <div style="margin-top: 12px; display: flex; align-items: center; justify-content: space-between; gap: 6px;">
-                <button type="button" class="btn-view-site" style="padding: 6px 12px; font-size: 14px;" onclick="navigator.clipboard.writeText(window.location.origin + '<%= file.url %>'); alert('ছবির লিংক কপি করা হয়েছে!');">
+
+              <div style="margin-top: 14px; display: flex; align-items: center; justify-content: space-between; gap: 6px; padding-top: 10px; border-top: 1px solid var(--admin-border-light);">
+                <button type="button" class="btn-view-site" style="padding: 6px 12px; font-size: 13px; font-weight: 600;" onclick="copyImageUrl(this, '<%= file.url %>')">
                   কপি লিংক
                 </button>
-                <form action="/admin/media/delete" method="POST" onsubmit="return confirm('ফাইলটি মুছে ফেলতে চান?');" style="display: inline;">
+                <form action="/admin/media/delete" method="POST" onsubmit="return confirm('আপনি কি নিশ্চিত যে ছবিটি মুছে ফেলতে চান?');" style="display: inline; margin: 0;">
                   <input type="hidden" name="filename" value="<%= file.filename %>">
-                  <button type="submit" class="btn-table-action btn-reject" style="padding: 6px 12px; font-size: 14px;">
+                  <button type="submit" class="btn-table-action btn-reject" style="padding: 6px 12px; font-size: 13px;">
                     ডিলিট
                   </button>
                 </form>
@@ -70,10 +96,120 @@
       <div class="admin-empty-state">
         <div class="empty-icon">🖼️</div>
         <div class="empty-title">কোনো মিডিয়া ফাইল পাওয়া যায়নি</div>
-        <div class="empty-desc">উপরের ফর্ম থেকে নতুন ছবি আপলোড করুন।</div>
+        <div class="empty-desc">উপরের বক্সে ক্লিক করে মিডিয়া পপআপের মাধ্যমে নতুন ছবি আপলোড করুন।</div>
       </div>
     <% } %>
   </div>
 </div>
+
+<script>
+  // Open Media Modal in Upload Tab
+  function openMediaUploadModal() {
+    if (window.PayastiMediaModal && typeof window.PayastiMediaModal.open === 'function') {
+      window.PayastiMediaModal.open({
+        tab: 'upload',
+        onSelect: function(file) {
+          window.location.reload();
+        }
+      });
+    }
+  }
+
+  // Open Media Modal in Library Tab
+  function openMediaLibraryModal() {
+    if (window.PayastiMediaModal && typeof window.PayastiMediaModal.open === 'function') {
+      window.PayastiMediaModal.open({
+        tab: 'library',
+        onSelect: function(file) {
+          window.location.reload();
+        }
+      });
+    }
+  }
+
+  // Open Media Modal with specific image selected
+  function openMediaDetailModal(url) {
+    if (window.PayastiMediaModal && typeof window.PayastiMediaModal.open === 'function') {
+      window.PayastiMediaModal.open({
+        tab: 'library',
+        currentUrl: url
+      });
+    }
+  }
+
+  // Bind Buttons
+  const btnUpload = document.getElementById('btnOpenMediaUpload');
+  const btnLibrary = document.getElementById('btnOpenMediaLibrary');
+
+  if (btnUpload) btnUpload.addEventListener('click', openMediaUploadModal);
+  if (btnLibrary) btnLibrary.addEventListener('click', openMediaLibraryModal);
+
+  // Thumb overlay hover
+  document.querySelectorAll('.media-thumb-area').forEach(area => {
+    area.addEventListener('mouseenter', () => {
+      const ov = area.querySelector('.media-thumb-overlay');
+      if (ov) ov.style.opacity = '1';
+    });
+    area.addEventListener('mouseleave', () => {
+      const ov = area.querySelector('.media-thumb-overlay');
+      if (ov) ov.style.opacity = '0';
+    });
+  });
+
+  // Card hover lift
+  document.querySelectorAll('.media-file-item-card').forEach(card => {
+    card.addEventListener('mouseenter', () => {
+      card.style.transform = 'translateY(-2px)';
+      card.style.boxShadow = 'var(--admin-shadow-md)';
+    });
+    card.addEventListener('mouseleave', () => {
+      card.style.transform = 'translateY(0)';
+      card.style.boxShadow = 'var(--admin-shadow-sm)';
+    });
+  });
+
+  // Copy Image Link Helper
+  function copyImageUrl(btn, url) {
+    const fullUrl = window.location.origin + url;
+    navigator.clipboard.writeText(fullUrl).then(() => {
+      const origText = btn.innerText;
+      btn.innerText = '✓ কপি হয়েছে!';
+      btn.style.color = '#059669';
+      btn.style.borderColor = '#059669';
+      setTimeout(() => {
+        btn.innerText = origText;
+        btn.style.color = '';
+        btn.style.borderColor = '';
+      }, 2000);
+    }).catch(err => {
+      alert('ছবির লিঙ্ক: ' + fullUrl);
+    });
+  }
+
+  // Real-time Search / Filter
+  const filterInput = document.getElementById('mediaFilterInput');
+  if (filterInput) {
+    filterInput.addEventListener('input', function() {
+      const query = this.value.trim().toLowerCase();
+      const cards = document.querySelectorAll('.media-file-item-card');
+      let visibleCount = 0;
+
+      cards.forEach(card => {
+        const fname = card.getAttribute('data-filename') || '';
+        if (fname.includes(query)) {
+          card.style.display = 'flex';
+          visibleCount++;
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    });
+  }
+
+  // Auto reload when file is uploaded via modal
+  window.addEventListener('payasti:media-uploaded', () => {
+    window.location.reload();
+  });
+</script>
 
 <%- include('partials/admin_layout_end') %>

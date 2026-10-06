@@ -1,210 +1,528 @@
 <%- include('partials/admin_layout_start', { 
-  pageTitle: 'এডমিন ড্যাশবোর্ড ও মডারেশন', 
-  pageBreadcrumb: 'ড্যাশবোর্ড ওভারভিউ',
-  topbarButton: { text: '+ নতুন বই যুক্ত করুন', url: '/admin/books' }
+  pageTitle: 'এডমিন কমান্ড সেন্টার ও ড্যাশবোর্ড', 
+  pageBreadcrumb: 'কমান্ড ওভারভিউ'
 }) %>
 
-<!-- KPI Metric Cards Grid -->
-<div class="admin-stats-grid">
-  <!-- Pending Submissions -->
-  <div class="admin-stat-card warning">
-    <div class="stat-info">
-      <span class="stat-label">পেন্ডিং লেখা</span>
-      <span class="stat-number"><%= toBengaliNumber(stats.pending) %></span>
-      <a href="/admin/pending" class="stat-link">
-        লেখাগুলো পর্যালোচনা করুন &rarr;
-      </a>
+<!-- 1. Ultra-Modern Literary Command Banner -->
+<div class="admin-hero-banner">
+  <div class="hero-text-wrap">
+    <div class="hero-live-pill <%= (stats.pending > 0 || stats.pendingUsers > 0) ? 'warning' : 'success' %>">
+      <span class="hero-pulse-dot <%= (stats.pending > 0 || stats.pendingUsers > 0) ? 'warning' : 'success' %>"></span>
+      <% if (stats.pending > 0) { %>
+        <span><%= toBengaliNumber(stats.pending) %>টি সাহিত্য পর্যালোচনার অপেক্ষমাণ</span>
+      <% } else if (stats.pendingUsers > 0) { %>
+        <span><%= toBengaliNumber(stats.pendingUsers) %>জন লেখক অনুমোদনের অপেক্ষমাণ</span>
+      <% } else { %>
+        <span>সকল কার্যক্রম আপডেট ও লাইভ</span>
+      <% } %>
     </div>
-    <div class="stat-icon-wrap">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="12" r="10"></circle>
-        <polyline points="12 6 12 12 16 14"></polyline>
-      </svg>
-    </div>
+    <h1 class="hero-title">স্বাগতম, <%= typeof user !== 'undefined' && user && user.display_name ? user.display_name : 'অ্যাডমিন' %> 👋</h1>
+    <p class="hero-subtext">
+      <% if (stats.pending > 0) { %>
+        ম্যাগাজিনের মডারেশন কিউতে <strong><%= toBengaliNumber(stats.pending) %>টি</strong> নতুন লেখা পর্যালোচনার অপেক্ষায় রয়েছে।
+      <% } else { %>
+        বর্তমানে কোনো পেন্ডিং আবেদন নেই। মোট <strong><%= toBengaliNumber(stats.published) %>টি</strong> সাহিত্য লাইভে পাঠকদের জন্য উন্মুক্ত রয়েছে।
+      <% } %>
+    </p>
   </div>
-
-  <!-- Published Articles -->
-  <div class="admin-stat-card success">
-    <div class="stat-info">
-      <span class="stat-label">প্রকাশিত সাহিত্য</span>
-      <span class="stat-number"><%= toBengaliNumber(stats.published) %></span>
-      <a href="/" target="_blank" class="stat-link">
-        ওয়েবসাইটে দেখুন &rarr;
+  <div class="hero-actions">
+    <a href="/admin/posts/new" class="hero-action-btn primary" title="নতুন সাহিত্য রচনা করুন">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+      <span>নতুন সাহিত্য রচনা</span>
+    </a>
+    <% if (stats.pending > 0) { %>
+      <a href="/admin/pending" class="hero-action-btn warning" title="সম্পূর্ণ পেন্ডিং কিউ">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <span>পেন্ডিং কিউ (<%= toBengaliNumber(stats.pending) %>)</span>
       </a>
-    </div>
-    <div class="stat-icon-wrap">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-        <polyline points="22 4 12 14.01 9 11.01"></polyline>
-      </svg>
-    </div>
+    <% } %>
+    <a href="/admin/users" class="hero-action-btn" title="লেখক তালিকা">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+      <span>লেখকবৃন্দ</span>
+    </a>
+    <a href="/admin/books" class="hero-action-btn" title="বই সম্ভার">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+      <span>বই সম্ভার</span>
+    </a>
   </div>
+</div>
 
-  <!-- Registered Authors -->
-  <div class="admin-stat-card info">
-    <div class="stat-info">
-      <span class="stat-label">নিবন্ধিত লেখক</span>
-      <span class="stat-number"><%= toBengaliNumber(stats.users) %></span>
-      <a href="/admin/users" class="stat-link">
-        লেখক তালিকা ম্যানেজ করুন &rarr;
-      </a>
-    </div>
-    <div class="stat-icon-wrap">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-        <circle cx="9" cy="7" r="4"></circle>
-        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-      </svg>
-    </div>
-  </div>
-
-  <!-- Pending Authors / Users -->
-  <% if (typeof stats.pendingUsers !== 'undefined' && stats.pendingUsers > 0) { %>
-    <div class="admin-stat-card warning" style="border-left: 4px solid #f59e0b;">
-      <div class="stat-info">
-        <span class="stat-label">পেন্ডিং লেখক অনুমোদন</span>
-        <span class="stat-number" style="color: #b45309;"><%= toBengaliNumber(stats.pendingUsers) %></span>
-        <a href="/admin/users?status=pending_approval" class="stat-link" style="color: #b45309; font-weight: 700;">
-          অনুমোদন করুন &rarr;
-        </a>
-      </div>
-      <div class="stat-icon-wrap" style="background: #fef3c7; color: #b45309;">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-          <circle cx="8.5" cy="7" r="4"></circle>
-          <line x1="20" y1="8" x2="20" y2="14"></line>
-          <line x1="23" y1="11" x2="17" y2="11"></line>
+<!-- 2. Elevated Glassmorphic KPI Command Stats Grid -->
+<div class="admin-command-stats">
+  <!-- 1. Pending Submissions Card -->
+  <a href="/admin/pending" class="command-stat-card">
+    <div class="command-stat-top">
+      <div class="command-stat-icon amber">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <circle cx="12" cy="12" r="10"></circle>
+          <polyline points="12 6 12 12 16 14"></polyline>
         </svg>
       </div>
+      <span class="command-stat-badge amber">মডারেশন কিউ</span>
     </div>
-  <% } %>
+    <div class="command-stat-num"><%= toBengaliNumber(stats.pending) %></div>
+    <div class="command-stat-label">
+      <span>পেন্ডিং সাহিত্য</span>
+      <span class="command-stat-arrow">&rarr;</span>
+    </div>
+  </a>
 
-  <!-- Books Catalog -->
-  <div class="admin-stat-card purple">
-    <div class="stat-info">
-      <span class="stat-label">প্রকাশিত বই</span>
-      <span class="stat-number"><%= toBengaliNumber(stats.books) %></span>
-      <a href="/admin/books" class="stat-link">
-        বই সম্ভার ম্যানেজ করুন &rarr;
-      </a>
+  <!-- 2. Published Articles Card -->
+  <a href="/admin/posts?status=publish" class="command-stat-card">
+    <div class="command-stat-top">
+      <div class="command-stat-icon emerald">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+          <polyline points="22 4 12 14.01 9 11.01"></polyline>
+        </svg>
+      </div>
+      <span class="command-stat-badge emerald">লাইভ আর্কাইভ</span>
     </div>
-    <div class="stat-icon-wrap">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-      </svg>
+    <div class="command-stat-num"><%= toBengaliNumber(stats.published) %></div>
+    <div class="command-stat-label">
+      <span>প্রকাশিত সাহিত্য</span>
+      <span class="command-stat-arrow">&rarr;</span>
     </div>
-  </div>
+  </a>
+
+  <!-- 3. Registered Authors Card -->
+  <a href="/admin/users" class="command-stat-card">
+    <div class="command-stat-top">
+      <div class="command-stat-icon sapphire">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+          <circle cx="9" cy="7" r="4"></circle>
+        </svg>
+      </div>
+      <% if (typeof stats.pendingUsers !== 'undefined' && stats.pendingUsers > 0) { %>
+        <span class="command-stat-badge amber"><%= toBengaliNumber(stats.pendingUsers) %> জন পেন্ডিং</span>
+      <% } else { %>
+        <span class="command-stat-badge sapphire">সক্রিয় লেখক</span>
+      <% } %>
+    </div>
+    <div class="command-stat-num"><%= toBengaliNumber(stats.users) %></div>
+    <div class="command-stat-label">
+      <span>নিবন্ধিত লেখক</span>
+      <span class="command-stat-arrow">&rarr;</span>
+    </div>
+  </a>
+
+  <!-- 4. Total Reader Views or Published Books Card -->
+  <% if (typeof stats.totalViews !== 'undefined' && stats.totalViews > 0) { %>
+    <a href="/admin/posts" class="command-stat-card">
+      <div class="command-stat-top">
+        <div class="command-stat-icon violet">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+            <circle cx="12" cy="12" r="3"></circle>
+          </svg>
+        </div>
+        <span class="command-stat-badge violet">পাঠক রিচ</span>
+      </div>
+      <div class="command-stat-num"><%= toBengaliNumber(stats.totalViews) %></div>
+      <div class="command-stat-label">
+        <span>মোট পাঠক ভিউ</span>
+        <span class="command-stat-arrow">&rarr;</span>
+      </div>
+    </a>
+  <% } else { %>
+    <a href="/admin/books" class="command-stat-card">
+      <div class="command-stat-top">
+        <div class="command-stat-icon violet">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+          </svg>
+        </div>
+        <span class="command-stat-badge violet">প্রকাশিত বই</span>
+      </div>
+      <div class="command-stat-num"><%= toBengaliNumber(stats.books) %></div>
+      <div class="command-stat-label">
+        <span>বই সম্ভার</span>
+        <span class="command-stat-arrow">&rarr;</span>
+      </div>
+    </a>
+  <% } %>
 </div>
 
-<!-- Pending Submissions Card -->
-<div class="admin-card">
-  <div class="admin-card-header">
-    <div class="admin-card-title">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--admin-warning);">
-        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-        <polyline points="14 2 14 8 20 8"></polyline>
-        <line x1="16" y1="13" x2="8" y2="13"></line>
-        <line x1="16" y1="17" x2="8" y2="17"></line>
-        <polyline points="10 9 9 9 8 9"></polyline>
-      </svg>
-      <span>অনুমোদনের অপেক্ষায় থাকা সাম্প্রতিক লেখা</span>
-      <span class="admin-card-badge"><%= toBengaliNumber(recentPending.length) %> টি</span>
-    </div>
-    <div>
-      <a href="/admin/pending" class="stat-link" style="color: var(--admin-primary); font-size: 16px;">
-        সকল পেন্ডিং দেখুন &rarr;
-      </a>
+<!-- 3. Views Analytics & Readership Graph Section -->
+<%- include('partials/views_analytics_chart', { viewsAnalytics: viewsAnalytics }) %>
+
+<!-- 4. Two-Column Split Layout: Moderation Hub & Live Activity Stream -->
+<div class="admin-dashboard-split">
+  <!-- Left Main Column: Interactive Moderation Hub -->
+  <div class="admin-dashboard-main">
+    <div class="moderation-hub-card">
+      <div class="moderation-hub-header">
+        <div class="moderation-header-top">
+          <h2 class="moderation-title">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="color: #d97706;">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+            </svg>
+            <span>মডারেশন কিউ: সাহিত্য পর্যালোচনা</span>
+            <% if (recentPending && recentPending.length > 0) { %>
+              <span class="admin-card-badge" id="modCountBadge"><%= toBengaliNumber(recentPending.length) %> টি</span>
+            <% } %>
+          </h2>
+          <div>
+            <a href="/admin/pending" class="stat-link" style="color: var(--admin-primary); font-size: 15px; font-weight: 600; text-decoration: none;">
+              সকল পেন্ডিং কিউ &rarr;
+            </a>
+          </div>
+        </div>
+
+        <!-- Category Filter Tabs -->
+        <% if (recentPending && recentPending.length > 0) { %>
+          <div class="moderation-filter-tabs" id="moderationTabs">
+            <button type="button" class="mod-tab-btn active" data-filter="all">সব (<%= toBengaliNumber(recentPending.length) %>)</button>
+            <button type="button" class="mod-tab-btn" data-filter="কবিতা">কবিতা</button>
+            <button type="button" class="mod-tab-btn" data-filter="গল্প">গল্প</button>
+            <button type="button" class="mod-tab-btn" data-filter="প্রবন্ধ">প্রবন্ধ</button>
+            <button type="button" class="mod-tab-btn" data-filter="অন্যান্য">অন্যান্য</button>
+          </div>
+        <% } %>
+      </div>
+
+      <!-- Moderation Queue Items Stream -->
+      <div class="moderation-queue-stream" id="moderationStream">
+        <% if (recentPending && recentPending.length > 0) { %>
+          <% recentPending.forEach((p, idx) => { %>
+            <div class="mod-queue-card" data-category="<%= p.category_name || 'অন্যান্য' %>" data-post-id="<%= p.id %>" data-index="<%= idx %>">
+              <div class="mod-card-top">
+                <div class="mod-meta-chips">
+                  <span class="mod-category-chip"><%= p.category_name || 'অন্য সাহিত্য' %></span>
+                  <span class="mod-time-chip">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    <%= calculateReadingTime(p.content || '') %>
+                  </span>
+                  <span class="mod-date-chip">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    <%= formatBengaliDate(p.created_at) %>
+                  </span>
+                </div>
+              </div>
+
+              <h3 class="mod-card-title" onclick="openPreviewByIndex(<%= idx %>)" title="ক্লিক করে সম্পূর্ণ লেখাটি পড়ুন">
+                <%= p.title %>
+              </h3>
+
+              <% if (p.excerpt) { %>
+                <p class="mod-card-excerpt"><%= p.excerpt %></p>
+              <% } else if (p.content) { %>
+                <p class="mod-card-excerpt"><%= p.content.replace(/<[^>]+>/g, ' ').substring(0, 150) %>...</p>
+              <% } %>
+
+              <div class="mod-card-bottom">
+                <div class="mod-author-wrap">
+                  <div class="mod-author-avatar">
+                    <%= p.author_name ? p.author_name.trim().charAt(0) : 'ল' %>
+                  </div>
+                  <span class="mod-author-name"><%= p.author_name || 'লেখক' %></span>
+                </div>
+
+                <div class="mod-actions-group">
+                  <button type="button" class="mod-action-btn preview" onclick="openPreviewByIndex(<%= idx %>)" title="কুইক প্রিভিউ পড়ুন">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                    <span>পড়ুন</span>
+                  </button>
+
+                  <form action="/admin/post/<%= p.id %>/approve" method="POST" style="display: inline;" onsubmit="return confirm('লেখাটি অনুমোদন ও লাইভে প্রকাশ করতে চান?');">
+                    <button type="submit" class="mod-action-btn approve" title="অনুমোদন করুন">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                      <span>এপ্রুভ</span>
+                    </button>
+                  </form>
+
+                  <a href="/admin/posts/<%= p.id %>/edit" class="mod-action-btn edit" title="সম্পাদনা">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                  </a>
+
+                  <form action="/admin/post/<%= p.id %>/reject" method="POST" style="display: inline;" onsubmit="return confirm('লেখাটি ড্রাফট / বাতিল করতে চান?');">
+                    <button type="submit" class="mod-action-btn reject" title="বাতিল করুন">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          <% }) %>
+
+          <!-- Tab empty placeholder (hidden by default) -->
+          <div id="tabEmptyMessage" style="display: none; padding: 48px 20px; text-align: center;">
+            <div style="font-size: 20px; font-weight: 700; color: var(--admin-text-main); margin-bottom: 6px;">এই বিভাগে কোনো পেন্ডিং লেখা নেই</div>
+            <div style="font-size: 15px; color: var(--admin-text-muted);">অন্যান্য ট্যাব নির্বাচন করুন অথবা সম্পূর্ণ কিউ দেখুন।</div>
+          </div>
+        <% } else { %>
+          <div class="admin-empty-state" style="padding: 56px 20px;">
+            <div class="empty-icon" style="background: rgba(16, 185, 129, 0.12); color: #10b981; width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            </div>
+            <div class="empty-title" style="font-size: 22px; font-weight: 700; color: var(--admin-text-main); margin-bottom: 6px;">সকল সাহিত্য পর্যালোচিত ও লাইভে সক্রিয়! 🍃</div>
+            <div class="empty-desc" style="font-size: 15.5px; color: var(--admin-text-muted); max-width: 480px; margin: 0 auto;">বর্তমানে কোনো পেন্ডিং সাহিত্য জমা নেই। সকল লেখকের রচনা সফলভাবে লাইভ আর্কাইভে স্থান পেয়েছে।</div>
+          </div>
+        <% } %>
+      </div>
     </div>
   </div>
 
-  <div class="admin-table-wrap">
-    <table class="admin-table">
-      <thead>
-        <tr>
-          <th>শিরোনাম ও বিবরণ</th>
-          <th>লেখক</th>
-          <th>বিভাগ</th>
-          <th>জমা দেওয়ার তারিখ</th>
-          <th>স্ট্যাটাস</th>
-          <th style="text-align: right;">সিদ্ধান্ত</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% if (recentPending && recentPending.length > 0) { %>
-          <% recentPending.forEach(p => { %>
-            <tr>
-              <td>
-                <div class="post-title-cell">
-                  <%= p.title %>
+  <!-- Right Sidebar Column: Live Activity Feed -->
+  <div class="admin-dashboard-side">
+    <!-- 1. Recent Published Literature -->
+    <div class="admin-side-widget">
+      <div class="admin-side-widget-header">
+        <h3 class="admin-side-widget-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="color: #059669;"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+          <span>সর্বশেষ প্রকাশিত সাহিত্য</span>
+        </h3>
+      </div>
+      <div class="admin-side-widget-body">
+        <% if (recentPublished && recentPublished.length > 0) { %>
+          <% recentPublished.forEach(p => { %>
+            <a href="/post/<%= encodeURIComponent(p.slug) %>" target="_blank" class="side-item-row" title="<%= p.title %>">
+              <div class="side-item-info">
+                <span class="side-item-title"><%= p.title %></span>
+                <div class="side-item-sub">
+                  <span><%= p.author_name || 'লেখক' %></span>
+                  <span>•</span>
+                  <span><%= p.category_name || 'অন্য সাহিত্য' %></span>
                 </div>
-                <% if (p.excerpt) { %>
-                  <div style="font-size: 15px; color: var(--admin-text-sub); margin-top: 4px; max-width: 320px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                    <%= p.excerpt %>
-                  </div>
-                <% } %>
-              </td>
-              <td>
-                <div class="author-cell">
-                  <div class="author-mini-avatar">
-                    <%= p.author_name ? p.author_name.charAt(0) : 'ল' %>
-                  </div>
-                  <div class="author-cell-info">
-                    <span class="author-name"><%= p.author_name || 'লেখক' %></span>
-                  </div>
-                </div>
-              </td>
-              <td>
-                <span class="category-pill"><%= p.category_name || 'অন্য সাহিত্য' %></span>
-              </td>
-              <td style="white-space: nowrap; color: var(--admin-text-muted); font-size: 16px;">
-                <%= formatBengaliDate(p.created_at) %>
-              </td>
-              <td>
-                <span class="status-badge pending">পেন্ডিং</span>
-              </td>
-              <td>
-                <div class="actions-group" style="justify-content: flex-end;">
-                  <form action="/admin/post/<%= p.id %>/approve" method="POST" style="display: inline;" onsubmit="return confirm('লেখাটি অনুমোদন ও পাবলিশ করতে চান?');">
-                    <button type="submit" class="btn-table-action btn-approve" title="এপ্রুভ করুন">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="20 6 9 17 4 12"></polyline>
-                      </svg>
-                      এপ্রুভ
-                    </button>
-                  </form>
-                  <form action="/admin/post/<%= p.id %>/reject" method="POST" style="display: inline;" onsubmit="return confirm('লেখাটি ড্রাফট / রিজেক্ট করতে চান?');">
-                    <button type="submit" class="btn-table-action btn-reject" title="রিজেক্ট করুন">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="18" y1="6" x2="6" y2="18"></line>
-                        <line x1="6" y1="6" x2="18" y2="18"></line>
-                      </svg>
-                      রিজেক্ট
-                    </button>
-                  </form>
-                </div>
-              </td>
-            </tr>
+              </div>
+              <div class="side-item-meta" title="মোট পাঠক ভিউ">
+                👁️ <%= toBengaliNumber(p.views || 0) %>
+              </div>
+            </a>
           <% }) %>
         <% } else { %>
-          <tr>
-            <td colspan="6">
-              <div class="admin-empty-state">
-                <div class="empty-icon">
-                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="20 6 9 17 4 12"></polyline>
-                  </svg>
-                </div>
-                <div class="empty-title">বর্তমানে কোনো পেন্ডিং লেখা নেই</div>
-                <div class="empty-desc">সব লেখকের লেখা অনুমোদিত ও নিয়মিত প্রকাশিত অবস্থায় রয়েছে।</div>
-              </div>
-            </td>
-          </tr>
+          <div style="text-align: center; padding: 24px 16px; color: var(--admin-text-muted); font-size: 14.5px;">কোনো প্রকাশিত লেখা নেই</div>
         <% } %>
-      </tbody>
-    </table>
+      </div>
+      <div class="admin-side-widget-footer">
+        <a href="/admin/posts?status=publish">সকল প্রকাশিত সাহিত্য &rarr;</a>
+      </div>
+    </div>
+
+    <!-- 2. Recent Registered Authors -->
+    <div class="admin-side-widget">
+      <div class="admin-side-widget-header">
+        <h3 class="admin-side-widget-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="color: #2563eb;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+          <span>নতুন নিবন্ধিত লেখক</span>
+        </h3>
+      </div>
+      <div class="admin-side-widget-body">
+        <% if (recentUsers && recentUsers.length > 0) { %>
+          <% recentUsers.forEach(u => { %>
+            <a href="/admin/users/<%= u.id %>/edit" class="side-item-row" title="<%= u.display_name %>">
+              <div class="author-mini-avatar" style="width: 32px; height: 32px; font-size: 13.5px; border-radius: 50%; background: var(--admin-border); display: flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0;">
+                <%= u.display_name ? u.display_name.trim().charAt(0) : 'ল' %>
+              </div>
+              <div class="side-item-info">
+                <span class="side-item-title"><%= u.display_name %></span>
+                <div class="side-item-sub">
+                  <span><%= u.role === 'admin' ? 'এডমিন' : (u.role === 'editor' ? 'সম্পাদক' : 'লেখক') %></span>
+                  <span>•</span>
+                  <span><%= formatBengaliDate(u.created_at || u.registered_at) %></span>
+                </div>
+              </div>
+              <div class="side-item-meta" style="font-size: 16px; color: var(--admin-text-sub);">
+                &rarr;
+              </div>
+            </a>
+          <% }) %>
+        <% } else { %>
+          <div style="text-align: center; padding: 24px 16px; color: var(--admin-text-muted); font-size: 14.5px;">কোনো নতুন লেখক নেই</div>
+        <% } %>
+      </div>
+      <div class="admin-side-widget-footer">
+        <a href="/admin/users">লেখক তালিকা পরিচালনা &rarr;</a>
+      </div>
+    </div>
   </div>
 </div>
+
+<!-- ==========================================================================
+     4. IN-DASHBOARD INSTANT READING PREVIEW MODAL
+     ========================================================================== -->
+<div id="postPreviewModal" class="preview-modal-backdrop" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="modalPostTitle">
+  <div class="preview-modal-panel">
+    <!-- Header -->
+    <div class="preview-modal-header">
+      <div class="preview-header-meta">
+        <span class="mod-category-chip" id="modalPostCategory">বিভাগ</span>
+        <span class="mod-time-chip" id="modalPostTime">পাঠ সময়</span>
+        <span class="mod-date-chip" id="modalPostDate">তারিখ</span>
+      </div>
+      <button type="button" class="btn-close-preview" onclick="closePostPreview()" aria-label="বন্ধ করুন">&times;</button>
+    </div>
+
+    <!-- Body -->
+    <div class="preview-modal-body">
+      <h2 class="preview-post-title" id="modalPostTitle">শিরোনাম</h2>
+      
+      <div class="preview-author-bar">
+        <div class="mod-author-avatar" id="modalAuthorAvatar" style="width: 38px; height: 38px; font-size: 16px;">ল</div>
+        <div class="preview-author-info">
+          <span class="preview-author-name" id="modalPostAuthor">লেখকের নাম</span>
+          <span class="preview-author-role">সাহিত্যিক • পয়েন্ট / অবদানকারী</span>
+        </div>
+      </div>
+
+      <div class="preview-content-box" id="modalPostContent">
+        <!-- Rendered Text Content -->
+      </div>
+    </div>
+
+    <!-- Footer Actions -->
+    <div class="preview-modal-footer">
+      <button type="button" class="preview-btn" onclick="closePostPreview()" style="background: var(--admin-card-bg); border-color: var(--admin-border); color: var(--admin-text-main);">
+        বন্ধ করুন
+      </button>
+
+      <a id="modalEditBtn" href="#" class="preview-btn" style="background: var(--admin-border-light); border-color: var(--admin-border); color: var(--admin-text-main);">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        <span>সম্পাদনা</span>
+      </a>
+
+      <form id="modalRejectForm" action="#" method="POST" style="display: inline;" onsubmit="return confirm('লেখাটি ড্রাফট / বাতিল করতে চান?');">
+        <button type="submit" class="preview-btn" style="background: rgba(239, 68, 68, 0.1); color: #dc2626; border-color: rgba(239, 68, 68, 0.25);">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          <span>বাতিল</span>
+        </button>
+      </form>
+
+      <form id="modalApproveForm" action="#" method="POST" style="display: inline;" onsubmit="return confirm('লেখাটি অনুমোদন ও লাইভে প্রকাশ করতে চান?');">
+        <button type="submit" class="preview-btn approve">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          <span>অনুমোদন ও প্রকাশ</span>
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Pending Data Store for Instant Modal Access -->
+<% if (recentPending && recentPending.length > 0) { %>
+  <script type="application/json" id="pendingPostsJson">
+    <%- JSON.stringify(recentPending.map(p => ({
+      id: p.id,
+      title: p.title,
+      author: p.author_name || 'লেখক',
+      category: p.category_name || 'অন্য সাহিত্য',
+      date: formatBengaliDate(p.created_at),
+      readingTime: calculateReadingTime(p.content || ''),
+      excerpt: p.excerpt || '',
+      content: p.content || ''
+    }))) %>
+  </script>
+<% } %>
+
+<script>
+  (function() {
+    let pendingPosts = [];
+    const pendingJsonElem = document.getElementById('pendingPostsJson');
+    if (pendingJsonElem) {
+      try {
+        pendingPosts = JSON.parse(pendingJsonElem.textContent);
+      } catch (e) {
+        console.error('Failed to parse pending posts JSON:', e);
+      }
+    }
+
+    const modal = document.getElementById('postPreviewModal');
+    const modalTitle = document.getElementById('modalPostTitle');
+    const modalAuthor = document.getElementById('modalPostAuthor');
+    const modalAvatar = document.getElementById('modalAuthorAvatar');
+    const modalCategory = document.getElementById('modalPostCategory');
+    const modalTime = document.getElementById('modalPostTime');
+    const modalDate = document.getElementById('modalPostDate');
+    const modalContent = document.getElementById('modalPostContent');
+    const modalEditBtn = document.getElementById('modalEditBtn');
+    const modalApproveForm = document.getElementById('modalApproveForm');
+    const modalRejectForm = document.getElementById('modalRejectForm');
+
+    window.openPreviewByIndex = function(index) {
+      const post = pendingPosts[index];
+      if (!post) return;
+
+      modalTitle.textContent = post.title;
+      modalAuthor.textContent = post.author;
+      modalAvatar.textContent = post.author ? post.author.trim().charAt(0) : 'ল';
+      modalCategory.textContent = post.category;
+      modalTime.textContent = post.readingTime;
+      modalDate.textContent = post.date;
+
+      // Handle raw content or rich text
+      if (post.content && post.content.includes('<') && post.content.includes('>')) {
+        modalContent.innerHTML = post.content;
+      } else {
+        modalContent.textContent = post.content;
+      }
+
+      modalEditBtn.href = '/admin/posts/' + post.id + '/edit';
+      modalApproveForm.action = '/admin/post/' + post.id + '/approve';
+      modalRejectForm.action = '/admin/post/' + post.id + '/reject';
+
+      modal.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+    };
+
+    window.closePostPreview = function() {
+      if (modal) {
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+    };
+
+    // Close on backdrop click
+    if (modal) {
+      modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+          closePostPreview();
+        }
+      });
+    }
+
+    // Close on Escape key
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && modal && modal.style.display !== 'none') {
+        closePostPreview();
+      }
+    });
+
+    // Category Tabs Filter Logic
+    const tabs = document.querySelectorAll('.mod-tab-btn');
+    const cards = document.querySelectorAll('.mod-queue-card');
+    const tabEmptyMsg = document.getElementById('tabEmptyMessage');
+
+    tabs.forEach(tab => {
+      tab.addEventListener('click', function() {
+        tabs.forEach(t => t.classList.remove('active'));
+        this.classList.add('active');
+
+        const filter = this.getAttribute('data-filter');
+        let visibleCount = 0;
+
+        cards.forEach(card => {
+          const cardCat = card.getAttribute('data-category') || '';
+          if (filter === 'all' || cardCat.includes(filter)) {
+            card.style.display = 'flex';
+            visibleCount++;
+          } else {
+            card.style.display = 'none';
+          }
+        });
+
+        if (tabEmptyMsg) {
+          tabEmptyMsg.style.display = visibleCount === 0 ? 'block' : 'none';
+        }
+      });
+    });
+  })();
+</script>
 
 <%- include('partials/admin_layout_end') %>

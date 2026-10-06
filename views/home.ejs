@@ -1,6 +1,15 @@
 <%- include('partials/header') %>
 
 <main class="page-main-content">
+  <!-- 1. Literature of the Day (আজকের সাহিত্য) Section -->
+  <% if (typeof dailyPoem !== 'undefined' && dailyPoem) { %>
+    <section class="site-section section-daily-poem" style="padding-top: 24px; padding-bottom: 8px;">
+      <div class="site-container">
+        <%- include('partials/daily_poem_strip', { poem: dailyPoem }) %>
+      </div>
+    </section>
+  <% } %>
+
   <!-- 1. Books Showcase Section -->
   <section class="site-section section-books">
     <div class="site-container">
@@ -57,7 +66,14 @@
     </section>
   <% } %>
 
-  <!-- 3. Latest Literature Section -->
+  <!-- 4. Literary Themes & Mood Explorer Section -->
+  <section class="site-section section-themes">
+    <div class="site-container">
+      <%- include('partials/theme_explorer') %>
+    </div>
+  </section>
+
+  <!-- 5. Latest Literature Section -->
   <section class="site-section section-latest">
     <div class="site-container">
       <div class="section-header">

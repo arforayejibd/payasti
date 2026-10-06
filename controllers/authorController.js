@@ -13,14 +13,21 @@ exports.getAuthorsList = async (req, res) => {
     const offset = (page - 1) * limit;
 
     let countSql = "SELECT COUNT(*) AS total FROM users WHERE role IN ('author', 'editor', 'admin')";
-    let usersSql = "SELECT * FROM users WHERE role IN ('author', 'editor', 'admin')";
+    let usersSql = `
+      SELECT u.id, u.wp_id, u.username, u.email, u.display_name, u.nicename, u.role, u.avatar, u.bio, u.registered_at,
+             COALESCE(SUM(p.views), 0) AS total_views,
+             COUNT(p.id) AS post_count
+      FROM users u
+      LEFT JOIN posts p ON u.id = p.author_id AND p.status = 'publish'
+      WHERE u.role IN ('author', 'editor', 'admin')
+    `;
     const countParams = [];
     const usersParams = [];
 
     if (searchQuery) {
       countSql += " AND (display_name LIKE ? OR username LIKE ? OR nicename LIKE ?)";
       countParams.push(`%${searchQuery}%`, `%${searchQuery}%`, `%${searchQuery}%`);
-      usersSql += " AND (display_name LIKE ? OR username LIKE ? OR nicename LIKE ?)";
+      usersSql += " AND (u.display_name LIKE ? OR u.username LIKE ? OR u.nicename LIKE ?)";
       usersParams.push(`%${searchQuery}%`, `%${searchQuery}%`, `%${searchQuery}%`);
     }
 
@@ -32,8 +39,8 @@ exports.getAuthorsList = async (req, res) => {
     const totalFiltered = totalFilteredRow ? totalFilteredRow.total : 0;
     const totalPages = Math.ceil(totalFiltered / limit);
 
-    // WordPress sorts authors alphabetically by display_name
-    usersSql += " ORDER BY display_name ASC LIMIT ? OFFSET ?";
+    // Group by user and sort alphabetically
+    usersSql += " GROUP BY u.id ORDER BY u.display_name ASC LIMIT ? OFFSET ?";
     usersParams.push(limit, offset);
 
     const authors = await db.prepare(usersSql).all(...usersParams);
@@ -133,10 +140,21 @@ exports.getAuthorProfile = async (req, res) => {
       author.avatar = `https://secure.gravatar.com/avatar/${emailHash}?s=100&d=mp`;
     }
 
-    // Count author's posts
+    // Count author's posts & total views
     const totalPostsRow = await db.prepare("SELECT COUNT(*) AS total FROM posts WHERE author_id = ? AND status = 'publish'").get(author.id);
-    const totalPosts = totalPostsRow ? totalPostsRow.total : 0;
+    const totalPosts = Number(totalPostsRow ? totalPostsRow.total : 0);
     const totalPages = Math.ceil(totalPosts / limit);
+
+    const totalViewsRow = await db.prepare("SELECT COALESCE(SUM(views), 0) AS total FROM posts WHERE author_id = ? AND status = 'publish'").get(author.id);
+    const totalViews = Number(totalViewsRow ? totalViewsRow.total : 0);
+
+    const badges = {
+      isViral: totalViews >= 10000,
+      isPopular: totalViews >= 1000,
+      isMaster: totalPosts >= 15,
+      isRising: totalPosts >= 5,
+      isFirst: totalPosts >= 1
+    };
 
     // Fetch author's posts
     const posts = await db.prepare(`
@@ -166,6 +184,8 @@ exports.getAuthorProfile = async (req, res) => {
     res.render('author_profile', {
       author,
       posts,
+      totalViews,
+      badges,
       pagination: {
         currentPage: page,
         totalPages: totalPages,

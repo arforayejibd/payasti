@@ -74,6 +74,6 @@ router.post('/users/:id/delete', adminController.deleteUser);
 
 // 7. Settings
 router.get('/settings', adminController.getSettings);
-router.post('/settings', adminController.postSettings);
+router.post('/settings', upload.single('og_image_file'), adminController.postSettings);
 
 module.exports = router;

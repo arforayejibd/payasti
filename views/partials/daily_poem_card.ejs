@@ -1,0 +1,83 @@
+<%
+  if (typeof poem !== 'undefined' && poem) {
+    let authorBadge = null;
+    try {
+      if (typeof getBadgeByAuthorId === 'function') {
+        authorBadge = getBadgeByAuthorId(poem.author_id || poem.author_slug || poem.author_name);
+      } else {
+        const h = require(process.cwd() + '/helpers/authorBadgeHelper');
+        authorBadge = h.getBadgeByAuthorId(poem.author_id || poem.author_slug || poem.author_name);
+      }
+    } catch(e) {}
+
+    let stanza = '';
+    try {
+      if (typeof extractPoemStanza === 'function') {
+        stanza = extractPoemStanza(poem.content, 3);
+      } else {
+        const h = require(process.cwd() + '/helpers/dailyPoemHelper');
+        stanza = h.extractPoemStanza(poem.content, 3);
+      }
+    } catch(e) {
+      stanza = poem.excerpt || (poem.content ? poem.content.substring(0, 140) : '');
+    }
+%>
+<article class="post-card post-card--daily-poem">
+  <!-- Daily Badge Top Strip -->
+  <div class="daily-poem-card-topbar">
+    <span class="daily-poem-topbar-pill">📜 আজকের কবিতা</span>
+    <span class="daily-poem-topbar-date"><%= typeof formatBengaliDate === 'function' ? formatBengaliDate(new Date()) : '' %></span>
+  </div>
+
+  <div class="post-card-body">
+    <!-- Author Row -->
+    <div class="post-card-author-row">
+      <div class="avatar-badge-wrap">
+        <div class="post-card-avatar-wrap">
+          <a href="/author/<%= encodeURIComponent(poem.author_slug || '') %>" class="post-card-avatar-link">
+            <% if (poem.author_avatar) { %>
+              <img src="<%= poem.author_avatar %>" alt="<%= poem.author_name %>" class="post-card-avatar-img" loading="lazy">
+            <% } else { %>
+              <div class="post-card-avatar-placeholder">
+                <%= poem.author_name ? poem.author_name.charAt(0) : 'প' %>
+              </div>
+            <% } %>
+          </a>
+        </div>
+        <% if (authorBadge) { %>
+          <div class="avatar-floating-badge <%= authorBadge.tagClass %> badge-size-sm" title="<%= authorBadge.icon %> <%= authorBadge.title %> (<%= authorBadge.tooltip %>)">
+            <span><%= authorBadge.icon %></span>
+          </div>
+        <% } %>
+      </div>
+      <div class="post-card-titles-wrap">
+        <div class="post-card-author-header">
+          <a href="/author/<%= encodeURIComponent(poem.author_slug || '') %>" class="post-card-author-name">
+            <%= poem.author_name %>
+          </a>
+        </div>
+        <a href="/post/<%= encodeURIComponent(poem.slug || '') %>" class="post-card-title" title="<%= poem.title %>">
+          <%= poem.title %>
+        </a>
+      </div>
+    </div>
+
+    <!-- Excerpt / Stanza -->
+    <a href="/post/<%= encodeURIComponent(poem.slug || '') %>" class="post-card-excerpt-link">
+      <div class="post-card-excerpt daily-poem-grid-stanza"><%- stanza %></div>
+    </a>
+  </div>
+
+  <!-- Meta Footer -->
+  <div class="post-card-footer">
+    <div class="post-card-category">
+      <a href="/category/<%= encodeURIComponent(poem.category_slug || 'কবিতা') %>" class="post-card-category-link">
+        <%= poem.category_name || 'কবিতা' %>
+      </a>
+    </div>
+    <a href="/post/<%= encodeURIComponent(poem.slug || '') %>" class="daily-poem-grid-link">
+      কবিতাটি পড়ুন »
+    </a>
+  </div>
+</article>
+<% } %>

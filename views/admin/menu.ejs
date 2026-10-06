@@ -1,0 +1,1038 @@
+<%- include('partials/admin_layout_start', { 
+  pageTitle: 'হেডার মেনু ব্যবস্থাপনা (Header Navigation)', 
+  pageBreadcrumb: 'Header Menu'
+}) %>
+
+<style>
+  :root {
+    --admin-bg-card: #ffffff;
+    --admin-card-bg: #ffffff;
+    --admin-text: #0f172a;
+    --admin-text-muted: #64748b;
+    --admin-border: #e2e8f0;
+    --admin-bg: #f8fafc;
+    --admin-primary: #075603;
+  }
+
+  /* Menu Builder Specific Styles */
+  .menu-builder-card {
+    background: #ffffff;
+    border: 1px solid var(--admin-border);
+    border-radius: 12px;
+    padding: 14px 18px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    user-select: none;
+  }
+  .menu-builder-card.dragging {
+    opacity: 0.4;
+    border: 2px dashed var(--admin-primary);
+    transform: scale(0.98);
+  }
+  .menu-builder-card.drag-over {
+    border-top: 3px solid var(--admin-primary);
+    transform: translateY(2px);
+  }
+  .menu-drag-handle {
+    cursor: grab;
+    color: var(--admin-text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 4px;
+    border-radius: 6px;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+  .menu-drag-handle:hover {
+    background: var(--admin-bg);
+    color: var(--admin-primary);
+  }
+  .menu-drag-handle:active {
+    cursor: grabbing;
+  }
+  .sub-item-card {
+    background: var(--admin-bg);
+    border: 1px solid var(--admin-border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    margin-top: 6px;
+    margin-left: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .preview-navbar-strip {
+    background: #ffffff;
+    border: 1px solid var(--admin-border);
+    border-radius: 12px;
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    overflow-x: auto;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.03);
+  }
+  .preview-nav-item {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--admin-text);
+    padding: 6px 12px;
+    border-radius: 8px;
+    background: var(--admin-bg);
+    border: 1px solid var(--admin-border);
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .cat-tab-btn {
+    padding: 6px 12px;
+    font-size: 12.5px;
+    font-weight: 700;
+    border-radius: 8px;
+    border: 1px solid var(--admin-border);
+    background: var(--admin-bg);
+    color: var(--admin-text-muted);
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .cat-tab-btn.active {
+    background: var(--admin-primary);
+    color: #ffffff;
+    border-color: var(--admin-primary);
+  }
+  .unsaved-floating-bar {
+    position: sticky;
+    bottom: 20px;
+    z-index: 50;
+    background: #1e293b;
+    color: #ffffff;
+    border-radius: 14px;
+    padding: 14px 22px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    animation: slideUpToast 0.25s ease-out;
+    margin-top: 24px;
+  }
+  @keyframes slideUpToast {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Subcategory Modal */
+  .subcat-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.65);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    z-index: 9999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .subcat-modal-overlay.active {
+    display: flex;
+  }
+  .subcat-modal-card {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    max-width: 520px;
+    width: 100%;
+    padding: 24px;
+    box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.35);
+    position: relative;
+    z-index: 10000;
+  }
+  .subcat-modal-card input,
+  .subcat-modal-card select {
+    background: #f8fafc !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #0f172a !important;
+  }
+  .subcat-modal-card input:focus,
+  .subcat-modal-card select:focus {
+    background: #ffffff !important;
+    border-color: #075603 !important;
+    box-shadow: 0 0 0 3px rgba(7, 86, 3, 0.12) !important;
+  }
+</style>
+
+<div class="admin-content-wrap">
+  <!-- Top Banner / Alert -->
+  <% if (typeof success !== 'undefined' && success) { %>
+    <div style="background: #f0fdf4; border: 1px solid #86efac; color: #166534; padding: 14px 20px; border-radius: 12px; margin-bottom: 24px; font-weight: 700; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 8px rgba(22, 101, 52, 0.08);">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span style="font-size: 22px;">✓</span>
+        <span>হেডার মেনু সফলভাবে সংরক্ষিত হয়েছে! ফন্টএন্ড হেডারে আপনার নির্বাচিত ক্যাটাগরিগুলো তাৎক্ষণিকভাবে কার্যকর হয়েছে।</span>
+      </div>
+      <a href="/" target="_blank" style="padding: 6px 14px; background: #166534; color: #ffffff; text-decoration: none; border-radius: 6px; font-size: 13px; font-weight: 700;">
+        সাইট দেখুন &raquo;
+      </a>
+    </div>
+  <% } %>
+
+  <!-- Live Navbar Preview Box -->
+  <div class="admin-card" style="margin-bottom: 24px;">
+    <div class="admin-card-body" style="padding: 18px 24px;">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 16px;">👁️</span>
+          <strong style="font-size: 15px; color: var(--admin-text);">লাইভ হেডার প্রিভিউ (Live Header Preview)</strong>
+          <span style="font-size: 12px; color: var(--admin-text-muted); background: var(--admin-bg); padding: 2px 8px; border-radius: 6px; border: 1px solid var(--admin-border);">স্বয়ংক্রিয় আপডেট</span>
+        </div>
+        <div style="font-size: 13px; color: var(--admin-text-muted);">
+          ফন্টএন্ডের হেডারে মেনু যেমনটি দেখা যাবে
+        </div>
+      </div>
+
+      <!-- Preview Bar -->
+      <div class="preview-navbar-strip" id="liveNavbarPreview">
+        <!-- Rendered dynamically by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Grid Workspace -->
+  <div style="display: grid; grid-template-columns: 360px minmax(0, 1fr); gap: 24px; align-items: start;">
+    
+    <!-- LEFT COLUMN: Categories & Sources -->
+    <div style="display: flex; flex-direction: column; gap: 20px;">
+      
+      <!-- Category Picker Box -->
+      <div class="admin-card">
+        <div class="admin-card-header" style="padding: 16px 20px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+            <h3 style="font-size: 16px; font-weight: 800; margin: 0; color: var(--admin-text); display: flex; align-items: center; gap: 6px;">
+              <span>📂</span>
+              <span>ক্যাটাগরি তালিকা (<%= toBengaliNumber(categories.length) %>)</span>
+            </h3>
+            <span style="font-size: 12px; color: var(--admin-text-muted);">টিক দিন</span>
+          </div>
+
+          <!-- Tabs: All / Popular / Active -->
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <button type="button" class="cat-tab-btn active" onclick="switchCatTab('all', this)">সবগুলো</button>
+            <button type="button" class="cat-tab-btn" onclick="switchCatTab('popular', this)">জনপ্রিয়</button>
+            <button type="button" class="cat-tab-btn" onclick="switchCatTab('active', this)">মেনুতে আছে</button>
+          </div>
+        </div>
+
+        <div class="admin-card-body" style="padding: 16px 20px;">
+          <!-- Search Filter -->
+          <div style="position: relative; margin-bottom: 10px;">
+            <input 
+              type="text" 
+              id="catSearchInput" 
+              placeholder="ক্যাটাগরি খুঁজুন (যেমন: টেক, বই)..." 
+              style="width: 100%; padding: 8px 12px 8px 30px; font-size: 13.5px; border: 1px solid var(--admin-border); border-radius: 8px; background: var(--admin-bg); color: var(--admin-text); outline: none;"
+              oninput="filterCategoriesList(this.value)"
+            >
+            <span style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 13px; color: var(--admin-text-muted); pointer-events: none;">🔍</span>
+          </div>
+
+          <!-- Quick Actions -->
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; font-size: 12.5px;">
+            <button type="button" onclick="selectAllCats(true)" style="background: none; border: none; color: var(--admin-primary); cursor: pointer; font-weight: 700; padding: 0;">✓ দৃশ্যমান সব সিলেক্ট করুন</button>
+            <button type="button" onclick="selectAllCats(false)" style="background: none; border: none; color: #ef4444; cursor: pointer; font-weight: 600; padding: 0;">সিলেকশন মুছুন</button>
+          </div>
+
+          <!-- Category Checkbox List -->
+          <div id="catItemsList" style="max-height: 400px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; padding-right: 4px;">
+            <% categories.forEach(cat => { %>
+              <label 
+                class="cat-picker-item" 
+                data-name="<%= cat.name.toLowerCase() %>" 
+                data-slug="<%= cat.slug %>" 
+                data-count="<%= cat.count || 0 %>"
+                style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--admin-border); background: var(--admin-bg-card); cursor: pointer; transition: all 0.15s ease;"
+              >
+                <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
+                  <input 
+                    type="checkbox" 
+                    class="cat-source-chk" 
+                    value="<%= cat.slug %>" 
+                    data-title="<%= cat.name %>" 
+                    data-slug="<%= cat.slug %>" 
+                    data-url="/category/<%= encodeURIComponent(cat.slug) %>"
+                    style="width: 16px; height: 16px; cursor: pointer; accent-color: var(--admin-primary);"
+                  >
+                  <span class="cat-label-text" style="font-size: 14px; font-weight: 600; color: var(--admin-text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                    <%= cat.name %>
+                  </span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
+                  <span class="cat-active-badge" id="badge-<%= cat.slug %>" style="display: none; font-size: 11px; font-weight: 700; color: #065f46; background: #d1fae5; padding: 1px 6px; border-radius: 4px;">
+                    যুক্ত
+                  </span>
+                  <span style="font-size: 12px; font-weight: 700; color: var(--admin-text-muted); background: var(--admin-bg); padding: 2px 7px; border-radius: 10px; border: 1px solid var(--admin-border);">
+                    <%= toBengaliNumber(cat.count || 0) %>
+                  </span>
+                </div>
+              </label>
+            <% }) %>
+          </div>
+
+          <button 
+            type="button" 
+            onclick="addSelectedCategoriesToMenu()" 
+            class="btn-new-action" 
+            style="width: 100%; margin-top: 14px; padding: 10px; font-size: 14.5px; font-weight: 800; justify-content: center; border-radius: 8px;"
+          >
+            <span>+ নির্বাচিতগুলো মেনুতে যোগ করুন</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Custom Link Adder -->
+      <div class="admin-card">
+        <div class="admin-card-header" style="padding: 14px 20px;">
+          <h3 style="font-size: 15px; font-weight: 800; margin: 0; color: var(--admin-text); display: flex; align-items: center; gap: 6px;">
+            <span>🔗</span>
+            <span>কাস্টম লিংক বা এক্সটার্নাল পেজ</span>
+          </h3>
+        </div>
+        <div class="admin-card-body" style="padding: 16px 20px;">
+          <div style="margin-bottom: 10px;">
+            <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px; color: var(--admin-text);">মেনুর নাম *</label>
+            <input type="text" id="customLinkTitle" placeholder="যেমন: অফার / গাইড / হোম" style="width: 100%; padding: 8px 12px; font-size: 13.5px; border: 1px solid var(--admin-border); border-radius: 8px; background: var(--admin-bg); color: var(--admin-text); outline: none;">
+          </div>
+          <div style="margin-bottom: 12px;">
+            <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px; color: var(--admin-text);">লিংক / URL *</label>
+            <input type="text" id="customLinkUrl" placeholder="যেমন: /offers বা https://..." style="width: 100%; padding: 8px 12px; font-size: 13.5px; border: 1px solid var(--admin-border); border-radius: 8px; background: var(--admin-bg); color: var(--admin-text); outline: none;">
+          </div>
+          <button type="button" onclick="addCustomLinkToMenu()" class="btn-action-outline" style="width: 100%; padding: 8px; font-size: 13.5px; font-weight: 700; border-radius: 8px; border: 1px solid var(--admin-border); color: var(--admin-primary); cursor: pointer; background: var(--admin-bg-card);">
+            + কাস্টম লিংক যোগ করুন
+          </button>
+        </div>
+      </div>
+
+      <!-- Quick Preset Buttons -->
+      <div class="admin-card">
+        <div class="admin-card-header" style="padding: 12px 18px;">
+          <span style="font-size: 13.5px; font-weight: 700; color: var(--admin-text);">⚡ কুইক প্রিসেট</span>
+        </div>
+        <div class="admin-card-body" style="padding: 12px 18px; display: flex; flex-direction: column; gap: 8px;">
+          <button type="button" onclick="applyPreset('standard')" style="text-align: left; padding: 7px 10px; font-size: 13px; font-weight: 600; border-radius: 6px; border: 1px solid var(--admin-border); background: var(--admin-bg); color: var(--admin-text); cursor: pointer;">
+            🌟 সেরা ১০ স্ট্যান্ডার্ড মেনু
+          </button>
+          <button type="button" onclick="applyPreset('tech_books')" style="text-align: left; padding: 7px 10px; font-size: 13px; font-weight: 600; border-radius: 6px; border: 1px solid var(--admin-border); background: var(--admin-bg); color: var(--admin-text); cursor: pointer;">
+            📱 টেক ও গ্যাজেট + বই ফোকাসড
+          </button>
+          <button type="button" onclick="resetToDefaultMenu()" style="text-align: left; padding: 7px 10px; font-size: 13px; font-weight: 600; border-radius: 6px; border: 1px solid #fee2e2; background: #fff5f5; color: #dc2626; cursor: pointer;">
+            🔄 ডিফল্ট রিস্টোর করুন
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT COLUMN: Active Menu Structure & Order List -->
+    <div class="admin-card">
+      <div class="admin-card-header" style="display: flex; align-items: center; justify-content: space-between; padding: 18px 24px; flex-wrap: wrap; gap: 10px;">
+        <div>
+          <h3 style="font-size: 17px; font-weight: 800; margin: 0 0 2px; color: var(--admin-text); display: flex; align-items: center; gap: 8px;">
+            <span>🧭</span>
+            <span>সক্রিয় হেডার মেনু তালিকা (Active Menu Structure)</span>
+          </h3>
+          <span style="font-size: 13px; color: var(--admin-text-muted);">
+            আইটেমগুলোকে টেনে (Drag & Drop) অথবা ▲ / ▼ বোতাম দিয়ে সাজান। সরাসরি নাম বা সাবমেনু এডিট করুন।
+          </span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <button type="button" onclick="collapseAllDrawers()" style="background: none; border: 1px solid var(--admin-border); color: var(--admin-text-muted); padding: 5px 10px; border-radius: 6px; font-size: 12.5px; font-weight: 600; cursor: pointer;">
+            সব সংকোচন করুন
+          </button>
+        </div>
+      </div>
+
+      <div class="admin-card-body" style="padding: 24px;">
+        <form id="menuSaveForm" action="/admin/menu" method="POST">
+          <input type="hidden" name="menu_json" id="menuJsonInput" value="">
+
+          <!-- Menu Items Sortable Container -->
+          <div id="activeMenuItemsList" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px;">
+            <!-- Items rendered via JS from initial data -->
+          </div>
+
+          <!-- Empty State -->
+          <div id="emptyMenuState" style="display: none; text-align: center; padding: 40px 20px; background: var(--admin-bg); border: 2px dashed var(--admin-border); border-radius: 12px; margin-bottom: 24px;">
+            <div style="font-size: 32px; margin-bottom: 8px;">📭</div>
+            <h4 style="font-size: 16px; font-weight: 700; color: var(--admin-text); margin-bottom: 4px;">কোনো মেনু আইটেম নেই</h4>
+            <p style="font-size: 14px; color: var(--admin-text-muted); margin: 0;">বাম পাশ থেকে ক্যাটাগরি সিলেক্ট করে যোগ করুন।</p>
+          </div>
+
+          <!-- Bottom Action Bar -->
+          <div style="display: flex; align-items: center; justify-content: space-between; padding-top: 20px; border-top: 1px solid var(--admin-border); flex-wrap: wrap; gap: 14px;">
+            <div style="font-size: 14px; color: var(--admin-text-muted);">
+              মোট মূল মেনু আইটেম: <strong id="totalMenuItemsCount" style="color: var(--admin-text);">০</strong> টি
+            </div>
+
+            <button type="submit" class="btn-new-action" style="padding: 12px 36px; font-size: 16px; font-weight: 800; border-radius: 10px; box-shadow: 0 4px 14px rgba(6, 130, 0, 0.3);">
+              💾 হেডার মেনু সেভ করুন
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Floating Sticky Bar on Dirty State -->
+  <div class="unsaved-floating-bar" id="unsavedFloatingBar">
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <span style="font-size: 18px;">⚠️</span>
+      <span style="font-weight: 700; font-size: 14.5px;">মেনুতে অসংরক্ষিত পরিবর্তন রয়েছে। ফন্টএন্ডে দেখতে সেভ করুন।</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <button type="button" onclick="submitMenuForm()" style="background: var(--admin-primary, #059669); color: #ffffff; border: none; padding: 8px 20px; border-radius: 8px; font-weight: 800; font-size: 14px; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.2);">
+        💾 এখনই সেভ করুন
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal for Subcategory Selection -->
+<div class="subcat-modal-overlay" id="subcatModal">
+  <div class="subcat-modal-card">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--admin-border);">
+      <h3 style="font-size: 16px; font-weight: 800; color: var(--admin-text); margin: 0;">
+        📂 সাব-ক্যাটাগরি ড্রপডাউন যোগ করুন
+      </h3>
+      <button type="button" onclick="closeSubcatModal()" style="background: none; border: none; font-size: 20px; cursor: pointer; color: var(--admin-text-muted);">&times;</button>
+    </div>
+
+    <div style="margin-bottom: 14px;">
+      <label style="display: block; font-size: 13.5px; font-weight: 700; margin-bottom: 6px; color: var(--admin-text);">বিদ্যমান ক্যাটাগরি থেকে বেছে নিন:</label>
+      <select id="modalCatSelect" onchange="onModalCatChange(this)" style="width: 100%; padding: 8px 12px; font-size: 14px; border: 1px solid var(--admin-border); border-radius: 8px; background: var(--admin-bg); color: var(--admin-text); outline: none;">
+        <option value="">-- ক্যাটাগরি নির্বাচন করুন --</option>
+        <% categories.forEach(cat => { %>
+          <option value="<%= cat.slug %>" data-name="<%= cat.name %>">
+            <%= cat.name %> (<%= toBengaliNumber(cat.count || 0) %>টি পোস্ট)
+          </option>
+        <% }) %>
+      </select>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 10px; margin: 14px 0;">
+      <hr style="flex: 1; border: none; border-top: 1px solid var(--admin-border);">
+      <span style="font-size: 12px; color: var(--admin-text-muted); font-weight: 700;">অথবা কাস্টম সাব-লিংক</span>
+      <hr style="flex: 1; border: none; border-top: 1px solid var(--admin-border);">
+    </div>
+
+    <div style="margin-bottom: 10px;">
+      <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px; color: var(--admin-text);">সাবমেনুর নাম *</label>
+      <input type="text" id="modalSubTitle" placeholder="যেমন: স্মার্টওয়াচ ও এক্সেসরিজ" style="width: 100%; padding: 8px 12px; font-size: 13.5px; border: 1px solid var(--admin-border); border-radius: 8px; background: var(--admin-bg); color: var(--admin-text); outline: none;">
+    </div>
+
+    <div style="margin-bottom: 18px;">
+      <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px; color: var(--admin-text);">সাবমেনুর URL / লিঙ্ক *</label>
+      <input type="text" id="modalSubUrl" placeholder="যেমন: /category/tech" style="width: 100%; padding: 8px 12px; font-size: 13.5px; border: 1px solid var(--admin-border); border-radius: 8px; background: var(--admin-bg); color: var(--admin-text); outline: none;">
+    </div>
+
+    <div style="display: flex; align-items: center; justify-content: flex-end; gap: 10px;">
+      <button type="button" onclick="closeSubcatModal()" style="padding: 8px 16px; font-size: 13.5px; font-weight: 600; border-radius: 8px; border: 1px solid var(--admin-border); background: var(--admin-bg); color: var(--admin-text); cursor: pointer;">
+        বাতিল
+      </button>
+      <button type="button" onclick="confirmAddSubcategory()" class="btn-new-action" style="padding: 8px 20px; font-size: 13.5px; font-weight: 700; border-radius: 8px;">
+        + সাবমেনু যোগ করুন
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- All Available Categories JSON for Sub-item Picker -->
+<script>
+  const allCategoriesData = <%- JSON.stringify(categories || []) %>;
+  let activeMenuData = <%- JSON.stringify(currentMenu || []) %>;
+  let isDirty = false;
+  let currentCatTab = 'all';
+  let activeParentIndexForSubcat = null;
+
+  function markDirty() {
+    isDirty = true;
+    const bar = document.getElementById('unsavedFloatingBar');
+    if (bar) bar.style.display = 'flex';
+    document.getElementById('menuJsonInput').value = JSON.stringify(activeMenuData);
+  }
+
+  // Switch Left Tabs
+  function switchCatTab(tab, btn) {
+    currentCatTab = tab;
+    document.querySelectorAll('.cat-tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    applyCatFilters();
+  }
+
+  // Filter Categories List on Left
+  function filterCategoriesList(query) {
+    applyCatFilters(query);
+  }
+
+  function applyCatFilters(query) {
+    const q = (query || document.getElementById('catSearchInput').value || '').toLowerCase().trim();
+    const items = document.querySelectorAll('.cat-picker-item');
+
+    items.forEach(item => {
+      const name = item.getAttribute('data-name') || '';
+      const slug = item.getAttribute('data-slug') || '';
+      const count = parseInt(item.getAttribute('data-count') || '0', 10);
+      const isAlreadyInMenu = activeMenuData.some(m => m.slug === slug || (m.subcategories && m.subcategories.some(s => s.slug === slug)));
+
+      let matchesTab = true;
+      if (currentCatTab === 'popular') {
+        matchesTab = count >= 5;
+      } else if (currentCatTab === 'active') {
+        matchesTab = isAlreadyInMenu;
+      }
+
+      let matchesQuery = !q || name.includes(q) || slug.includes(q);
+
+      if (matchesTab && matchesQuery) {
+        item.style.display = 'flex';
+      } else {
+        item.style.display = 'none';
+      }
+    });
+  }
+
+  // Update Category Active Badges on Left
+  function updateCategoryBadges() {
+    document.querySelectorAll('.cat-active-badge').forEach(b => b.style.display = 'none');
+    activeMenuData.forEach(item => {
+      if (item.slug) {
+        const badge = document.getElementById('badge-' + item.slug);
+        if (badge) badge.style.display = 'inline-block';
+      }
+      if (item.subcategories && item.subcategories.length) {
+        item.subcategories.forEach(sub => {
+          if (sub.slug) {
+            const subBadge = document.getElementById('badge-' + sub.slug);
+            if (subBadge) subBadge.style.display = 'inline-block';
+          }
+        });
+      }
+    });
+  }
+
+  // Select all checkboxes in category source
+  function selectAllCats(checked) {
+    document.querySelectorAll('.cat-source-chk').forEach(chk => {
+      if (chk.closest('.cat-picker-item').style.display !== 'none') {
+        chk.checked = checked;
+      }
+    });
+  }
+
+  // Render the Live Navbar Preview Bar
+  function renderLiveNavbarPreview() {
+    const preview = document.getElementById('liveNavbarPreview');
+    preview.innerHTML = '';
+
+    if (activeMenuData.length === 0) {
+      preview.innerHTML = '<span style="font-size: 13px; color: var(--admin-text-muted); font-style: italic;">মেনু খালি। বাম পাশ থেকে ক্যাটাগরি যোগ করুন।</span>';
+      return;
+    }
+
+    activeMenuData.forEach(item => {
+      const pill = document.createElement('div');
+      pill.className = 'preview-nav-item';
+      
+      const hasSubs = item.subcategories && item.subcategories.length > 0;
+      pill.innerHTML = `
+        <span>${escapeHtml(item.title || 'শিরোনামহীন')}</span>
+        ${hasSubs ? '<span style="font-size: 10px; opacity: 0.7; margin-left: 2px;">▼ (' + item.subcategories.length + ')</span>' : ''}
+      `;
+      preview.appendChild(pill);
+    });
+  }
+
+  // Render the Active Menu Builder UI
+  function renderActiveMenuUI() {
+    const container = document.getElementById('activeMenuItemsList');
+    const emptyState = document.getElementById('emptyMenuState');
+    const countDisplay = document.getElementById('totalMenuItemsCount');
+    const jsonInput = document.getElementById('menuJsonInput');
+
+    container.innerHTML = '';
+    countDisplay.textContent = activeMenuData.length;
+    jsonInput.value = JSON.stringify(activeMenuData);
+
+    renderLiveNavbarPreview();
+    updateCategoryBadges();
+
+    if (activeMenuData.length === 0) {
+      emptyState.style.display = 'block';
+      return;
+    }
+    emptyState.style.display = 'none';
+
+    activeMenuData.forEach((item, index) => {
+      const card = document.createElement('div');
+      card.className = 'menu-builder-card';
+      card.setAttribute('draggable', 'true');
+      card.setAttribute('data-index', index);
+
+      const hasSubs = Array.isArray(item.subcategories) && item.subcategories.length > 0;
+
+      card.innerHTML = `
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
+          <div style="display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0;">
+            
+            <!-- Drag Handle -->
+            <div class="menu-drag-handle" title="টেনে ক্রম সাজান">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <circle cx="9" cy="5" r="2"></circle><circle cx="15" cy="5" r="2"></circle>
+                <circle cx="9" cy="12" r="2"></circle><circle cx="15" cy="12" r="2"></circle>
+                <circle cx="9" cy="19" r="2"></circle><circle cx="15" cy="19" r="2"></circle>
+              </svg>
+            </div>
+
+            <!-- Up / Down Buttons -->
+            <div style="display: flex; flex-direction: column; gap: 2px;">
+              <button type="button" onclick="moveMenuItem(${index}, -1)" ${index === 0 ? 'disabled style="opacity: 0.2; cursor: not-allowed;"' : ''} style="background: var(--admin-bg); border: 1px solid var(--admin-border); border-radius: 4px; padding: 2px 6px; font-size: 10px; cursor: pointer; color: var(--admin-text);" title="উপরে তুলুন">▲</button>
+              <button type="button" onclick="moveMenuItem(${index}, 1)" ${index === activeMenuData.length - 1 ? 'disabled style="opacity: 0.2; cursor: not-allowed;"' : ''} style="background: var(--admin-bg); border: 1px solid var(--admin-border); border-radius: 4px; padding: 2px 6px; font-size: 10px; cursor: pointer; color: var(--admin-text);" title="নিচে নামান">▼</button>
+            </div>
+
+            <!-- Serial Badge -->
+            <span style="font-size: 13px; font-weight: 800; color: var(--admin-primary); background: rgba(6, 130, 0, 0.08); width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+              ${index + 1}
+            </span>
+
+            <!-- Editable Title Input -->
+            <div style="flex: 1; min-width: 140px;">
+              <input 
+                type="text" 
+                value="${escapeHtml(item.title || '')}" 
+                placeholder="মেনু নাম" 
+                oninput="updateMenuItemTitle(${index}, this.value)"
+                style="width: 100%; padding: 7px 12px; font-size: 14.5px; font-weight: 700; border: 1px solid var(--admin-border); border-radius: 8px; background: var(--admin-bg); color: var(--admin-text); outline: none;"
+              >
+            </div>
+
+            <!-- URL / Badge -->
+            <div style="font-size: 12.5px; color: var(--admin-text-muted); background: var(--admin-bg); padding: 5px 10px; border-radius: 6px; border: 1px solid var(--admin-border); max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${item.url || '/'}">
+              <code>${escapeHtml(item.url || '/')}</code>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <!-- Dropdown Toggle Button -->
+            <button 
+              type="button" 
+              onclick="toggleDrawer(${index})" 
+              style="background: var(--admin-bg); border: 1px solid var(--admin-border); color: var(--admin-text); padding: 6px 12px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px;"
+              title="সাবমেনু ড্রপডাউন পরিচালনা"
+            >
+              <span>📂 সাবমেনু (${hasSubs ? item.subcategories.length : 0})</span>
+              <span id="drawer-arrow-${index}">▼</span>
+            </button>
+
+            <!-- Delete Button -->
+            <button 
+              type="button" 
+              onclick="removeMenuItem(${index})" 
+              style="background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; border-radius: 8px; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; font-size: 15px; cursor: pointer; transition: all 0.15s ease; flex-shrink: 0;"
+              title="মেনু থেকে মুছুন"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+
+        <!-- Subcategories Drawer -->
+        <div id="drawer-${index}" style="display: none; margin-top: 14px; padding-top: 14px; border-top: 1px dashed var(--admin-border);">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; margin-left: 36px; flex-wrap: wrap; gap: 8px;">
+            <strong style="font-size: 13.5px; color: var(--admin-text);">🔽 '${escapeHtml(item.title || '')}' এর অধীনে ড্রপডাউন সাব-ক্যাটাগরি:</strong>
+            <button type="button" onclick="openSubcategoryModal(${index})" style="background: rgba(6, 130, 0, 0.08); border: 1px solid rgba(6, 130, 0, 0.2); color: var(--admin-primary); padding: 5px 12px; border-radius: 6px; font-size: 12.5px; font-weight: 700; cursor: pointer;">
+              + সাব-ক্যাটাগরি যোগ করুন
+            </button>
+          </div>
+
+          <div id="sub-items-container-${index}">
+            ${renderSubItemsHtml(item.subcategories || [], index)}
+          </div>
+        </div>
+      `;
+
+      // Setup Drag and Drop events
+      setupCardDragAndDrop(card, index);
+
+      container.appendChild(card);
+    });
+  }
+
+  // Render Sub-items HTML
+  function renderSubItemsHtml(subs, parentIndex) {
+    if (!subs || subs.length === 0) {
+      return `<div style="margin-left: 36px; font-size: 13px; color: var(--admin-text-muted); font-style: italic; padding: 6px 0;">কোনো সাব-আইটেম যোগ করা হয়নি। এটি সাধারণ সিঙ্গেল মেনু হিসেবে থাকবে।</div>`;
+    }
+
+    return subs.map((sub, subIndex) => `
+      <div class="sub-item-card">
+        <div style="display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0;">
+          <span style="color: var(--admin-primary); font-weight: 800; font-size: 13px;">↳</span>
+          <input 
+            type="text" 
+            value="${escapeHtml(sub.title || '')}" 
+            placeholder="সাবমেনু নাম" 
+            oninput="updateSubItemTitle(${parentIndex}, ${subIndex}, this.value)"
+            style="width: 180px; padding: 5px 10px; font-size: 13px; font-weight: 600; border: 1px solid var(--admin-border); border-radius: 6px; background: var(--admin-bg-card); color: var(--admin-text); outline: none;"
+          >
+          <span style="font-size: 12px; color: var(--admin-text-muted); background: var(--admin-bg-card); padding: 3px 8px; border-radius: 6px; border: 1px solid var(--admin-border);">
+            <code>${escapeHtml(sub.url || '/')}</code>
+          </span>
+        </div>
+        <button 
+          type="button" 
+          onclick="removeSubItem(${parentIndex}, ${subIndex})" 
+          style="background: none; border: none; color: #ef4444; font-size: 14px; font-weight: 700; cursor: pointer; padding: 2px 6px;"
+          title="সাব-আইটেম মুছুন"
+        >
+          ✕
+        </button>
+      </div>
+    `).join('');
+  }
+
+  // Toggle Edit Drawer
+  function toggleDrawer(index) {
+    const drawer = document.getElementById('drawer-' + index);
+    const arrow = document.getElementById('drawer-arrow-' + index);
+    if (!drawer) return;
+
+    if (drawer.style.display === 'none') {
+      drawer.style.display = 'block';
+      if (arrow) arrow.textContent = '▲';
+    } else {
+      drawer.style.display = 'none';
+      if (arrow) arrow.textContent = '▼';
+    }
+  }
+
+  function collapseAllDrawers() {
+    activeMenuData.forEach((_, index) => {
+      const drawer = document.getElementById('drawer-' + index);
+      const arrow = document.getElementById('drawer-arrow-' + index);
+      if (drawer) drawer.style.display = 'none';
+      if (arrow) arrow.textContent = '▼';
+    });
+  }
+
+  // HTML5 Drag and Drop Handlers
+  let draggedIndex = null;
+
+  function setupCardDragAndDrop(card, index) {
+    card.addEventListener('dragstart', (e) => {
+      draggedIndex = index;
+      card.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+
+    card.addEventListener('dragend', () => {
+      card.classList.remove('dragging');
+      document.querySelectorAll('.menu-builder-card').forEach(c => c.classList.remove('drag-over'));
+      draggedIndex = null;
+    });
+
+    card.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      card.classList.add('drag-over');
+    });
+
+    card.addEventListener('dragleave', () => {
+      card.classList.remove('drag-over');
+    });
+
+    card.addEventListener('drop', (e) => {
+      e.preventDefault();
+      card.classList.remove('drag-over');
+      if (draggedIndex !== null && draggedIndex !== index) {
+        const itemToMove = activeMenuData.splice(draggedIndex, 1)[0];
+        activeMenuData.splice(index, 0, itemToMove);
+        markDirty();
+        renderActiveMenuUI();
+      }
+    });
+  }
+
+  // Move Menu Item Up (-1) or Down (+1)
+  function moveMenuItem(index, direction) {
+    const targetIndex = index + direction;
+    if (targetIndex < 0 || targetIndex >= activeMenuData.length) return;
+
+    const temp = activeMenuData[index];
+    activeMenuData[index] = activeMenuData[targetIndex];
+    activeMenuData[targetIndex] = temp;
+
+    markDirty();
+    renderActiveMenuUI();
+  }
+
+  // Update Display Title
+  function updateMenuItemTitle(index, newTitle) {
+    if (activeMenuData[index]) {
+      activeMenuData[index].title = newTitle.trim() || activeMenuData[index].title;
+      document.getElementById('menuJsonInput').value = JSON.stringify(activeMenuData);
+      renderLiveNavbarPreview();
+      markDirty();
+    }
+  }
+
+  // Update Sub-Item Title
+  function updateSubItemTitle(parentIndex, subIndex, newTitle) {
+    if (activeMenuData[parentIndex] && activeMenuData[parentIndex].subcategories[subIndex]) {
+      activeMenuData[parentIndex].subcategories[subIndex].title = newTitle.trim() || activeMenuData[parentIndex].subcategories[subIndex].title;
+      document.getElementById('menuJsonInput').value = JSON.stringify(activeMenuData);
+      markDirty();
+    }
+  }
+
+  // Remove Menu Item
+  function removeMenuItem(index) {
+    activeMenuData.splice(index, 1);
+    markDirty();
+    renderActiveMenuUI();
+  }
+
+  // Remove Sub-Item
+  function removeSubItem(parentIndex, subIndex) {
+    if (activeMenuData[parentIndex] && activeMenuData[parentIndex].subcategories) {
+      activeMenuData[parentIndex].subcategories.splice(subIndex, 1);
+      markDirty();
+      renderActiveMenuUI();
+      // Keep drawer open
+      setTimeout(() => {
+        const drawer = document.getElementById('drawer-' + parentIndex);
+        if (drawer) drawer.style.display = 'block';
+      }, 50);
+    }
+  }
+
+  // Subcategory Modal Controls
+  function openSubcategoryModal(parentIndex) {
+    activeParentIndexForSubcat = parentIndex;
+    document.getElementById('modalCatSelect').value = '';
+    document.getElementById('modalSubTitle').value = '';
+    document.getElementById('modalSubUrl').value = '';
+    document.getElementById('subcatModal').classList.add('active');
+  }
+
+  function closeSubcatModal() {
+    document.getElementById('subcatModal').classList.remove('active');
+    activeParentIndexForSubcat = null;
+  }
+
+  function onModalCatChange(select) {
+    const opt = select.options[select.selectedIndex];
+    if (opt && opt.value) {
+      document.getElementById('modalSubTitle').value = opt.getAttribute('data-name') || '';
+      document.getElementById('modalSubUrl').value = '/category/' + opt.value;
+    }
+  }
+
+  function confirmAddSubcategory() {
+    if (activeParentIndexForSubcat === null || !activeMenuData[activeParentIndexForSubcat]) {
+      closeSubcatModal();
+      return;
+    }
+
+    const title = (document.getElementById('modalSubTitle').value || '').trim();
+    let url = (document.getElementById('modalSubUrl').value || '').trim();
+    const select = document.getElementById('modalCatSelect');
+    const slug = select.value || (url.includes('/category/') ? url.split('/category/')[1] : '');
+
+    if (!title) {
+      alert('সাবমেনুর নাম লিখুন।');
+      return;
+    }
+    if (!url) {
+      alert('সাবমেনুর লিঙ্ক লিখুন।');
+      return;
+    }
+
+    if (!url.startsWith('/') && !url.startsWith('http://') && !url.startsWith('https://')) {
+      url = '/' + url;
+    }
+
+    if (!Array.isArray(activeMenuData[activeParentIndexForSubcat].subcategories)) {
+      activeMenuData[activeParentIndexForSubcat].subcategories = [];
+    }
+
+    activeMenuData[activeParentIndexForSubcat].subcategories.push({
+      title: title,
+      slug: slug,
+      url: url
+    });
+
+    const parentIdx = activeParentIndexForSubcat;
+    closeSubcatModal();
+    markDirty();
+    renderActiveMenuUI();
+
+    // Reopen parent drawer
+    setTimeout(() => {
+      const drawer = document.getElementById('drawer-' + parentIdx);
+      if (drawer) drawer.style.display = 'block';
+      const arrow = document.getElementById('drawer-arrow-' + parentIdx);
+      if (arrow) arrow.textContent = '▲';
+    }, 50);
+  }
+
+  // Add Checked Categories to Active Menu
+  function addSelectedCategoriesToMenu() {
+    const checkedBoxes = document.querySelectorAll('.cat-source-chk:checked');
+    if (checkedBoxes.length === 0) {
+      alert('অনুগ্রহ করে অন্তত একটি ক্যাটাগরি সিলেক্ট করুন।');
+      return;
+    }
+
+    let addedCount = 0;
+    checkedBoxes.forEach(chk => {
+      const slug = chk.getAttribute('data-slug');
+      const title = chk.getAttribute('data-title');
+      const url = chk.getAttribute('data-url');
+
+      const exists = activeMenuData.some(item => item.slug === slug || item.url === url);
+      if (!exists) {
+        activeMenuData.push({
+          title: title,
+          slug: slug,
+          url: url
+        });
+        addedCount++;
+      }
+      chk.checked = false;
+    });
+
+    markDirty();
+    renderActiveMenuUI();
+
+    if (addedCount > 0) {
+      const container = document.getElementById('activeMenuItemsList');
+      if (container) container.lastElementChild?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } else {
+      alert('নির্বাচিত ক্যাটাগরিগুলো ইতোমধ্যেই মেনুতে বিদ্যমান রয়েছে।');
+    }
+  }
+
+  // Add Custom Link to Menu
+  function addCustomLinkToMenu() {
+    const titleInput = document.getElementById('customLinkTitle');
+    const urlInput = document.getElementById('customLinkUrl');
+
+    const title = (titleInput.value || '').trim();
+    let url = (urlInput.value || '').trim();
+
+    if (!title) {
+      alert('মেনুর নাম লিখুন।');
+      titleInput.focus();
+      return;
+    }
+
+    if (!url) {
+      alert('মেনুর লিংক লিখুন।');
+      urlInput.focus();
+      return;
+    }
+
+    if (!url.startsWith('/') && !url.startsWith('http://') && !url.startsWith('https://')) {
+      url = '/' + url;
+    }
+
+    activeMenuData.push({
+      title: title,
+      url: url
+    });
+
+    titleInput.value = '';
+    urlInput.value = '';
+
+    markDirty();
+    renderActiveMenuUI();
+  }
+
+  // Apply Presets
+  function applyPreset(presetType) {
+    if (!confirm('আপনি কি এই প্রিসেট মেনু সেট করতে চান? বর্তমান সাজানো মেনু পরিবর্তন হবে।')) return;
+
+    if (presetType === 'standard') {
+      activeMenuData = [
+        { title: 'হোম', url: '/' },
+        { title: 'সেরা ১০ তালিকা', url: '/category/sera-10-lists', slug: 'sera-10-lists' },
+        { 
+          title: 'টেক ও গ্যাজেট', 
+          url: '/category/tech', 
+          slug: 'tech',
+          subcategories: [
+            { title: 'স্মার্টওয়াচ ও গ্যাজেটস', slug: 'tech', url: '/category/tech' },
+            { title: 'টুলস ও এক্সেসরিজ', slug: 'tools', url: '/category/tools' }
+          ]
+        },
+        { title: 'বই রিভিউ', url: '/category/books', slug: 'books' },
+        { 
+          title: 'বিউটি ও পার্সোনাল কেয়ার', 
+          url: '/category/beauty-and-personal-care', 
+          slug: 'beauty-and-personal-care',
+          subcategories: [
+            { title: 'বেবি প্রোডাক্টস', slug: 'baby-products', url: '/category/baby-products' }
+          ]
+        },
+        { title: 'লাইফস্টাইল ও হেলথ', url: '/category/health-and-wellness', slug: 'health-and-wellness' },
+        { title: 'ব্লগ', url: '/category/blog', slug: 'blog' }
+      ];
+    } else if (presetType === 'tech_books') {
+      activeMenuData = [
+        { title: 'হোম', url: '/' },
+        { title: 'সেরা ১০ তালিকা', url: '/category/sera-10-lists', slug: 'sera-10-lists' },
+        { title: 'টেক ও গ্যাজেট', url: '/category/tech', slug: 'tech' },
+        { title: 'বই রিভিউ', url: '/category/books', slug: 'books' },
+        { title: 'ব্লগ', url: '/category/blog', slug: 'blog' }
+      ];
+    }
+
+    markDirty();
+    renderActiveMenuUI();
+  }
+
+  // Reset to Default
+  function resetToDefaultMenu() {
+    if (confirm('আপনি কি মেনুটি ডিফল্ট অবস্থায় ফিরিয়ে নিতে চান?')) {
+      applyPreset('standard');
+    }
+  }
+
+  function escapeHtml(text) {
+    return String(text || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function submitMenuForm() {
+    document.getElementById('menuJsonInput').value = JSON.stringify(activeMenuData);
+    document.getElementById('menuSaveForm').submit();
+  }
+
+  // Ensure JSON input is always populated before form submits
+  document.getElementById('menuSaveForm').addEventListener('submit', function(e) {
+    document.getElementById('menuJsonInput').value = JSON.stringify(activeMenuData);
+  });
+
+  // Initial Render on DOM ready
+  document.addEventListener('DOMContentLoaded', () => {
+    renderActiveMenuUI();
+  });
+</script>
+
+<%- include('partials/admin_layout_end') %>
