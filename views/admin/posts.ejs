@@ -71,7 +71,7 @@
       <thead>
         <tr>
           <th style="width: 50px;">ছবি</th>
-          <th>শিরোনাম ও সারসংক্ষেপ</th>
+          <th>শিরোনাম</th>
           <th>লেখক</th>
           <th>বিভাগ</th>
           <th>পাঠক</th>
@@ -99,17 +99,9 @@
                     <%= p.title %>
                   </a>
                 </div>
-                <% if (p.excerpt) { %>
-                  <div style="font-size: 15px; color: var(--admin-text-sub); margin-top: 4px; max-width: 320px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                    <%= p.excerpt %>
-                  </div>
-                <% } %>
               </td>
               <td>
                 <div class="author-cell">
-                  <div class="author-mini-avatar">
-                    <%= p.author_name ? p.author_name.charAt(0) : 'ল' %>
-                  </div>
                   <div class="author-cell-info">
                     <span class="author-name"><%= p.author_name || 'লেখক' %></span>
                     <span class="author-email">@<%= p.author_username || 'user' %></span>
