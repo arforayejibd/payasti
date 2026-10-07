@@ -154,6 +154,31 @@
   margin-top: 8px;
 }
 
+.payasti-spell-popover-actions {
+  margin-top: 8px;
+  padding-top: 6px;
+  border-top: 1px solid #f1f5f9;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.payasti-spell-btn-add-dict {
+  background: none;
+  border: none;
+  color: var(--admin-primary, #4f46e5);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 3px 6px;
+  border-radius: 4px;
+  transition: all 0.12s ease;
+}
+
+.payasti-spell-btn-add-dict:hover {
+  background: #eef2ff;
+  color: #4338ca;
+}
+
 /* 3. Spell Checker Control Bar Widget */
 .payasti-spell-widget {
   display: inline-flex;

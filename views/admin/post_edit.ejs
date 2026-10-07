@@ -6,7 +6,7 @@
 
 <!-- Quill Editor CSS -->
 <link rel="stylesheet" href="/vendor/quill/quill.snow.css">
-<link rel="stylesheet" href="/css/payasti-spellchecker.css?v=5.5">
+<link rel="stylesheet" href="/css/payasti-spellchecker.css?v=7.2">
 
 <% if (typeof error !== 'undefined' && error) { %>
   <div style="background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; padding: 14px 18px; border-radius: 10px; margin-bottom: 24px; font-size: 16px;">
@@ -26,7 +26,7 @@
           </div>
           <div>
             <% if (post.status === 'publish') { %>
-              <a href="/<%= post.category_slug || 'literature' %>/<%= post.slug %>" target="_blank" class="btn-view-site" style="padding: 4px 10px; font-size: 13px;">
+              <a href="/post/<%= encodeURIComponent(post.slug) %>" target="_blank" class="btn-view-site" style="padding: 4px 10px; font-size: 13px;">
                 লাইভ প্রিভিউ &nearr;
               </a>
             <% } %>
@@ -182,7 +182,7 @@
 <!-- Quill Editor JS & Initialization -->
 <script src="/vendor/quill/quill.min.js"></script>
 <script src="/js/payasti-quill.js?v=2.6"></script>
-<script src="/js/payasti-spellchecker.js?v=5.5"></script>
+<script src="/js/payasti-spellchecker.js?v=7.2"></script>
 <script>
   document.addEventListener('DOMContentLoaded', function() {
     const quill = window.createPayastiEditor('#quillEditor', {
