@@ -15,7 +15,17 @@ function generateToken(user) {
 // Middleware to extract user from session or JWT cookie
 async function checkUser(req, res, next) {
   res.locals.user = null;
+  res.locals.isImpersonating = false;
   const token = req.cookies.token || (req.session && req.session.token);
+
+  const hasImpersonationSession = !!(
+    (req.session && req.session.impersonatorAdminId) ||
+    (req.cookies && req.cookies.admin_impersonator)
+  );
+
+  if (hasImpersonationSession) {
+    res.locals.isImpersonating = true;
+  }
 
   if (!token) {
     return next();
@@ -24,7 +34,7 @@ async function checkUser(req, res, next) {
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
     const user = await db.prepare('SELECT id, wp_id, username, email, display_name, nicename, role, avatar, bio, status, email_verified, is_approved, registered_at FROM users WHERE id = ?').get(decoded.id);
-    if (user && user.status !== 'suspended' && (user.role === 'admin' || (user.email_verified && user.is_approved))) {
+    if (user && user.status !== 'suspended' && (user.role === 'admin' || (user.email_verified && user.is_approved) || hasImpersonationSession)) {
       req.user = user;
       res.locals.user = user;
     } else if (user && (user.status === 'suspended' || !user.is_approved || !user.email_verified)) {

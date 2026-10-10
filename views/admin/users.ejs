@@ -98,7 +98,7 @@
           <th>স্ট্যাটাস</th>
           <th>মোট পোস্ট</th>
           <th>নিবন্ধন তারিখ</th>
-          <th style="text-align: right; min-width: 170px;">অ্যাকশন</th>
+          <th style="text-align: right; min-width: 230px;">অ্যাকশন</th>
         </tr>
       </thead>
       <tbody>
@@ -180,6 +180,20 @@
                           <polyline points="20 6 9 17 4 12"></polyline>
                         </svg>
                         অনুমোদন
+                      </button>
+                    </form>
+                  <% } %>
+
+                  <!-- Login as Author / Impersonate Button -->
+                  <% if (user.id !== u.id) { %>
+                    <form action="/admin/users/<%= u.id %>/login-as" method="POST" style="display: inline;" onsubmit="return confirm('আপনি কি লেখক &quot;<%= u.display_name || u.username %>&quot; এর অ্যাকাউন্টে লগইন করতে চান?');">
+                      <button type="submit" class="btn-table-action" style="background: #eef2ff; color: #4338ca; border: 1px solid #c7d2fe; font-weight: 600;" title="লেখক হিসেবে লগইন করুন">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+                          <polyline points="10 17 15 12 10 7"></polyline>
+                          <line x1="15" y1="12" x2="3" y2="12"></line>
+                        </svg>
+                        লগইন
                       </button>
                     </form>
                   <% } %>

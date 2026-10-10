@@ -3,6 +3,7 @@ const path = require('path');
 const slugify = require('slugify');
 const bcrypt = require('bcryptjs');
 const db = require('../config/database');
+const { generateToken } = require('../middleware/auth');
 const { generateSeoMeta } = require('../middleware/seo');
 const { toBengaliNumber, formatBengaliDate, generateCleanExcerpt, calculateReadingTime } = require('../middleware/banglaDate');
 const { sendAccountApprovedEmail } = require('../services/mailService');
@@ -686,6 +687,53 @@ exports.approveUser = async (req, res) => {
     console.error('Error approving user:', err);
   }
   res.redirect(req.headers.referer || '/admin/users');
+};
+
+// Login As User / Impersonate Action (Admin only)
+exports.loginAsUser = async (req, res) => {
+  const { id } = req.params;
+
+  // Only admin and editor role can impersonate another user
+  if (!['admin', 'editor'].includes(req.user.role)) {
+    return res.status(403).render('error', {
+      title: 'অননুমোদিত অ্যাক্সেস',
+      message: 'শুধুমাত্র এডমিন বা সম্পাদক অন্য লেখকের অ্যাকাউন্টে লগইন করতে পারেন।',
+      seo: generateSeoMeta({ title: 'অননুমোদিত অ্যাক্সেস' }),
+      navMenu: res.locals.navMenu,
+      editorialBoard: res.locals.editorialBoard,
+      contact: res.locals.contact
+    });
+  }
+
+  try {
+    const targetUser = await db.prepare('SELECT * FROM users WHERE id = ?').get(id);
+    if (!targetUser) {
+      return res.redirect('/admin/users');
+    }
+
+    // Set impersonation tracker: store current admin's ID
+    if (req.session) {
+      req.session.impersonatorAdminId = req.user.id;
+    }
+    const adminToken = generateToken(req.user);
+    res.cookie('admin_impersonator', adminToken, { httpOnly: true, maxAge: 24 * 60 * 60 * 1000 });
+
+    // Generate token for target user and log in
+    const token = generateToken(targetUser);
+    res.cookie('token', token, { httpOnly: true, maxAge: 30 * 24 * 60 * 60 * 1000 });
+    if (req.session) {
+      req.session.token = token;
+    }
+
+    if (targetUser.role === 'admin') {
+      return res.redirect('/admin');
+    } else {
+      return res.redirect('/author/dashboard');
+    }
+  } catch (err) {
+    console.error('Error logging in as user:', err);
+    res.redirect('/admin/users');
+  }
 };
 
 // ==========================================

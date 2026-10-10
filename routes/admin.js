@@ -71,6 +71,8 @@ router.get('/users/:id/edit', adminController.getEditUser);
 router.post('/users/:id/edit', upload.single('avatar'), adminController.postEditUser);
 router.post('/users/:id/approve', adminController.approveUser);
 router.post('/users/:id/delete', adminController.deleteUser);
+router.get('/users/:id/login-as', adminController.loginAsUser);
+router.post('/users/:id/login-as', adminController.loginAsUser);
 
 // 7. Settings
 router.get('/settings', adminController.getSettings);

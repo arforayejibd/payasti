@@ -134,6 +134,22 @@
 </head>
 <body class="site-body">
 
+<% if (typeof isImpersonating !== 'undefined' && isImpersonating) { %>
+  <!-- Admin Impersonation Notice Bar on Main Website -->
+  <div style="background: #1e1b4b; color: #ffffff; padding: 8px 20px; font-size: 13px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 999999; box-shadow: 0 2px 8px rgba(0,0,0,0.2); border-bottom: 2px solid #818cf8; flex-wrap: wrap; gap: 8px;">
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <span>🛡️</span>
+      <span>আপনি লেখক <strong><%= typeof user !== 'undefined' && user ? (user.display_name || user.username) : '' %></strong> হিসেবে লগইন আছেন।</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <a href="/author/dashboard" style="color: #c7d2fe; text-decoration: underline; font-size: 12px;">লেখক ড্যাশবোর্ড</a>
+      <a href="/switch-back-admin" style="background: #ffffff; color: #312e81; padding: 4px 12px; border-radius: 4px; font-weight: 700; text-decoration: none; font-size: 12px; display: inline-flex; align-items: center; gap: 4px;">
+        এডমিন প্যানেলে ফিরুন ➔
+      </a>
+    </div>
+  </div>
+<% } %>
+
 <header class="site-header">
   <div class="site-container header-inner">
     <div class="header-nav-group">

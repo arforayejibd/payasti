@@ -10,6 +10,8 @@ router.post('/register', authController.postRegister);
 router.get('/verify-email', authController.getVerifyEmail);
 router.post('/resend-verification', authController.postResendVerification);
 router.get('/logout', authController.logout);
+router.get('/switch-back-admin', authController.switchBackToAdmin);
+router.post('/switch-back-admin', authController.switchBackToAdmin);
 
 // Forgot & Reset Password Routes
 router.get('/forgot-password', authController.getForgotPasswordPage);

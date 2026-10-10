@@ -1,7 +1,8 @@
+const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 const db = require('../config/database');
-const { generateToken } = require('../middleware/auth');
+const { generateToken, JWT_SECRET } = require('../middleware/auth');
 const { generateSeoMeta } = require('../middleware/seo');
 const { toBengaliNumber, formatBengaliDate } = require('../middleware/banglaDate');
 const { SITE_NAME, TAGLINE, NAV_MENU, EDITORIAL_BOARD, CONTACT, SITE_URL } = require('../config/constants');
@@ -365,10 +366,51 @@ exports.postResendVerification = async (req, res) => {
 // Logout
 exports.logout = (req, res) => {
   res.clearCookie('token');
+  res.clearCookie('admin_impersonator');
   if (req.session) {
     req.session.destroy();
   }
   res.redirect('/');
+};
+
+// Switch Back to Admin (Revert Impersonation)
+exports.switchBackToAdmin = async (req, res) => {
+  try {
+    let adminId = req.session && req.session.impersonatorAdminId;
+
+    // Fallback: check admin_impersonator cookie
+    if (!adminId && req.cookies && req.cookies.admin_impersonator) {
+      try {
+        const decoded = jwt.verify(req.cookies.admin_impersonator, JWT_SECRET);
+        adminId = decoded.id;
+      } catch (e) {
+        console.warn('Invalid admin_impersonator cookie:', e.message);
+      }
+    }
+
+    if (!adminId) {
+      return res.redirect(req.user && req.user.role === 'admin' ? '/admin/users' : '/author/dashboard');
+    }
+
+    const adminUser = await db.prepare("SELECT * FROM users WHERE id = ? AND role IN ('admin', 'editor')").get(adminId);
+    if (!adminUser) {
+      return res.redirect('/login');
+    }
+
+    // Restore admin token
+    const adminToken = generateToken(adminUser);
+    res.cookie('token', adminToken, { httpOnly: true, maxAge: 30 * 24 * 60 * 60 * 1000 });
+    res.clearCookie('admin_impersonator');
+    if (req.session) {
+      req.session.token = adminToken;
+      delete req.session.impersonatorAdminId;
+    }
+
+    res.redirect('/admin/users');
+  } catch (err) {
+    console.error('Error switching back to admin:', err);
+    res.redirect('/');
+  }
 };
 
 // Spelling Rules Page (/spelling-rules)
