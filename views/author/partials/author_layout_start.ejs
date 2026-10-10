@@ -73,25 +73,6 @@
 </head>
 <body class="admin-body">
 
-<% if (typeof isImpersonating !== 'undefined' && isImpersonating) { %>
-  <!-- Admin Impersonation Notice Bar -->
-  <div style="background: linear-gradient(90deg, #1e1b4b 0%, #312e81 40%, #3730a3 100%); color: #ffffff; padding: 10px 24px; font-size: 14px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 999999; box-shadow: 0 4px 14px rgba(0,0,0,0.25); border-bottom: 2px solid #818cf8; flex-wrap: wrap; gap: 10px;">
-    <div style="display: flex; align-items: center; gap: 10px; font-weight: 500;">
-      <span style="display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; background: rgba(255,255,255,0.18); border-radius: 50%; font-size: 15px;">🛡️</span>
-      <span>
-        এডমিন সতর্কতা: আপনি বর্তমানে লেখক <strong><%= typeof user !== 'undefined' && user ? (user.display_name || user.username) : '' %></strong> এর অ্যাকাউন্টে লগইন আছেন।
-      </span>
-    </div>
-    <a href="/author/switch-back" style="background: #ffffff; color: #3730a3; padding: 6px 16px; border-radius: 6px; font-weight: 700; text-decoration: none; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.15); transition: background 0.2s;">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <polyline points="9 14 4 9 9 4"></polyline>
-        <path d="M20 20v-7a4 4 0 0 0-4-4H4"></path>
-      </svg>
-      এডমিন প্যানেলে ফিরে যান
-    </a>
-  </div>
-<% } %>
-
 <div class="admin-layout">
   <!-- Mobile Sidebar Overlay Backdrop -->
   <div class="sidebar-overlay" id="sidebarOverlay"></div>
@@ -163,11 +144,11 @@
         </ul>
       </li>
 
-      <!-- ৩. এডমিন শর্টকাট (যদি এডমিন বা এডিটর হন) -->
-      <% if (typeof user !== 'undefined' && user && (user.role === 'admin' || user.role === 'editor')) { %>
+      <!-- ৩. এডমিন প্যানেল লিঙ্ক (এডমিন/সম্পাদক বা এডমিন ইম্পার্সনেশনে থাকলে) -->
+      <% if ((typeof isImpersonating !== 'undefined' && isImpersonating) || (typeof user !== 'undefined' && user && (user.role === 'admin' || user.role === 'editor'))) { %>
         <li class="admin-nav-section-title" style="margin-top: 14px;">মডারেশন অ্যাক্সেস</li>
         <li class="admin-nav-item">
-          <a href="/admin">
+          <a href="<%= (typeof isImpersonating !== 'undefined' && isImpersonating) ? '/author/switch-back' : '/admin' %>">
             <div class="admin-nav-left">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
