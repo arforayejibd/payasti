@@ -1058,6 +1058,7 @@ exports.postSettings = async (req, res) => {
       site_title, site_tagline, site_description, contact_email, contact_phone, facebook_url,
       google_site_verification, google_analytics_id, bing_site_verification,
       og_image, active_tab,
+      sidebar_ad_image, sidebar_ad_url, sidebar_ad_title, sidebar_ad_active,
       notice_title, notice_content, notice_active
     } = req.body;
 
@@ -1073,9 +1074,19 @@ exports.postSettings = async (req, res) => {
 
     // Resolve Universal OG Image: File upload takes priority, otherwise text input
     let finalOgImage = og_image ? og_image.trim() : '';
-    if (req.file && req.file.filename) {
-      finalOgImage = `/uploads/${req.file.filename}`;
+    const ogFile = (req.files && req.files.og_image_file && req.files.og_image_file[0]) || req.file;
+    if (ogFile && ogFile.filename) {
+      finalOgImage = `/uploads/${ogFile.filename}`;
     }
+
+    // Resolve Sidebar Ad Banner Image: File upload takes priority, otherwise text input
+    let finalSidebarAdImage = sidebar_ad_image ? sidebar_ad_image.trim() : '';
+    const adFile = req.files && req.files.sidebar_ad_image_file && req.files.sidebar_ad_image_file[0];
+    if (adFile && adFile.filename) {
+      finalSidebarAdImage = `/uploads/${adFile.filename}`;
+    }
+
+    const isAdActive = (sidebar_ad_active === '1' || sidebar_ad_active === 'on' || sidebar_ad_active === true || sidebar_ad_active === 'true') ? '1' : '0';
 
     const updates = [
       { key: 'site_title', value: site_title || '' },
@@ -1087,7 +1098,11 @@ exports.postSettings = async (req, res) => {
       { key: 'google_site_verification', value: cleanVerificationCode(google_site_verification) },
       { key: 'google_analytics_id', value: google_analytics_id ? google_analytics_id.trim() : '' },
       { key: 'bing_site_verification', value: cleanVerificationCode(bing_site_verification) },
-      { key: 'og_image', value: finalOgImage }
+      { key: 'og_image', value: finalOgImage },
+      { key: 'sidebar_ad_image', value: finalSidebarAdImage },
+      { key: 'sidebar_ad_url', value: (sidebar_ad_url || '').trim() },
+      { key: 'sidebar_ad_title', value: (sidebar_ad_title || '').trim() },
+      { key: 'sidebar_ad_active', value: isAdActive }
     ];
 
     for (const item of updates) {

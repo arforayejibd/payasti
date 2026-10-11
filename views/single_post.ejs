@@ -264,9 +264,32 @@
         <div class="sidebar-divider"></div>
 
         <!-- Magazine Ad Banner -->
-        <div class="sidebar-ad-wrap">
-          <img src="/images/Payasti-ads.png" alt="পয়স্তি সাহিত্য স্মারক" class="sidebar-ad-banner">
-        </div>
+        <% 
+          const sSettings = (typeof siteSettings !== 'undefined' && siteSettings) ? siteSettings : ((typeof locals !== 'undefined' && locals.siteSettings) ? locals.siteSettings : {});
+          const sidebarAdActive = (sSettings.sidebar_ad_active !== undefined) 
+            ? (sSettings.sidebar_ad_active === '1' || sSettings.sidebar_ad_active === 'true' || sSettings.sidebar_ad_active === 1) 
+            : true;
+          const sidebarAdImg = (sSettings.sidebar_ad_image && sSettings.sidebar_ad_image.trim()) 
+            ? sSettings.sidebar_ad_image.trim() 
+            : '/images/Payasti-ads.png';
+          const sidebarAdUrl = (sSettings.sidebar_ad_url && sSettings.sidebar_ad_url.trim()) 
+            ? sSettings.sidebar_ad_url.trim() 
+            : '';
+          const sidebarAdTitle = (sSettings.sidebar_ad_title && sSettings.sidebar_ad_title.trim()) 
+            ? sSettings.sidebar_ad_title.trim() 
+            : 'পয়স্তি সাহিত্য স্মারক';
+        %>
+        <% if (sidebarAdActive && sidebarAdImg) { %>
+          <div class="sidebar-ad-wrap">
+            <% if (sidebarAdUrl) { %>
+              <a href="<%= sidebarAdUrl %>" target="_blank" rel="noopener noreferrer" style="display: block; transition: opacity 0.2s;" title="<%= sidebarAdTitle %>">
+                <img src="<%= sidebarAdImg %>" alt="<%= sidebarAdTitle %>" class="sidebar-ad-banner" onerror="this.onerror=null; this.src='/images/Payasti-ads.png';">
+              </a>
+            <% } else { %>
+              <img src="<%= sidebarAdImg %>" alt="<%= sidebarAdTitle %>" class="sidebar-ad-banner" onerror="this.onerror=null; this.src='/images/Payasti-ads.png';">
+            <% } %>
+          </div>
+        <% } %>
       </div>
     </aside>
   </div>

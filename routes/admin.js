@@ -76,6 +76,9 @@ router.post('/users/:id/login-as', adminController.loginAsUser);
 
 // 7. Settings
 router.get('/settings', adminController.getSettings);
-router.post('/settings', upload.single('og_image_file'), adminController.postSettings);
+router.post('/settings', upload.fields([
+  { name: 'og_image_file', maxCount: 1 },
+  { name: 'sidebar_ad_image_file', maxCount: 1 }
+]), adminController.postSettings);
 
 module.exports = router;
