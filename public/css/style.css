@@ -1117,9 +1117,35 @@ button, input, textarea, select {
   margin-bottom: 0;
 }
 
+/* Maintain blank lines for poem stanzas and paragraphs */
 .article-content-body p:empty,
-.single-article-content-body p:empty {
-  display: none;
+.single-article-content-body p:empty,
+.article-content-body p > br:only-child,
+.single-article-content-body p > br:only-child {
+  min-height: 1.5em;
+  display: block;
+}
+
+/* Quill alignment support in published posts */
+.article-content-body .ql-align-center,
+.single-article-content-body .ql-align-center {
+  text-align: center !important;
+}
+
+.article-content-body .ql-align-right,
+.single-article-content-body .ql-align-right {
+  text-align: right !important;
+}
+
+.article-content-body .ql-align-justify,
+.single-article-content-body .ql-align-justify {
+  text-align: justify !important;
+  text-justify: inter-word !important;
+}
+
+.article-content-body .ql-align-left,
+.single-article-content-body .ql-align-left {
+  text-align: left !important;
 }
 
 .article-content-body a,
@@ -1141,6 +1167,8 @@ button, input, textarea, select {
 .single-article-content-body b {
   font-weight: 700;
   color: var(--text-heading);
+  -webkit-text-stroke: 0.35px currentColor;
+  text-shadow: 0.5px 0 0.1px currentColor;
 }
 
 .article-content-body em,
@@ -1148,17 +1176,50 @@ button, input, textarea, select {
 .single-article-content-body em,
 .single-article-content-body i {
   font-style: italic;
+  display: inline-block;
+  transform: skewX(-9deg);
+  transform-origin: bottom center;
+}
+
+.article-content-body u,
+.single-article-content-body u {
+  text-decoration: underline;
+  text-underline-offset: 4px;
 }
 
 .article-content-body blockquote,
 .single-article-content-body blockquote {
   border-left: 4px solid var(--brand-primary);
-  padding: 14px 22px;
-  margin: 24px 0;
+  padding: 8px 22px;
+  margin: 18px 0 0 0;
   background-color: var(--bg-muted);
   font-style: italic;
   border-radius: 0 var(--radius-md) var(--radius-md) 0;
   color: var(--text-main);
+  line-height: 1.62;
+}
+
+.article-content-body blockquote:last-child,
+.single-article-content-body blockquote:last-child {
+  margin-bottom: 18px;
+}
+
+/* Consecutive blockquotes merge into ONE continuous quote box for poems */
+.article-content-body blockquote + blockquote,
+.single-article-content-body blockquote + blockquote {
+  margin-top: 0 !important;
+  padding-top: 4px !important;
+  padding-bottom: 6px !important;
+  border-top-right-radius: 0 !important;
+  border-top-left-radius: 0 !important;
+}
+
+.article-content-body blockquote:has(+ blockquote),
+.single-article-content-body blockquote:has(+ blockquote) {
+  margin-bottom: 0 !important;
+  padding-bottom: 4px !important;
+  border-bottom-right-radius: 0 !important;
+  border-bottom-left-radius: 0 !important;
 }
 
 .article-content-body blockquote p,

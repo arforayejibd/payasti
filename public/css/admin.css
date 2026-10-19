@@ -1846,7 +1846,7 @@ body.theme-sepia .admin-hero-banner {
   border-radius: 14px;
   box-shadow: var(--admin-shadow-sm);
   margin-bottom: 28px;
-  overflow: hidden;
+  overflow: visible;
   transition: background-color 0.25s ease, border-color 0.25s ease;
 }
 
@@ -2593,11 +2593,12 @@ body.theme-dark .admin-tab-link.active {
   flex-direction: column;
   background: var(--admin-input-bg);
   border-radius: 10px;
-  overflow: hidden;
+  overflow: visible !important;
   border: 1.5px solid var(--admin-border);
   transition: border-color 0.2s, box-shadow 0.2s;
   width: 100%;
   box-sizing: border-box;
+  position: relative;
 }
 
 .payasti-editor-wrapper:focus-within {
@@ -2606,22 +2607,33 @@ body.theme-dark .admin-tab-link.active {
 }
 
 .ql-toolbar.ql-snow {
+  position: sticky !important;
+  top: 70px !important;
+  z-index: 35 !important;
   border: none !important;
-  border-bottom: 1px solid var(--admin-border) !important;
-  background-color: var(--admin-border-light);
+  border-bottom: 1.5px solid var(--admin-border) !important;
+  background-color: var(--admin-card-bg, #ffffff) !important;
   padding: 12px 16px !important;
   font-family: inherit !important;
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+  border-radius: 9px 9px 0 0 !important;
+}
+
+@media (max-width: 768px) {
+  .ql-toolbar.ql-snow {
+    top: 58px !important;
+  }
 }
 
 .ql-container.ql-snow {
   border: none !important;
   background-color: var(--admin-input-bg);
   font-family: var(--font-family-admin, 'payasti_uni', 'Hind Siliguri', sans-serif) !important;
-  font-size: 21px;
-  line-height: 1.85;
+  font-size: 21.5px;
+  line-height: 1.62;
   min-height: 420px;
 }
 
@@ -2629,29 +2641,165 @@ body.theme-dark .admin-tab-link.active {
   font-family: var(--font-family-admin, 'payasti_uni', 'Hind Siliguri', sans-serif) !important;
   font-feature-settings: "ss01" 1;
   -webkit-font-feature-settings: "ss01" 1;
-  font-size: 21px;
-  line-height: 1.85;
+  font-size: 21.5px;
+  font-weight: 500;
+  line-height: 1.62;
   min-height: 420px;
   color: var(--admin-text-main);
-  padding: 20px 24px !important;
+  padding: 24px 28px !important;
+  word-wrap: break-word;
 }
 
-/* Paragraph spacing & line break rendering */
+/* Paragraph spacing & line break rendering (Matching single_post.ejs exactly) */
 .ql-editor p {
-  margin-bottom: 20px;
-  line-height: 1.85;
-  text-align: justify;
-  text-justify: inter-word;
+  margin-bottom: 14px;
+  line-height: 1.62;
+  text-align: left;
 }
 
 .ql-editor p:last-child {
   margin-bottom: 0;
 }
 
-/* Visible empty paragraph for double-enter blank lines */
+/* Headings inside Editor (Matching single_post.ejs exactly) */
+.ql-editor h1 {
+  font-size: 30px !important;
+  font-weight: 700 !important;
+  line-height: 1.35 !important;
+  color: var(--admin-text-main) !important;
+  margin-top: 32px !important;
+  margin-bottom: 16px !important;
+}
+
+.ql-editor h2 {
+  font-size: 26px !important;
+  font-weight: 700 !important;
+  line-height: 1.35 !important;
+  color: var(--admin-text-main) !important;
+  margin-top: 28px !important;
+  margin-bottom: 14px !important;
+}
+
+.ql-editor h3 {
+  font-size: 23px !important;
+  font-weight: 700 !important;
+  line-height: 1.38 !important;
+  color: var(--admin-text-main) !important;
+  margin-top: 24px !important;
+  margin-bottom: 12px !important;
+}
+
+.ql-editor h4 {
+  font-size: 20.5px !important;
+  font-weight: 700 !important;
+  line-height: 1.4 !important;
+  color: var(--admin-text-main) !important;
+  margin-top: 20px !important;
+  margin-bottom: 10px !important;
+}
+
+.ql-editor h1:first-child,
+.ql-editor h2:first-child,
+.ql-editor h3:first-child,
+.ql-editor h4:first-child {
+  margin-top: 0 !important;
+}
+
+/* Explicit alignment styling overriding anything else */
+.ql-editor .ql-align-center,
+.ql-editor p.ql-align-center {
+  text-align: center !important;
+}
+
+.ql-editor .ql-align-right,
+.ql-editor p.ql-align-right {
+  text-align: right !important;
+}
+
+.ql-editor .ql-align-justify,
+.ql-editor p.ql-align-justify {
+  text-align: justify !important;
+  text-justify: inter-word !important;
+}
+
+.ql-editor .ql-align-left,
+.ql-editor p.ql-align-left {
+  text-align: left !important;
+}
+
+/* Bold without changing font family (1:1 with single_post.ejs) */
+.ql-editor strong,
+.ql-editor b {
+  font-weight: 700 !important;
+  color: var(--admin-text-main) !important;
+  font-family: inherit !important;
+  -webkit-text-stroke: 0.35px currentColor;
+  text-shadow: 0.5px 0 0.1px currentColor;
+}
+
+/* Italic (1:1 with single_post.ejs) */
+.ql-editor em,
+.ql-editor i {
+  font-style: italic !important;
+  display: inline-block;
+  transform: skewX(-9deg);
+  transform-origin: bottom center;
+}
+
+/* Underline (1:1 with single_post.ejs) */
+.ql-editor u {
+  text-decoration: underline !important;
+  text-underline-offset: 4px !important;
+}
+
+/* Links (1:1 with single_post.ejs) */
+.ql-editor a {
+  color: var(--admin-primary) !important;
+  text-decoration: underline !important;
+  text-underline-offset: 3px !important;
+  cursor: pointer !important;
+}
+
+/* Blockquote (1:1 with single_post.ejs + multi-line poem support) */
+.ql-editor blockquote {
+  border-left: 4px solid var(--admin-primary) !important;
+  padding: 8px 22px !important;
+  margin: 18px 0 0 0 !important;
+  background-color: var(--admin-border-light, #f8fafc) !important;
+  font-style: italic !important;
+  border-radius: 0 8px 8px 0 !important;
+  color: var(--admin-text-main) !important;
+  line-height: 1.62 !important;
+}
+
+.ql-editor blockquote:last-child {
+  margin-bottom: 18px !important;
+}
+
+/* Consecutive blockquotes seamlessly connect into ONE single poem quote box */
+.ql-editor blockquote + blockquote {
+  margin-top: 0 !important;
+  padding-top: 4px !important;
+  padding-bottom: 6px !important;
+  border-top-right-radius: 0 !important;
+  border-top-left-radius: 0 !important;
+}
+
+.ql-editor blockquote:has(+ blockquote) {
+  margin-bottom: 0 !important;
+  padding-bottom: 4px !important;
+  border-bottom-right-radius: 0 !important;
+  border-bottom-left-radius: 0 !important;
+}
+
+.ql-editor blockquote p {
+  margin-bottom: 0 !important;
+}
+
+/* Visible empty paragraph for poem stanzas & blank lines */
 .ql-editor p:empty,
 .ql-editor p > br:only-child {
-  min-height: 1.8em;
+  min-height: 1.5em;
   display: block;
 }
 

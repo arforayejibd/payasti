@@ -240,9 +240,10 @@ exports.postNewPost = async (req, res) => {
       slug = `${slug}-${Date.now()}`;
     }
 
-    // Clean content and strip temporary spell checker tags
+    // Clean content, merge consecutive blockquotes, and strip temporary spell checker tags
     let cleanContent = (content || '')
-      .replace(/<span class="payasti-spell-error[^"]*"[^>]*>([\s\S]*?)<\/span>/gi, '$1');
+      .replace(/<span class="payasti-spell-error[^"]*"[^>]*>([\s\S]*?)<\/span>/gi, '$1')
+      .replace(/<\/blockquote>\s*<blockquote[^>]*>/gi, '<br>');
 
     // Auto-generate clean excerpt if blank
     let cleanExcerpt = (excerpt || '').trim();

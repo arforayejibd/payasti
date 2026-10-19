@@ -988,6 +988,10 @@
           this.quill.root.dispatchEvent(scanEvt);
         } catch (e) {}
 
+        // Save current window scroll and cursor selection before batch formatting
+        const savedScrollY = (typeof window !== 'undefined') ? window.scrollY : 0;
+        const savedSelection = this.quill.getSelection();
+
         // Apply formatting silently in batch
         const totalLength = this.quill.getLength();
         if (totalLength > 0) {
@@ -1002,6 +1006,14 @@
             isBroken: item.isBroken
           }, Quill.sources.SILENT);
         });
+
+        // Restore cursor selection and window scroll position to prevent jumping to top
+        if (savedSelection) {
+          this.quill.setSelection(savedSelection.index, savedSelection.length, Quill.sources.SILENT);
+        }
+        if (typeof window !== 'undefined' && typeof savedScrollY === 'number') {
+          window.scrollTo({ top: savedScrollY, behavior: 'instant' });
+        }
 
       } catch (e) {
         console.error('PayastiSpellChecker: Scan error:', e);
@@ -1233,12 +1245,20 @@
     }
 
     clearHighlights() {
+      const savedScrollY = (typeof window !== 'undefined') ? window.scrollY : 0;
+      const savedSelection = this.quill.getSelection();
       const totalLength = this.quill.getLength();
       if (totalLength > 0) {
         this.quill.formatText(0, totalLength, 'spellError', false, Quill.sources.SILENT);
       }
       this.currentErrors = [];
       this.updateWidget();
+      if (savedSelection) {
+        this.quill.setSelection(savedSelection.index, savedSelection.length, Quill.sources.SILENT);
+      }
+      if (typeof window !== 'undefined' && typeof savedScrollY === 'number') {
+        window.scrollTo({ top: savedScrollY, behavior: 'instant' });
+      }
       if (typeof this.options.onScanComplete === 'function') {
         try {
           this.options.onScanComplete([]);

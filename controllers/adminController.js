@@ -242,7 +242,8 @@ exports.postNewPost = async (req, res) => {
     }
 
     let cleanContent = (content || '')
-      .replace(/<span class="payasti-spell-error[^"]*"[^>]*>([\s\S]*?)<\/span>/gi, '$1');
+      .replace(/<span class="payasti-spell-error[^"]*"[^>]*>([\s\S]*?)<\/span>/gi, '$1')
+      .replace(/<\/blockquote>\s*<blockquote[^>]*>/gi, '<br>');
 
     let cleanExcerpt = (excerpt || '').trim();
     if (!cleanExcerpt) {
@@ -324,7 +325,8 @@ exports.postEditPost = async (req, res) => {
     }
 
     let cleanContent = (content !== undefined && content.trim() !== '' ? content : (existingPost.content || ''))
-      .replace(/<span class="payasti-spell-error[^"]*"[^>]*>([\s\S]*?)<\/span>/gi, '$1');
+      .replace(/<span class="payasti-spell-error[^"]*"[^>]*>([\s\S]*?)<\/span>/gi, '$1')
+      .replace(/<\/blockquote>\s*<blockquote[^>]*>/gi, '<br>');
 
     let cleanExcerpt = (excerpt || '').trim();
     if (!cleanExcerpt) {

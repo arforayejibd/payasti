@@ -156,6 +156,7 @@ function renderArticleContent(content) {
     .replace(/&nbsp;/gi, ' ')
     .replace(/&amp;nbsp;/gi, ' ')
     .replace(/\bnbsp;?/gi, ' ')
+    .replace(/<\/blockquote>\s*<blockquote[^>]*>/gi, '<br>')
     .trim();
 
   // If content has HTML tags, return it clean

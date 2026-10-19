@@ -58,6 +58,35 @@
                   quill.setSelection(range.index + 1, Quill.sources.SILENT);
                 }
               }
+            },
+            // Custom link handler that preserves scroll position and doesn't jump to top
+            link: function(value) {
+              const currentRange = quill.getSelection();
+              if (!currentRange || currentRange.length === 0) {
+                alert('অনুগ্রহ করে যে শব্দ বা লেখায় লিংক যুক্ত করতে চান, সেটি আগে মাউস দিয়ে সিলেক্ট (Select) করুন।');
+                return;
+              }
+              const scrollY = window.scrollY;
+              const format = quill.getFormat(currentRange);
+              const existingUrl = format.link || '';
+              
+              const inputUrl = prompt('ওয়েব লিংক (URL) লিখুন বা পেস্ট করুন:', existingUrl || 'https://');
+              window.scrollTo(0, scrollY);
+              
+              if (inputUrl !== null) {
+                const trimmed = inputUrl.trim();
+                if (trimmed && trimmed !== 'https://' && trimmed !== 'http://') {
+                  let finalUrl = trimmed;
+                  if (!/^https?:\/\//i.test(finalUrl) && !/^mailto:/i.test(finalUrl)) {
+                    finalUrl = 'https://' + finalUrl;
+                  }
+                  quill.format('link', finalUrl, Quill.sources.USER);
+                } else {
+                  quill.format('link', false, Quill.sources.USER);
+                }
+              }
+              quill.setSelection(currentRange.index, currentRange.length, Quill.sources.SILENT);
+              window.scrollTo(0, scrollY);
             }
           }
         },
@@ -72,20 +101,15 @@
                 return false;
               }
             },
-            preventExtraEnter: {
-              key: 'Enter',
-              shiftKey: false,
+            linkShortcut: {
+              key: 'k',
+              shortKey: true,
               handler: function(range) {
-                const [line] = this.quill.getLine(range.index);
-                if (line) {
-                  // Check if current line is already an empty paragraph
-                  const text = (line.domNode && line.domNode.innerText) ? line.domNode.innerText.replace(/\uFEFF/g, '').trim() : '';
-                  if (line.length() <= 1 && text === '') {
-                    // Current line is already empty; prevent stacking consecutive blank paragraphs
-                    return false;
-                  }
+                const toolbar = quill.getModule('toolbar');
+                if (toolbar && toolbar.handlers && toolbar.handlers.link) {
+                  toolbar.handlers.link.call(toolbar, true);
                 }
-                return true;
+                return false;
               }
             }
           }
@@ -96,7 +120,7 @@
       }
     });
 
-    // Paste handler to automatically collapse excessive blank lines / enters
+    // Paste handler that preserves stanza breaks (double enters) for poems
     quill.root.addEventListener('paste', function(e) {
       const clipboardData = e.clipboardData || window.clipboardData;
       if (!clipboardData) return;
@@ -105,11 +129,11 @@
 
       if (text && (!html || !/<(table|h[1-6]|img|svg|iframe)\b/i.test(html))) {
         e.preventDefault();
-        // Collapse multiple enters/consecutive blank lines into single clean paragraph breaks
+        // Clean line breaks while keeping poem stanzas & multiple poem separation
         const cleanText = text
           .replace(/\r\n/g, '\n')
           .replace(/\r/g, '\n')
-          .replace(/\n\s*\n+/g, '\n')
+          .replace(/\n{3,}/g, '\n\n')
           .trim();
 
         const selection = quill.getSelection(true) || { index: 0, length: 0 };
