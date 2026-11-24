@@ -13,6 +13,17 @@ exports.getHomePage = async (req, res) => {
       return postController.searchPosts(req, res);
     }
 
+    // WordPress post shortlink ?p= compatibility (Legacy 301 Redirect)
+    if (req.query.p) {
+      const pId = parseInt(req.query.p, 10);
+      if (pId) {
+        const pPost = await db.prepare('SELECT slug FROM posts WHERE (id = ? OR wp_id = ?) AND status = "publish"').get(pId, pId);
+        if (pPost && pPost.slug) {
+          return res.redirect(301, `/post/${encodeURIComponent(pPost.slug)}`);
+        }
+      }
+    }
+
     // 1. Fetch Books
     const books = await db.prepare('SELECT id, title, slug, author_name, cover_image, regular_price, discounted_price, order_url FROM books ORDER BY id DESC LIMIT 30').all();
 

@@ -1,6 +1,16 @@
 const { SITE_NAME, TAGLINE, SITE_SUBTITLE, SITE_URL, DEFAULT_DESCRIPTION, OG_IMAGE } = require('../config/constants');
 const { getCachedSettings } = require('../helpers/settingsHelper');
 
+function normalizeCanonicalUrl(urlPath) {
+  if (!urlPath || urlPath === '/') return `${SITE_URL}/`;
+  try {
+    const cleanPath = urlPath.startsWith('/') ? urlPath : `/${urlPath}`;
+    return `${SITE_URL}${encodeURI(decodeURI(cleanPath))}`;
+  } catch (e) {
+    return `${SITE_URL}${urlPath.startsWith('/') ? urlPath : '/' + urlPath}`;
+  }
+}
+
 function generateSeoMeta(options = {}) {
   const {
     title,
@@ -29,7 +39,7 @@ function generateSeoMeta(options = {}) {
     .trim()
     .substring(0, 160);
 
-  const canonicalUrl = url ? `${SITE_URL}${url}` : `${SITE_URL}/`;
+  const canonicalUrl = normalizeCanonicalUrl(url);
 
   // Universal OG Image: Admin configured global OG image overrides/provides for every page and article
   const globalOgImage = (settings.og_image && settings.og_image.trim()) ? settings.og_image.trim() : null;
@@ -89,7 +99,7 @@ function getArticleSchema(post, author, category) {
     '@type': 'BlogPosting',
     'mainEntityOfPage': {
       '@type': 'WebPage',
-      '@id': `${SITE_URL}/post/${post.slug}`
+      '@id': normalizeCanonicalUrl(`/post/${post.slug}`)
     },
     'headline': post.title,
     'description': post.excerpt || post.title,
@@ -100,7 +110,7 @@ function getArticleSchema(post, author, category) {
     'author': {
       '@type': 'Person',
       'name': author ? (author.display_name || author.username) : 'পয়স্তি লেখক',
-      'url': author ? `${SITE_URL}/author/${encodeURIComponent(author.slug || author.nicename || author.username || '')}` : SITE_URL
+      'url': author ? normalizeCanonicalUrl(`/author/${author.slug || author.nicename || author.username || ''}`) : SITE_URL
     },
     'publisher': {
       '@type': 'Organization',
@@ -200,7 +210,7 @@ function getBreadcrumbSchema(items = []) {
       '@type': 'ListItem',
       'position': index + 1,
       'name': item.name,
-      'item': `${SITE_URL}${item.url}`
+      'item': normalizeCanonicalUrl(item.url)
     }))
   };
 }
@@ -307,5 +317,6 @@ module.exports = {
   getBookSchema,
   getWebsiteSchema,
   getBreadcrumbSchema,
-  getSpellCheckerSchema
+  getSpellCheckerSchema,
+  normalizeCanonicalUrl
 };

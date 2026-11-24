@@ -8,15 +8,42 @@ const { SITE_NAME, TAGLINE, NAV_MENU, EDITORIAL_BOARD, CONTACT, CATEGORY_SLUG_MA
 exports.getSinglePost = async (req, res) => {
   try {
     const { slug } = req.params;
+    const rawSlug = (slug || '').trim();
+    let decodedSlug = rawSlug;
+    try {
+      decodedSlug = decodeURIComponent(rawSlug).normalize('NFC');
+    } catch(e) {}
 
-    const post = await db.prepare(`
+    let post = await db.prepare(`
       SELECT p.*, u.id AS author_id, u.display_name AS author_name, u.nicename AS author_slug, u.avatar AS author_avatar, u.bio AS author_bio, u.email AS author_email,
              c.id AS category_id, c.name AS category_name, c.slug AS category_slug
       FROM posts p
       LEFT JOIN users u ON p.author_id = u.id
       LEFT JOIN categories c ON p.category_id = c.id
-      WHERE p.slug = ? AND p.status = 'publish'
-    `).get(slug);
+      WHERE (p.slug = ? OR p.slug = ?) AND p.status = 'publish'
+    `).get(rawSlug, decodedSlug);
+
+    // Fallback: If not found, check prefix match (handles truncated slugs in database or full titles from external links)
+    if (!post && decodedSlug) {
+      post = await db.prepare(`
+        SELECT p.*, u.id AS author_id, u.display_name AS author_name, u.nicename AS author_slug, u.avatar AS author_avatar, u.bio AS author_bio, u.email AS author_email,
+               c.id AS category_id, c.name AS category_name, c.slug AS category_slug
+        FROM posts p
+        LEFT JOIN users u ON p.author_id = u.id
+        LEFT JOIN categories c ON p.category_id = c.id
+        WHERE p.status = 'publish' AND (
+          ? LIKE CONCAT(p.slug, '%') OR
+          p.slug LIKE CONCAT(SUBSTRING(?, 1, 25), '%')
+        )
+        ORDER BY LENGTH(p.slug) DESC
+        LIMIT 1
+      `).get(decodedSlug, decodedSlug);
+
+      // If resolved via prefix or fuzzy match, 301 redirect to canonical slug
+      if (post && post.slug && post.slug !== rawSlug && post.slug !== decodedSlug) {
+        return res.redirect(301, `/post/${encodeURIComponent(post.slug)}`);
+      }
+    }
 
     if (!post) {
       return res.status(404).render('error', {

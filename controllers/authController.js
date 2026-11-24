@@ -3,7 +3,7 @@ const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 const db = require('../config/database');
 const { generateToken, JWT_SECRET } = require('../middleware/auth');
-const { generateSeoMeta } = require('../middleware/seo');
+const { generateSeoMeta, normalizeCanonicalUrl } = require('../middleware/seo');
 const { toBengaliNumber, formatBengaliDate } = require('../middleware/banglaDate');
 const { SITE_NAME, TAGLINE, NAV_MENU, EDITORIAL_BOARD, CONTACT, SITE_URL } = require('../config/constants');
 const { LITERARY_THEMES } = require('../helpers/literaryThemeHelper');
@@ -469,30 +469,36 @@ exports.getSitemap = async (req, res) => {
         .replace(/'/g, '&apos;');
     }
 
+    function formatLoc(path) {
+      return escapeXml(normalizeCanonicalUrl(path));
+    }
+
     let xml = `<?xml version="1.0" encoding="UTF-8"?>\n`;
     xml += `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n`;
 
-    // Static Pages
-    xml += `  <url><loc>${SITE_URL}/</loc><changefreq>daily</changefreq><priority>1.0</priority></url>\n`;
-    xml += `  <url><loc>${SITE_URL}/daily-literature</loc><changefreq>daily</changefreq><priority>0.95</priority></url>\n`;
-    xml += `  <url><loc>${SITE_URL}/bangla-spell</loc><changefreq>daily</changefreq><priority>0.95</priority></url>\n`;
-    xml += `  <url><loc>${SITE_URL}/spelling-rules</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>\n`;
-    xml += `  <url><loc>${SITE_URL}/themes</loc><changefreq>daily</changefreq><priority>0.9</priority></url>\n`;
-    xml += `  <url><loc>${SITE_URL}/authors</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>\n`;
-    xml += `  <url><loc>${SITE_URL}/books</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>\n`;
-    xml += `  <url><loc>${SITE_URL}/terms</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>\n`;
+    // Static Pages (Primary Canonical URLs)
+    xml += `  <url><loc>${formatLoc('/')}</loc><changefreq>daily</changefreq><priority>1.0</priority></url>\n`;
+    xml += `  <url><loc>${formatLoc('/bangla-spell')}</loc><changefreq>daily</changefreq><priority>0.95</priority></url>\n`;
+    xml += `  <url><loc>${formatLoc('/daily-literature')}</loc><changefreq>daily</changefreq><priority>0.95</priority></url>\n`;
+    xml += `  <url><loc>${formatLoc('/spelling-rules')}</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>\n`;
+    xml += `  <url><loc>${formatLoc('/themes')}</loc><changefreq>daily</changefreq><priority>0.9</priority></url>\n`;
+    xml += `  <url><loc>${formatLoc('/লেখক-তালিকা')}</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>\n`;
+    xml += `  <url><loc>${formatLoc('/books')}</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>\n`;
+    xml += `  <url><loc>${formatLoc('/terms')}</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>\n`;
 
     // Literary Themes
     if (Array.isArray(LITERARY_THEMES)) {
       LITERARY_THEMES.forEach(t => {
-        xml += `  <url><loc>${SITE_URL}/theme/${escapeXml(encodeURIComponent(t.slug))}</loc><changefreq>daily</changefreq><priority>0.85</priority></url>\n`;
+        if (t.slug) {
+          xml += `  <url><loc>${formatLoc('/theme/' + t.slug)}</loc><changefreq>daily</changefreq><priority>0.85</priority></url>\n`;
+        }
       });
     }
 
-    // Categories
+    // Categories (Canonical is /section/...)
     categories.forEach(c => {
       if (c.slug) {
-        xml += `  <url><loc>${SITE_URL}/category/${escapeXml(encodeURIComponent(c.slug))}</loc><changefreq>daily</changefreq><priority>0.8</priority></url>\n`;
+        xml += `  <url><loc>${formatLoc('/section/' + c.slug)}</loc><changefreq>daily</changefreq><priority>0.85</priority></url>\n`;
       }
     });
 
@@ -500,14 +506,14 @@ exports.getSitemap = async (req, res) => {
     posts.forEach(p => {
       if (p.slug) {
         const lastmod = (p.updated_at || p.published_at || new Date().toISOString()).split(' ')[0];
-        xml += `  <url><loc>${SITE_URL}/post/${escapeXml(encodeURIComponent(p.slug))}</loc><lastmod>${escapeXml(lastmod)}</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>\n`;
+        xml += `  <url><loc>${formatLoc('/post/' + p.slug)}</loc><lastmod>${escapeXml(lastmod)}</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>\n`;
       }
     });
 
     // Books
     books.forEach(b => {
       if (b.slug) {
-        xml += `  <url><loc>${SITE_URL}/book/${escapeXml(encodeURIComponent(b.slug))}</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>\n`;
+        xml += `  <url><loc>${formatLoc('/book/' + b.slug)}</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>\n`;
       }
     });
 
@@ -515,7 +521,7 @@ exports.getSitemap = async (req, res) => {
     authors.forEach(a => {
       const authorSlug = a.nicename || a.username;
       if (authorSlug) {
-        xml += `  <url><loc>${SITE_URL}/author/${escapeXml(encodeURIComponent(authorSlug))}</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>\n`;
+        xml += `  <url><loc>${formatLoc('/author/' + authorSlug)}</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>\n`;
       }
     });
 
@@ -529,8 +535,21 @@ exports.getSitemap = async (req, res) => {
 
 // Robots.txt
 exports.getRobots = (req, res) => {
-  res.header('Content-Type', 'text/plain');
-  res.send(`User-agent: *\nAllow: /\nDisallow: /author/dashboard\nDisallow: /admin\n\nSitemap: ${SITE_URL}/sitemap.xml\n`);
+  res.header('Content-Type', 'text/plain; charset=utf-8');
+  res.send(`User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /admin
+Disallow: /author/dashboard/
+Disallow: /author/dashboard
+Disallow: /author/new-post
+Disallow: /author/my-posts
+Disallow: /author/profile
+Disallow: /api/
+Disallow: /run-migration
+
+Sitemap: ${SITE_URL}/sitemap.xml
+`);
 };
 
 // ==========================================

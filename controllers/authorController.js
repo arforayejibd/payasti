@@ -75,11 +75,18 @@ exports.getAuthorsList = async (req, res) => {
       { name: 'লেখক তালিকা', url: '/লেখক-তালিকা/' }
     ];
 
+    const canonicalAuthorListUrl = page > 1 
+      ? `/লেখক-তালিকা/page/${page}` 
+      : '/লেখক-তালিকা';
+
     const seo = generateSeoMeta({
-      exactTitle: 'লেখক তালিকা | পয়স্তি ম্যাগাজিন',
-      description: 'লেখক তালিকা',
+      exactTitle: page > 1 
+        ? `লেখক তালিকা (পৃষ্ঠা ${page}) | পয়স্তি ম্যাগাজিন` 
+        : 'লেখক তালিকা | পয়স্তি ম্যাগাজিন - কবি ও সাহিত্যিকদের রচনাসমগ্র',
+      description: 'পয়স্তি ম্যাগাজিনের সকল সম্মানিত কবি, লেখক ও সাহিত্যিকদের তালিকা এবং তাদের প্রকাশিত সাহিত্যকর্ম। বাংলা সাহিত্যের নবীন ও প্রবীণ লেখকদের প্রোফাইল ব্রাউজ করুন।',
       image: 'https://payasti.com/content/uploads/2019/09/Payasti-Magazine.png',
-      url: '/%e0%a6%b2%e0%a7%87%e0%a6%96%e0%a6%95-%e0%a6%a4%e0%a6%be%e0%a6%b2%e0%a6%bf%e0%a6%95%e0%a6%be/',
+      url: canonicalAuthorListUrl,
+      keywords: ['লেখক তালিকা', 'বাংলা লেখক', 'বাংলা কবি', 'পয়স্তি লেখক', 'সাহিত্যিক প্রোফাইল'],
       schema: getBreadcrumbSchema(breadcrumbs)
     });
 
