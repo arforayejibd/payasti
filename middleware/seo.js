@@ -124,16 +124,9 @@ function getArticleSchema(post, author, category) {
     'articleSection': category ? category.name : 'সাহিত্য'
   };
 
-  if (post && post.rating_count && Number(post.rating_count) > 0) {
-    schema.aggregateRating = {
-      '@type': 'AggregateRating',
-      'ratingValue': parseFloat(post.rating_score || 5).toFixed(1),
-      'bestRating': '5',
-      'worstRating': '1',
-      'ratingCount': parseInt(post.rating_count, 10)
-    };
-  }
-
+  // Note: Google Review snippets only support specific schema types (Book, Product, Movie, etc.).
+  // Attaching aggregateRating to BlogPosting/Article triggers "Review snippets: 1 invalid item detected" in Search Console.
+  // We keep ratings on the site UI, while keeping BlogPosting schema 100% compliant with Google Search guidelines.
   return schema;
 }
 
