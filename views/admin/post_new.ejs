@@ -172,7 +172,7 @@
         </div>
       </div>
 
-      <!-- প্রধান লেখক নির্বাচন -->
+      <!-- প্রধান লেখক নির্বাচন (সার্চযোগ্য) -->
       <div class="admin-card" style="margin-bottom: 0;">
         <div class="admin-card-header">
           <div class="admin-card-title">
@@ -180,19 +180,49 @@
           </div>
         </div>
         <div class="admin-card-body">
-          <select name="author_id" id="mainAuthorSelect" class="admin-form-select" required style="width: 100%;">
-            <% if (authors && authors.length) { %>
-              <% authors.forEach(a => { %>
-                <option value="<%= a.id %>" data-nicename="<%= a.nicename || a.username %>" <%= user && user.id == a.id ? 'selected' : '' %>>
-                  <%= a.display_name %> (@<%= a.username %>)
-                </option>
-              <% }) %>
-            <% } %>
-          </select>
+          <% 
+            let defaultAuthorName = '';
+            let defaultAuthorId = '';
+            if (authors && authors.length) {
+              const def = authors.find(a => user && user.id == a.id) || authors[0];
+              if (def) {
+                defaultAuthorName = `${def.display_name} (@${def.username})`;
+                defaultAuthorId = def.id;
+              }
+            }
+          %>
+          <div class="searchable-author-container" style="position: relative;">
+            <div style="position: relative;">
+              <input 
+                type="text" 
+                id="mainAuthorSearchInput" 
+                class="admin-form-input" 
+                placeholder="🔍 টাইপ করে কবি খুঁজুন..." 
+                value="<%= defaultAuthorName %>" 
+                onfocus="openMainAuthorDropdown()" 
+                oninput="filterMainAuthorDropdown(this.value)" 
+                autocomplete="off"
+                style="padding-right: 30px; font-size: 14px;"
+              >
+              <span style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); pointer-events: none; color: #94a3b8; font-size: 11px;">▼</span>
+            </div>
+            <!-- Hidden actual select for form submission -->
+            <select name="author_id" id="mainAuthorSelect" style="display: none;" required>
+              <% if (authors && authors.length) { %>
+                <% authors.forEach(a => { %>
+                  <option value="<%= a.id %>" data-name="<%= a.display_name %>" data-username="<%= a.username %>" data-nicename="<%= a.nicename || a.username %>" <%= a.id == defaultAuthorId ? 'selected' : '' %>>
+                    <%= a.display_name %> (@<%= a.username %>)
+                  </option>
+                <% }) %>
+              <% } %>
+            </select>
+            <!-- Dropdown Menu -->
+            <div id="mainAuthorDropdownMenu" class="author-dropdown-menu" style="display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0; max-height: 220px; overflow-y: auto; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.12); z-index: 1050;"></div>
+          </div>
         </div>
       </div>
 
-      <!-- সহ-লেখক / অন্যান্য কবি নির্বাচন (মাল্টিপল অথর) -->
+      <!-- সহ-লেখক / অন্যান্য কবি নির্বাচন (সার্চযোগ্য মাল্টিপল অথর) -->
       <div class="admin-card" id="coAuthorsCard" style="margin-bottom: 0;">
         <div class="admin-card-header">
           <div class="admin-card-title">
@@ -201,14 +231,27 @@
         </div>
         <div class="admin-card-body">
           <p style="font-size: 13px; color: #64748b; margin-top: 0; margin-bottom: 8px;">
-            সংকলন বা যৌথ লেখার ক্ষেত্রে অংশগ্রহণকারী কবিদের সিলেক্ট করুন। তাঁদের সবার প্রোফাইলে লেখাটি প্রদর্শিত হবে:
+            সংকলনে একাধিক কবি থাকলে সিলেক্ট করুন। সবার প্রোফাইলে লেখাটি প্রদর্শিত হবে:
           </p>
+          <!-- লাইভ সার্চ ফিল্টার ইনপুট -->
+          <div style="position: relative; margin-bottom: 8px;">
+            <input 
+              type="text" 
+              id="coAuthorSearchInput" 
+              class="admin-form-input" 
+              placeholder="🔍 কবির নাম দিয়ে তালিকায় খুঁজুন..." 
+              style="padding: 6px 10px 6px 30px; font-size: 13px; height: 34px; width: 100%; border-radius: 6px;"
+              oninput="filterCoAuthorCheckboxes(this.value)"
+            >
+            <span style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 13px;">🔍</span>
+          </div>
           <div id="coAuthorsCheckboxList" style="max-height: 180px; overflow-y: auto; border: 1px solid var(--admin-border); border-radius: 8px; padding: 8px 12px; background: #f8fafc;">
             <% if (authors && authors.length) { %>
               <% authors.forEach(a => { %>
-                <label class="coauthor-check-label" style="display: flex; align-items: center; gap: 8px; padding: 4px 0; font-size: 14px; cursor: pointer; color: #334155;">
+                <label class="coauthor-check-label" data-search="<%= (a.display_name + ' ' + a.username).toLowerCase() %>" style="display: flex; align-items: center; gap: 8px; padding: 4px 0; font-size: 14px; cursor: pointer; color: #334155;">
                   <input type="checkbox" name="co_author_ids" value="<%= a.id %>" class="coauthor-checkbox" id="coauthor_<%= a.id %>" style="accent-color: var(--admin-primary); width: 16px; height: 16px;">
                   <span><%= a.display_name %></span>
+                  <span style="font-size: 12px; color: #94a3b8;">(@<%= a.username %>)</span>
                 </label>
               <% }) %>
             <% } %>
@@ -396,6 +439,9 @@
     const initialAuthorId = data ? (data.authorId || '') : (availableAuthors[0] ? availableAuthors[0].id : '');
     const initialLines = data ? (data.lines || '') : '';
 
+    const initialAuthor = availableAuthors.find(a => String(a.id) === String(initialAuthorId)) || availableAuthors[0];
+    const initialAuthorText = initialAuthor ? `${initialAuthor.display_name} (@${initialAuthor.username})` : '';
+
     const card = document.createElement('div');
     card.className = 'poem-entry-card';
     card.innerHTML = `
@@ -412,11 +458,26 @@
           <label style="display: block; font-size: 13px; font-weight: 600; color: #334155; margin-bottom: 5px;">কবিতার শিরোনাম *</label>
           <input type="text" class="poem-title-input admin-form-input" placeholder="যেমন: বসন্তের গান" value="${escapeHtml(initialTitle)}" required>
         </div>
-        <div>
-          <label style="display: block; font-size: 13px; font-weight: 600; color: #334155; margin-bottom: 5px;">কবি নির্বাচন *</label>
-          <select class="poem-author-select admin-form-select" onchange="syncPoemAuthorsToCoAuthors()" style="width: 100%;">
+        <div class="searchable-card-author-wrapper" style="position: relative;">
+          <label style="display: block; font-size: 13px; font-weight: 600; color: #334155; margin-bottom: 5px;">কবি নির্বাচন (সার্চ করুন) *</label>
+          <div style="position: relative;">
+            <input 
+              type="text" 
+              class="poem-author-search-input admin-form-input" 
+              placeholder="🔍 টাইপ করে কবি খুঁজুন..." 
+              value="${escapeHtml(initialAuthorText)}" 
+              onfocus="openCardAuthorDropdown(this)" 
+              oninput="filterCardAuthorDropdown(this)" 
+              autocomplete="off"
+              style="padding-right: 28px; font-size: 14px;"
+            >
+            <span style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); pointer-events: none; color: #94a3b8; font-size: 11px;">▼</span>
+          </div>
+          <!-- Hidden select to hold value -->
+          <select class="poem-author-select" style="display: none;">
             ${renderAuthorOptions(initialAuthorId)}
           </select>
+          <div class="author-dropdown-menu" style="display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0; max-height: 220px; overflow-y: auto; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.12); z-index: 1050;"></div>
         </div>
       </div>
       <div>
@@ -438,6 +499,133 @@
     card.remove();
     reindexPoemCards();
   }
+
+  // Filter co-authors checkboxes in sidebar
+  function filterCoAuthorCheckboxes(query) {
+    const q = (query || '').toLowerCase().trim();
+    const labels = document.querySelectorAll('.coauthor-check-label');
+    labels.forEach(lbl => {
+      const searchKey = lbl.dataset.search || lbl.textContent.toLowerCase();
+      if (!q || searchKey.includes(q)) {
+        lbl.style.display = 'flex';
+      } else {
+        lbl.style.display = 'none';
+      }
+    });
+  }
+
+  // Main Author Dropdown Functions
+  function openMainAuthorDropdown() {
+    closeAllAuthorDropdowns();
+    const menu = document.getElementById('mainAuthorDropdownMenu');
+    const input = document.getElementById('mainAuthorSearchInput');
+    renderAuthorDropdownItems(menu, '', (author) => {
+      input.value = `${author.display_name} (@${author.username})`;
+      const select = document.getElementById('mainAuthorSelect');
+      if (select) {
+        select.value = author.id;
+        select.dispatchEvent(new Event('change'));
+      }
+      menu.style.display = 'none';
+    });
+    menu.style.display = 'block';
+  }
+
+  function filterMainAuthorDropdown(query) {
+    const menu = document.getElementById('mainAuthorDropdownMenu');
+    const input = document.getElementById('mainAuthorSearchInput');
+    renderAuthorDropdownItems(menu, query, (author) => {
+      input.value = `${author.display_name} (@${author.username})`;
+      const select = document.getElementById('mainAuthorSelect');
+      if (select) {
+        select.value = author.id;
+        select.dispatchEvent(new Event('change'));
+      }
+      menu.style.display = 'none';
+    });
+    menu.style.display = 'block';
+  }
+
+  // Poem Card Author Dropdown Functions
+  function openCardAuthorDropdown(input) {
+    closeAllAuthorDropdowns();
+    const wrapper = input.closest('.searchable-card-author-wrapper');
+    const menu = wrapper.querySelector('.author-dropdown-menu');
+    const select = wrapper.querySelector('.poem-author-select');
+
+    renderAuthorDropdownItems(menu, '', (author) => {
+      input.value = `${author.display_name} (@${author.username})`;
+      if (select) {
+        select.value = author.id;
+        syncPoemAuthorsToCoAuthors();
+      }
+      menu.style.display = 'none';
+    });
+    menu.style.display = 'block';
+  }
+
+  function filterCardAuthorDropdown(input) {
+    const wrapper = input.closest('.searchable-card-author-wrapper');
+    const menu = wrapper.querySelector('.author-dropdown-menu');
+    const select = wrapper.querySelector('.poem-author-select');
+
+    renderAuthorDropdownItems(menu, input.value, (author) => {
+      input.value = `${author.display_name} (@${author.username})`;
+      if (select) {
+        select.value = author.id;
+        syncPoemAuthorsToCoAuthors();
+      }
+      menu.style.display = 'none';
+    });
+    menu.style.display = 'block';
+  }
+
+  // Render items into dropdown
+  function renderAuthorDropdownItems(menuEl, query, onSelect) {
+    const q = (query || '').toLowerCase().trim();
+    const filtered = availableAuthors.filter(a => {
+      if (!q) return true;
+      const name = (a.display_name || '').toLowerCase();
+      const user = (a.username || '').toLowerCase();
+      return name.includes(q) || user.includes(q);
+    });
+
+    if (filtered.length === 0) {
+      menuEl.innerHTML = '<div style="padding: 12px; color: #94a3b8; font-size: 13px; text-align: center;">কোনো কবি পাওয়া যায়নি</div>';
+      return;
+    }
+
+    menuEl.innerHTML = '';
+    filtered.forEach(a => {
+      const item = document.createElement('div');
+      item.className = 'author-dropdown-item';
+      item.style.cssText = 'padding: 8px 12px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #f8fafc; font-size: 14px;';
+      item.innerHTML = `
+        <div>
+          <strong style="color: #0f172a;">${escapeHtml(a.display_name)}</strong>
+          <span style="color: #64748b; font-size: 12px; margin-left: 6px;">@${escapeHtml(a.username)}</span>
+        </div>
+        ${a.role === 'admin' ? '<span style="font-size: 11px; background: #fee2e2; color: #dc2626; padding: 2px 6px; border-radius: 4px;">এডমিন</span>' : ''}
+      `;
+      item.addEventListener('mouseenter', () => item.style.background = '#f0fdf4');
+      item.addEventListener('mouseleave', () => item.style.background = 'transparent');
+      item.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        onSelect(a);
+      });
+      menuEl.appendChild(item);
+    });
+  }
+
+  function closeAllAuthorDropdowns() {
+    document.querySelectorAll('.author-dropdown-menu').forEach(m => m.style.display = 'none');
+  }
+
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.searchable-author-container') && !e.target.closest('.searchable-card-author-wrapper')) {
+      closeAllAuthorDropdowns();
+    }
+  });
 
   function syncPoemAuthorsToCoAuthors() {
     if (currentMode !== 'group') return;
@@ -467,11 +655,16 @@
       }
     });
 
-    // Set main author select to first author
+    // Set main author select and search input to first author
     if (firstAuthorId) {
       const mainSelect = document.getElementById('mainAuthorSelect');
       if (mainSelect) {
         mainSelect.value = firstAuthorId;
+        const opt = mainSelect.options[mainSelect.selectedIndex];
+        const mainInput = document.getElementById('mainAuthorSearchInput');
+        if (opt && mainInput) {
+          mainInput.value = opt.text.trim();
+        }
       }
     }
   }
