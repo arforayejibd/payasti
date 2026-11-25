@@ -199,10 +199,13 @@
       <div class="admin-card" style="margin-bottom: 0;">
         <div class="admin-card-header">
           <div class="admin-card-title">
-            <span>মূল/প্রধান লেখক *</span>
+            <span>পোস্টের প্রধান লেখক / সংকলক *</span>
           </div>
         </div>
         <div class="admin-card-body">
+          <p style="font-size: 12px; color: #64748b; margin-top: 0; margin-bottom: 8px;">
+            💡 বহু কবি সংকলনে সম্পাদক/পোস্টকারীকে সিলেক্ট করতে পারেন। আর একক কবির একাধিক কবিতা হলে সেই কবিকেই সিলেক্ট করুন।
+          </p>
           <% 
             let defaultAuthorName = '';
             let defaultAuthorId = post.author_id;
@@ -220,7 +223,7 @@
                 type="text" 
                 id="mainAuthorSearchInput" 
                 class="admin-form-input" 
-                placeholder="🔍 টাইপ করে কবি খুঁজুন..." 
+                placeholder="🔍 টাইপ করে কবি বা সম্পাদক খুঁজুন..." 
                 value="<%= defaultAuthorName %>" 
                 onfocus="openMainAuthorDropdown()" 
                 oninput="filterMainAuthorDropdown(this.value)" 
@@ -530,12 +533,15 @@
     });
   }
 
+  let userManuallySelectedMainAuthor = false;
+
   // Main Author Dropdown Functions
   function openMainAuthorDropdown() {
     closeAllAuthorDropdowns();
     const menu = document.getElementById('mainAuthorDropdownMenu');
     const input = document.getElementById('mainAuthorSearchInput');
     renderAuthorDropdownItems(menu, '', (author) => {
+      userManuallySelectedMainAuthor = true;
       input.value = `${author.display_name} (@${author.username})`;
       const select = document.getElementById('mainAuthorSelect');
       if (select) {
@@ -551,6 +557,7 @@
     const menu = document.getElementById('mainAuthorDropdownMenu');
     const input = document.getElementById('mainAuthorSearchInput');
     renderAuthorDropdownItems(menu, query, (author) => {
+      userManuallySelectedMainAuthor = true;
       input.value = `${author.display_name} (@${author.username})`;
       const select = document.getElementById('mainAuthorSelect');
       if (select) {
@@ -650,7 +657,7 @@
     if (!container) return;
     const cards = container.querySelectorAll('.poem-entry-card');
     const selectedAuthorIds = new Set();
-    let firstAuthorId = null;
+    let singlePoetId = null;
 
     cards.forEach((card, idx) => {
       const select = card.querySelector('.poem-author-select');
@@ -658,12 +665,12 @@
         const id = parseInt(select.value, 10);
         if (id) {
           selectedAuthorIds.add(id);
-          if (idx === 0) firstAuthorId = id;
+          singlePoetId = id;
         }
       }
     });
 
-    // Check checkboxes in sidebar
+    // Check checkboxes in sidebar for all contributing poets
     const checkboxes = document.querySelectorAll('.coauthor-checkbox');
     checkboxes.forEach(cb => {
       const cbId = parseInt(cb.value, 10);
@@ -672,11 +679,13 @@
       }
     });
 
-    // Set main author select to first author
-    if (firstAuthorId) {
+    // Auto-assignment for Main Author:
+    // If all poems belong to ONE single poet (e.g. একই কবির ৫টি কবিতা):
+    // and user has not manually overridden the main author, set that single poet as main author!
+    if (selectedAuthorIds.size === 1 && singlePoetId && !userManuallySelectedMainAuthor) {
       const mainSelect = document.getElementById('mainAuthorSelect');
       if (mainSelect) {
-        mainSelect.value = firstAuthorId;
+        mainSelect.value = singlePoetId;
         const opt = mainSelect.options[mainSelect.selectedIndex];
         const mainInput = document.getElementById('mainAuthorSearchInput');
         if (opt && mainInput) {
@@ -684,6 +693,8 @@
         }
       }
     }
+    // If there are MULTIPLE distinct poets (বহু কবি সংকলন):
+    // DO NOT touch mainAuthorSelect! The main author remains the Editor / Curator (সম্পাদক / সংকলক).
   }
 
   document.addEventListener('DOMContentLoaded', function() {
@@ -771,6 +782,7 @@
 
           addNewPoemCard({ title: pTitle, authorId: authorId, lines: lines });
         });
+        userManuallySelectedMainAuthor = true;
       } else {
         addNewPoemCard();
       }
