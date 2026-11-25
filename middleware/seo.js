@@ -304,6 +304,51 @@ function getSpellCheckerSchema() {
   };
 }
 
+function getAuthorProfileSchema(author, breadcrumbs = []) {
+  const authorSlug = author.nicename || author.username || '';
+  const profileUrl = normalizeCanonicalUrl(`/author/${authorSlug}`);
+  const authorBio = author.bio || `${author.display_name} এর পয়স্তি ম্যাগাজিনে প্রকাশিত সকল কবিতা, গল্প, প্রবন্ধ ও সাহিত্য সৃষ্টি।`;
+  let authorAvatar = author.avatar || `${SITE_URL}/images/Payasti-logo.png`;
+  if (authorAvatar && !authorAvatar.startsWith('http://') && !authorAvatar.startsWith('https://')) {
+    authorAvatar = `${SITE_URL}${authorAvatar.startsWith('/') ? '' : '/'}${authorAvatar}`;
+  }
+
+  const graph = [
+    {
+      '@type': 'ProfilePage',
+      '@id': `${profileUrl}#profilepage`,
+      'url': profileUrl,
+      'name': `${author.display_name} - লেখকের প্রোফাইল ও রচনাসমগ্র`,
+      'isPartOf': { '@id': `${SITE_URL}/#website` },
+      'mainEntity': { '@id': `${profileUrl}#person` }
+    },
+    {
+      '@type': 'Person',
+      '@id': `${profileUrl}#person`,
+      'name': author.display_name,
+      'alternateName': authorSlug,
+      'description': authorBio,
+      'image': authorAvatar,
+      'jobTitle': 'লেখক ও সাহিত্য সাধক',
+      'worksFor': {
+        '@type': 'Organization',
+        'name': `${SITE_NAME} - ${TAGLINE}`,
+        'url': SITE_URL
+      },
+      'url': profileUrl
+    }
+  ];
+
+  if (breadcrumbs && breadcrumbs.length) {
+    graph.push(getBreadcrumbSchema(breadcrumbs));
+  }
+
+  return {
+    '@context': 'https://schema.org',
+    '@graph': graph
+  };
+}
+
 module.exports = {
   generateSeoMeta,
   getArticleSchema,
@@ -311,5 +356,6 @@ module.exports = {
   getWebsiteSchema,
   getBreadcrumbSchema,
   getSpellCheckerSchema,
+  getAuthorProfileSchema,
   normalizeCanonicalUrl
 };

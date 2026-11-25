@@ -1,6 +1,6 @@
 const crypto = require('crypto');
 const db = require('../config/database');
-const { generateSeoMeta, getBreadcrumbSchema } = require('../middleware/seo');
+const { generateSeoMeta, getBreadcrumbSchema, getAuthorProfileSchema } = require('../middleware/seo');
 const { toBengaliNumber, formatBengaliDate } = require('../middleware/banglaDate');
 const { SITE_NAME, TAGLINE, NAV_MENU, EDITORIAL_BOARD, CONTACT } = require('../config/constants');
 
@@ -174,18 +174,40 @@ exports.getAuthorProfile = async (req, res) => {
       LIMIT ? OFFSET ?
     `).all(author.id, limit, offset);
 
+    const authorSlug = author.nicename || author.username || '';
     const breadcrumbs = [
       { name: 'প্রচ্ছদ', url: '/' },
-      { name: 'যারা লিখেছেন', url: '/authors' },
-      { name: author.display_name, url: `/author/${author.nicename || author.username}` }
+      { name: 'যারা লিখেছেন', url: '/লেখক-তালিকা' },
+      { name: author.display_name, url: `/author/${authorSlug}` }
     ];
 
+    const canonicalAuthorUrl = page > 1 
+      ? `/author/${authorSlug}?page=${page}` 
+      : `/author/${authorSlug}`;
+
+    const authorTitle = page > 1 
+      ? `${author.display_name} - লেখকের প্রোফাইল ও রচনাসমগ্র (পৃষ্ঠা ${page})` 
+      : `${author.display_name} - লেখকের প্রোফাইল ও রচনাসমগ্র`;
+
+    const authorBioSnippet = author.bio 
+      ? author.bio.replace(/<[^>]+>/g, '').trim().substring(0, 160)
+      : `${author.display_name} এর পয়স্তি ম্যাগাজিনে প্রকাশিত সকল কবিতা, গল্প, প্রবন্ধ ও সাহিত্য সৃষ্টি।`;
+
     const seo = generateSeoMeta({
-      title: `${author.display_name} - লেখকের প্রোফাইল ও রচনাসমগ্র`,
-      description: author.bio || `${author.display_name} এর পয়স্তি ম্যাগাজিনে প্রকাশিত সকল কবিতা, গল্প, প্রবন্ধ ও সাহিত্য সৃষ্টি।`,
+      title: authorTitle,
+      description: authorBioSnippet,
       image: author.avatar,
-      url: `/author/${author.nicename || author.username}`,
-      schema: getBreadcrumbSchema(breadcrumbs)
+      url: canonicalAuthorUrl,
+      type: 'profile',
+      keywords: [
+        author.display_name,
+        `${author.display_name} এর কবিতা`,
+        `${author.display_name} এর গল্প`,
+        `${author.display_name} এর বই`,
+        'পয়স্তি লেখক',
+        'বাংলা সাহিত্যিক'
+      ],
+      schema: getAuthorProfileSchema(author, breadcrumbs)
     });
 
     res.render('author_profile', {
