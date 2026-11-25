@@ -8,9 +8,20 @@
         <!-- Article Header -->
         <header class="article-header">
           <div class="article-meta-top">
-            <a href="/author/<%= encodeURIComponent(post.author_slug || '') %>" class="article-author-name">
-              <%= author ? author.display_name : (post.author_name || 'পয়স্তি লেখক') %>
-            </a>
+            <% if (typeof coAuthors !== 'undefined' && coAuthors.length > 1) { %>
+              <div class="article-coauthors-group" style="display: inline-flex; align-items: center; flex-wrap: wrap; gap: 4px;">
+                <span class="coauthors-label" style="color: #64748b; font-weight: 500;">কবি ও লেখকবৃন্দ:</span>
+                <% coAuthors.forEach((ca, idx) => { %>
+                  <a href="/author/<%= encodeURIComponent(ca.author_slug || ca.nicename || ca.username || '') %>" class="article-author-name">
+                    <%= ca.display_name %>
+                  </a><%= idx < coAuthors.length - 1 ? ' • ' : '' %>
+                <% }) %>
+              </div>
+            <% } else { %>
+              <a href="/author/<%= encodeURIComponent(post.author_slug || '') %>" class="article-author-name">
+                <%= author ? author.display_name : (post.author_name || 'পয়স্তি লেখক') %>
+              </a>
+            <% } %>
             <span class="header-meta-sep">•</span>
             <span class="article-reading-time" title="আনুমানিক পাঠের সময়">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
@@ -167,50 +178,71 @@
     <!-- Sidebar Column (30%) -->
     <aside class="article-sidebar">
       <div class="sidebar-card-widget">
-        <!-- Author Profile Widget -->
-        <div class="sidebar-author-profile">
-          <div class="sidebar-author-header">
-            <%- include('partials/author_avatar_badge', { 
-              avatar: author ? author.avatar : null, 
-              name: author ? author.display_name : (post.author_name || 'লেখক'), 
-              views: author ? author.total_views : 0, 
-              posts: author ? author.post_count : 0, 
-              size: 'md',
-              wrapClass: 'sidebar-author-avatar-wrap',
-              link: `/author/${encodeURIComponent((author && (author.nicename || author.username)) || post.author_slug || '')}/`
-            }) %>
-            <div class="sidebar-author-meta">
-              <a href="/author/<%= encodeURIComponent((author && (author.nicename || author.username)) || post.author_slug || '') %>/" class="sidebar-author-name-link" title="<%= author ? author.display_name : (post.author_name || 'পয়স্তি লেখক') %>">
-                <%= author ? author.display_name : (post.author_name || 'পয়স্তি লেখক') %>
-              </a>
-              <div class="sidebar-author-badge-row">
-                <%- include('partials/author_badge_tag', { 
-                  views: author ? author.total_views : 0, 
-                  posts: author ? author.post_count : 0 
-                }) %>
-              </div>
+        <% if (typeof coAuthors !== 'undefined' && coAuthors.length > 1) { %>
+          <!-- Multiple Authors / Anthology Widget -->
+          <div class="sidebar-coauthors-box">
+            <div class="sidebar-coauthors-header" style="display: flex; align-items: center; gap: 8px; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--border-color, #e2e8f0);">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1a5b4c" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+              <h3 style="font-size: 16px; font-weight: 700; color: #1a5b4c; margin: 0;">এই সংকলনের কবিবৃন্দ (<%= toBengaliNumber(coAuthors.length) %> জন)</h3>
+            </div>
+            <div class="sidebar-coauthors-list" style="display: flex; flex-direction: column; gap: 10px;">
+              <% coAuthors.forEach(ca => { %>
+                <a href="/author/<%= encodeURIComponent(ca.author_slug || ca.nicename || ca.username || '') %>/" class="sidebar-coauthor-item" style="display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 8px; background: #f8fafc; border: 1px solid #e2e8f0; text-decoration: none; color: inherit; transition: all 0.2s;">
+                  <img src="<%= ca.avatar || '/images/default-avatar.png' %>" alt="<%= ca.display_name %>" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 1px solid #cbd5e1;">
+                  <div style="flex: 1; min-width: 0;">
+                    <strong style="display: block; font-size: 14px; font-weight: 600; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><%= ca.display_name %></strong>
+                    <span style="font-size: 12px; color: #d97706; font-weight: 500;">প্রোফাইল ও রচনাসমগ্র &rarr;</span>
+                  </div>
+                </a>
+              <% }) %>
             </div>
           </div>
-          <% if (author && author.bio) { %>
-            <% 
-              const cleanBio = (author.bio || '')
-                .replace(/\\r\\n|\\r|\\n/g, ' ')
-                .replace(/[\r\n]+/g, ' ')
-                .replace(/\|\s*/g, '')
-                .replace(/\s+/g, ' ')
-                .trim();
-            %>
-            <% if (cleanBio) { %>
-              <div class="sidebar-author-bio-text" title="<%= cleanBio %>">
-                <%= cleanBio %>
+        <% } else { %>
+          <!-- Author Profile Widget -->
+          <div class="sidebar-author-profile">
+            <div class="sidebar-author-header">
+              <%- include('partials/author_avatar_badge', { 
+                avatar: author ? author.avatar : null, 
+                name: author ? author.display_name : (post.author_name || 'লেখক'), 
+                views: author ? author.total_views : 0, 
+                posts: author ? author.post_count : 0, 
+                size: 'md',
+                wrapClass: 'sidebar-author-avatar-wrap',
+                link: `/author/${encodeURIComponent((author && (author.nicename || author.username)) || post.author_slug || '')}/`
+              }) %>
+              <div class="sidebar-author-meta">
+                <a href="/author/<%= encodeURIComponent((author && (author.nicename || author.username)) || post.author_slug || '') %>/" class="sidebar-author-name-link" title="<%= author ? author.display_name : (post.author_name || 'পয়স্তি লেখক') %>">
+                  <%= author ? author.display_name : (post.author_name || 'পয়স্তি লেখক') %>
+                </a>
+                <div class="sidebar-author-badge-row">
+                  <%- include('partials/author_badge_tag', { 
+                    views: author ? author.total_views : 0, 
+                    posts: author ? author.post_count : 0 
+                  }) %>
+                </div>
               </div>
-              <a href="/author/<%= encodeURIComponent((author && (author.nicename || author.username)) || post.author_slug || '') %>/" class="sidebar-author-view-profile">
-                <span>সম্পূর্ণ প্রোফাইল ও রচনাসমগ্র</span>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-              </a>
+            </div>
+            <% if (author && author.bio) { %>
+              <% 
+                const cleanBio = (author.bio || '')
+                  .replace(/\\r\\n|\\r|\\n/g, ' ')
+                  .replace(/[\r\n]+/g, ' ')
+                  .replace(/\|\s*/g, '')
+                  .replace(/\s+/g, ' ')
+                  .trim();
+              %>
+              <% if (cleanBio) { %>
+                <div class="sidebar-author-bio-text" title="<%= cleanBio %>">
+                  <%= cleanBio %>
+                </div>
+                <a href="/author/<%= encodeURIComponent((author && (author.nicename || author.username)) || post.author_slug || '') %>/" class="sidebar-author-view-profile">
+                  <span>সম্পূর্ণ প্রোফাইল ও রচনাসমগ্র</span>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </a>
+              <% } %>
             <% } %>
-          <% } %>
-        </div>
+          </div>
+        <% } %>
 
         <div class="sidebar-divider"></div>
 

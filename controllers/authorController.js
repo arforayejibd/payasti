@@ -52,11 +52,20 @@ exports.getAuthorsList = async (req, res) => {
         const emailSha256 = crypto.createHash('sha256').update(emailClean).digest('hex');
         author.avatar = `https://secure.gravatar.com/avatar/${emailSha256}?s=100&d=mm&r=g`;
       }
-      author.recentPosts = await db.prepare(`
-        SELECT title, slug FROM posts
-        WHERE author_id = ? AND status = 'publish'
-        ORDER BY published_at DESC LIMIT 3
-      `).all(author.id);
+      try {
+        author.recentPosts = await db.prepare(`
+          SELECT DISTINCT p.title, p.slug FROM posts p
+          LEFT JOIN post_authors pa ON p.id = pa.post_id
+          WHERE (p.author_id = ? OR pa.author_id = ?) AND p.status = 'publish'
+          ORDER BY p.published_at DESC LIMIT 3
+        `).all(author.id, author.id);
+      } catch (rpErr) {
+        author.recentPosts = await db.prepare(`
+          SELECT title, slug FROM posts
+          WHERE author_id = ? AND status = 'publish'
+          ORDER BY published_at DESC LIMIT 3
+        `).all(author.id);
+      }
     }
 
     // Base URL calculation for pagination
@@ -147,13 +156,34 @@ exports.getAuthorProfile = async (req, res) => {
       author.avatar = `https://secure.gravatar.com/avatar/${emailHash}?s=100&d=mp`;
     }
 
-    // Count author's posts & total views
-    const totalPostsRow = await db.prepare("SELECT COUNT(*) AS total FROM posts WHERE author_id = ? AND status = 'publish'").get(author.id);
-    const totalPosts = Number(totalPostsRow ? totalPostsRow.total : 0);
-    const totalPages = Math.ceil(totalPosts / limit);
+    // Count author's posts & total views (including co-authored / anthology posts)
+    let totalPosts = 0;
+    let totalViews = 0;
+    try {
+      const totalPostsRow = await db.prepare(`
+        SELECT COUNT(DISTINCT p.id) AS total 
+        FROM posts p 
+        LEFT JOIN post_authors pa ON p.id = pa.post_id 
+        WHERE (p.author_id = ? OR pa.author_id = ?) AND p.status = 'publish'
+      `).get(author.id, author.id);
+      totalPosts = Number(totalPostsRow ? totalPostsRow.total : 0);
 
-    const totalViewsRow = await db.prepare("SELECT COALESCE(SUM(views), 0) AS total FROM posts WHERE author_id = ? AND status = 'publish'").get(author.id);
-    const totalViews = Number(totalViewsRow ? totalViewsRow.total : 0);
+      const totalViewsRow = await db.prepare(`
+        SELECT COALESCE(SUM(v.views), 0) AS total FROM (
+          SELECT DISTINCT p.id, p.views
+          FROM posts p
+          LEFT JOIN post_authors pa ON p.id = pa.post_id
+          WHERE (p.author_id = ? OR pa.author_id = ?) AND p.status = 'publish'
+        ) v
+      `).get(author.id, author.id);
+      totalViews = Number(totalViewsRow ? totalViewsRow.total : 0);
+    } catch (cntErr) {
+      const totalPostsRow = await db.prepare("SELECT COUNT(*) AS total FROM posts WHERE author_id = ? AND status = 'publish'").get(author.id);
+      totalPosts = Number(totalPostsRow ? totalPostsRow.total : 0);
+      const totalViewsRow = await db.prepare("SELECT COALESCE(SUM(views), 0) AS total FROM posts WHERE author_id = ? AND status = 'publish'").get(author.id);
+      totalViews = Number(totalViewsRow ? totalViewsRow.total : 0);
+    }
+    const totalPages = Math.ceil(totalPosts / limit);
 
     const badges = {
       isViral: totalViews >= 10000,
@@ -163,16 +193,30 @@ exports.getAuthorProfile = async (req, res) => {
       isFirst: totalPosts >= 1
     };
 
-    // Fetch author's posts
-    const posts = await db.prepare(`
-      SELECT p.id, p.title, p.slug, p.excerpt, p.content, p.published_at, p.views, p.category_id, p.subcategory_id,
-             c.name AS category_name, c.slug AS category_slug
-      FROM posts p
-      LEFT JOIN categories c ON p.category_id = c.id
-      WHERE p.author_id = ? AND p.status = 'publish'
-      ORDER BY p.published_at DESC
-      LIMIT ? OFFSET ?
-    `).all(author.id, limit, offset);
+    // Fetch author's posts (including co-authored / anthology posts)
+    let posts = [];
+    try {
+      posts = await db.prepare(`
+        SELECT DISTINCT p.id, p.title, p.slug, p.excerpt, p.content, p.published_at, p.views, p.category_id, p.subcategory_id,
+               c.name AS category_name, c.slug AS category_slug
+        FROM posts p
+        LEFT JOIN post_authors pa ON p.id = pa.post_id
+        LEFT JOIN categories c ON p.category_id = c.id
+        WHERE (p.author_id = ? OR pa.author_id = ?) AND p.status = 'publish'
+        ORDER BY p.published_at DESC
+        LIMIT ? OFFSET ?
+      `).all(author.id, author.id, limit, offset);
+    } catch (postsErr) {
+      posts = await db.prepare(`
+        SELECT p.id, p.title, p.slug, p.excerpt, p.content, p.published_at, p.views, p.category_id, p.subcategory_id,
+               c.name AS category_name, c.slug AS category_slug
+        FROM posts p
+        LEFT JOIN categories c ON p.category_id = c.id
+        WHERE p.author_id = ? AND p.status = 'publish'
+        ORDER BY p.published_at DESC
+        LIMIT ? OFFSET ?
+      `).all(author.id, limit, offset);
+    }
 
     const authorSlug = author.nicename || author.username || '';
     const breadcrumbs = [

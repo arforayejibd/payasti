@@ -148,7 +148,7 @@
       <div class="admin-card" style="margin-bottom: 0;">
         <div class="admin-card-header">
           <div class="admin-card-title">
-            <span>লেখক নির্বাচন *</span>
+            <span>মূল/প্রধান লেখক *</span>
           </div>
         </div>
         <div class="admin-card-body">
@@ -161,6 +161,32 @@
               <% }) %>
             <% } %>
           </select>
+        </div>
+      </div>
+
+      <!-- সহ-লেখক / অন্যান্য কবি নির্বাচন (মাল্টিপল অথর) -->
+      <div class="admin-card" id="coAuthorsCard" style="margin-bottom: 0;">
+        <div class="admin-card-header">
+          <div class="admin-card-title">
+            <span>সহ-লেখক / কবিবৃন্দ (সংকলন বা যৌথ লেখা)</span>
+          </div>
+        </div>
+        <div class="admin-card-body">
+          <p style="font-size: 13px; color: #64748b; margin-top: 0; margin-bottom: 8px;">
+            সংকলন বা যৌথ লেখার ক্ষেত্রে অতিরিক্ত কবি বা লেখকদের নির্বাচন করুন। তাঁদের প্রত্যেকের প্রোফাইলেও এই লেখাটি প্রদর্শিত হবে:
+          </p>
+          <div id="coAuthorsCheckboxList" style="max-height: 180px; overflow-y: auto; border: 1px solid var(--admin-border); border-radius: 8px; padding: 8px 12px; background: #f8fafc;">
+            <% if (authors && authors.length) { %>
+              <% authors.forEach(a => { 
+                   const isCoAuthor = (typeof coAuthorIds !== 'undefined' && coAuthorIds.includes(a.id)) || (post.author_id == a.id);
+              %>
+                <label class="coauthor-check-label" style="display: flex; align-items: center; gap: 8px; padding: 4px 0; font-size: 14px; cursor: pointer; color: #334155;">
+                  <input type="checkbox" name="co_author_ids" value="<%= a.id %>" class="coauthor-checkbox" id="coauthor_<%= a.id %>" <%= isCoAuthor ? 'checked' : '' %> style="accent-color: var(--admin-primary); width: 16px; height: 16px;">
+                  <span><%= a.display_name %></span>
+                </label>
+              <% }) %>
+            <% } %>
+          </div>
         </div>
       </div>
 

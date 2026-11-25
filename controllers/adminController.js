@@ -193,7 +193,7 @@ exports.getAllPosts = async (req, res) => {
 exports.getNewPost = async (req, res) => {
   try {
     const categories = await db.prepare('SELECT id, name FROM categories ORDER BY name ASC').all();
-    const authors = await db.prepare('SELECT id, display_name, username, role FROM users ORDER BY display_name ASC').all();
+    const authors = await db.prepare('SELECT id, display_name, username, nicename, role FROM users ORDER BY display_name ASC').all();
     const seo = generateSeoMeta({ title: 'নতুন লেখা যোগ করুন - এডমিন' });
 
     res.render('admin/post_new', {
@@ -216,7 +216,7 @@ exports.postNewPost = async (req, res) => {
   try {
     const { title, author_id, category_id, excerpt, content, status, is_featured } = req.body;
     const categories = await db.prepare('SELECT id, name FROM categories ORDER BY name ASC').all();
-    const authors = await db.prepare('SELECT id, display_name, username, role FROM users ORDER BY display_name ASC').all();
+    const authors = await db.prepare('SELECT id, display_name, username, nicename, role FROM users ORDER BY display_name ASC').all();
 
     if (!title || !category_id || !content) {
       return res.render('admin/post_new', {
@@ -255,7 +255,7 @@ exports.postNewPost = async (req, res) => {
     const postStatus = status || 'publish';
     const postFeatured = is_featured === '1' ? 1 : 0;
 
-    await db.prepare(`
+    const result = await db.prepare(`
       INSERT INTO posts (author_id, title, slug, content, excerpt, featured_image, category_id, status, views, is_featured, published_at, created_at, updated_at)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, ?, NOW(), NOW(), NOW())
     `).run(
@@ -269,6 +269,26 @@ exports.postNewPost = async (req, res) => {
       postStatus,
       postFeatured
     );
+
+    const newPostId = result.lastInsertRowid || result.insertId;
+
+    // Handle Co-authors / Multiple authors (Group Poetry & Anthologies)
+    let allAuthorIds = [postAuthorId];
+    if (req.body.co_author_ids) {
+      const coIds = Array.isArray(req.body.co_author_ids) ? req.body.co_author_ids : [req.body.co_author_ids];
+      coIds.forEach(id => {
+        const parsed = parseInt(id, 10);
+        if (parsed && !allAuthorIds.includes(parsed)) {
+          allAuthorIds.push(parsed);
+        }
+      });
+    }
+
+    for (const aId of allAuthorIds) {
+      try {
+        await db.prepare('INSERT IGNORE INTO post_authors (post_id, author_id) VALUES (?, ?)').run(newPostId, aId);
+      } catch (e) {}
+    }
 
     res.redirect('/admin/posts');
   } catch (err) {
@@ -288,7 +308,17 @@ exports.getEditPost = async (req, res) => {
     }
 
     const categories = await db.prepare('SELECT id, name FROM categories ORDER BY name ASC').all();
-    const authors = await db.prepare('SELECT id, display_name, username, role FROM users ORDER BY display_name ASC').all();
+    const authors = await db.prepare('SELECT id, display_name, username, nicename, role FROM users ORDER BY display_name ASC').all();
+    
+    // Fetch co-author IDs
+    let coAuthorIds = [];
+    try {
+      const coAuthorRows = await db.prepare('SELECT author_id FROM post_authors WHERE post_id = ?').all(id);
+      coAuthorIds = coAuthorRows.map(r => r.author_id);
+    } catch (e) {
+      coAuthorIds = [];
+    }
+
     const seo = generateSeoMeta({ title: `লেখা সম্পাদনা: ${post.title}` });
 
     res.render('admin/post_edit', {
@@ -296,6 +326,7 @@ exports.getEditPost = async (req, res) => {
       post,
       categories,
       authors,
+      coAuthorIds,
       error: null,
       activeMenu: 'all_posts',
       seo,
@@ -362,6 +393,27 @@ exports.postEditPost = async (req, res) => {
       id
     );
 
+    // Update post_authors for multiple authors / anthology
+    let allAuthorIds = [postAuthorId];
+    if (req.body.co_author_ids) {
+      const coIds = Array.isArray(req.body.co_author_ids) ? req.body.co_author_ids : [req.body.co_author_ids];
+      coIds.forEach(cId => {
+        const parsed = parseInt(cId, 10);
+        if (parsed && !allAuthorIds.includes(parsed)) {
+          allAuthorIds.push(parsed);
+        }
+      });
+    }
+
+    try {
+      await db.prepare('DELETE FROM post_authors WHERE post_id = ?').run(id);
+      for (const aId of allAuthorIds) {
+        await db.prepare('INSERT IGNORE INTO post_authors (post_id, author_id) VALUES (?, ?)').run(id, aId);
+      }
+    } catch (paErr) {
+      console.error('Error updating post_authors:', paErr);
+    }
+
     res.redirect('/admin/posts');
   } catch (err) {
     console.error('Error in postEditPost:', err);
@@ -373,6 +425,9 @@ exports.postEditPost = async (req, res) => {
 exports.deletePost = async (req, res) => {
   const { id } = req.params;
   try {
+    try {
+      await db.prepare('DELETE FROM post_authors WHERE post_id = ?').run(id);
+    } catch (e) {}
     await db.prepare('DELETE FROM post_tags WHERE post_id = ?').run(id);
     await db.prepare('DELETE FROM comments WHERE post_id = ?').run(id);
     await db.prepare('DELETE FROM posts WHERE id = ?').run(id);

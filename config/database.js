@@ -100,6 +100,16 @@ async function initDatabase() {
       `);
 
       await connection.query(`
+        CREATE TABLE IF NOT EXISTS post_authors (
+          post_id INT NOT NULL,
+          author_id INT NOT NULL,
+          PRIMARY KEY (post_id, author_id),
+          INDEX idx_post_authors_post (post_id),
+          INDEX idx_post_authors_author (author_id)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+      `);
+
+      await connection.query(`
         CREATE TABLE IF NOT EXISTS books (
           id INT AUTO_INCREMENT PRIMARY KEY,
           wp_id INT UNIQUE,

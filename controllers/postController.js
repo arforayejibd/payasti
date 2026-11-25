@@ -143,6 +143,41 @@ exports.getSinglePost = async (req, res) => {
       post_count: authorPostCount
     };
 
+    // Fetch Co-authors (for multi-author / anthology posts)
+    let coAuthors = [];
+    try {
+      const coAuthorRows = await db.prepare(`
+        SELECT u.id, u.display_name, u.nicename AS author_slug, u.username, u.avatar, u.bio, u.email
+        FROM post_authors pa
+        JOIN users u ON pa.author_id = u.id
+        WHERE pa.post_id = ?
+        ORDER BY (pa.author_id = ?) DESC, u.display_name ASC
+      `).all(post.id, post.author_id);
+
+      coAuthors = coAuthorRows.map(ca => {
+        let cavatar = ca.avatar;
+        if (!cavatar && ca.email) {
+          const hash = crypto.createHash('sha256').update(ca.email.toLowerCase().trim()).digest('hex');
+          cavatar = `https://secure.gravatar.com/avatar/${hash}?s=150&d=mm&r=g`;
+        }
+        return {
+          id: ca.id,
+          display_name: ca.display_name,
+          username: ca.author_slug || ca.username,
+          nicename: ca.author_slug || ca.username,
+          author_slug: ca.author_slug || ca.username,
+          avatar: cavatar,
+          bio: ca.bio
+        };
+      });
+    } catch (caErr) {
+      coAuthors = [];
+    }
+
+    if (!coAuthors || coAuthors.length === 0) {
+      coAuthors = [author];
+    }
+
     const category = {
       name: post.category_name,
       slug: post.category_slug
@@ -192,6 +227,7 @@ exports.getSinglePost = async (req, res) => {
     res.render('single_post', {
       post,
       author,
+      coAuthors,
       tags,
       comments,
       userRating,
