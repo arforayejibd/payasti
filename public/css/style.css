@@ -3649,15 +3649,15 @@ button, input, textarea, select {
   display: flex;
   flex-direction: column;
   gap: 36px;
-  margin: 20px 0 32px 0;
+  margin: 20px 0 36px 0;
 }
 
 .group-poetry-item {
-  padding: 0 0 28px 0;
+  padding: 0 0 32px 0;
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;
-  border-bottom: 1px dashed #e2e8f0 !important;
+  border-bottom: 1px dashed var(--border-color, #e2e8f0) !important;
 }
 
 .group-poetry-item:last-child {
@@ -3666,21 +3666,22 @@ button, input, textarea, select {
 }
 
 .group-poem-title {
-  font-size: 22px;
+  font-size: 26px;
   font-weight: 700;
-  color: #0f172a;
-  margin: 0 0 4px 0;
-  line-height: 1.4;
+  line-height: 1.35;
+  color: var(--text-heading, #0f172a);
+  margin: 0 0 6px 0;
   font-family: inherit;
 }
 
 .group-poem-author {
-  font-size: 14px;
-  color: #64748b;
-  margin-bottom: 16px;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
+  font-size: 21.5px;
+  font-weight: 500;
+  line-height: 1.62;
+  color: var(--text-muted, #64748b);
+  margin-bottom: 18px;
+  display: block;
+  font-family: inherit;
 }
 
 .group-poem-author a {
@@ -3695,9 +3696,10 @@ button, input, textarea, select {
 }
 
 .group-poem-body {
-  font-size: 19px;
-  line-height: 2.1;
-  color: #1e293b;
+  font-size: 21.5px;
+  font-weight: 500;
+  line-height: 1.62;
+  color: var(--text-main, #1e293b);
   font-family: inherit;
 }
 

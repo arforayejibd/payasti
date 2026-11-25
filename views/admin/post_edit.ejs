@@ -15,9 +15,30 @@
 <% } %>
 
 <form id="postEditForm" action="/admin/posts/<%= post.id %>/edit" method="POST" enctype="multipart/form-data">
+  <!-- Hidden input for post mode -->
+  <input type="hidden" name="post_mode" id="postModeInput" value="single">
+
   <div class="admin-editor-layout">
     <!-- বাম পাশের প্রধান কলাম (শিরোনাম ও মূল লেখা) -->
     <div class="admin-editor-main">
+      <!-- মোড সিলেক্টর ট্যাব -->
+      <div class="admin-card" style="margin-bottom: 0; background: #f8fafc; border: 1px solid #cbd5e1;">
+        <div class="admin-card-body" style="padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+          <div>
+            <strong style="color: #0f172a; font-size: 15px;">পোস্টের ধরন:</strong>
+            <span style="color: #64748b; font-size: 13px; margin-left: 6px;">(সাধারণ একক লেখা অথবা বহু কবি/কবিতার সংকলন)</span>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button type="button" id="btnModeSingle" class="btn-mode-tab active" onclick="setPostMode('single')">
+              ✍️ সাধারণ একক লেখা
+            </button>
+            <button type="button" id="btnModeGroup" class="btn-mode-tab" onclick="setPostMode('group')">
+              📚 একগুচ্ছ কবিতা / বহু কবি সংকলন
+            </button>
+          </div>
+        </div>
+      </div>
+
       <!-- শিরোনাম -->
       <div class="admin-card" style="margin-bottom: 0;">
         <div class="admin-card-header">
@@ -36,6 +57,7 @@
           <input 
             type="text" 
             name="title" 
+            id="postTitleInput"
             value="<%= post.title %>" 
             class="admin-form-input" 
             required 
@@ -45,8 +67,8 @@
         </div>
       </div>
 
-      <!-- মূল লেখা (WYSIWYG রিচ টেক্সট এডিটর) -->
-      <div class="admin-card" style="margin-bottom: 0;">
+      <!-- মোড ১: সাধারণ একক লেখা (WYSIWYG রিচ টেক্সট এডিটর) -->
+      <div class="admin-card" id="singleEditorCard" style="margin-bottom: 0;">
         <div class="admin-card-header">
           <div class="admin-card-title">
             <span>মূল সাহিত্য / লেখা *</span>
@@ -62,12 +84,41 @@
             <div>অক্ষর: <strong id="statCharCount" style="color: #0f172a;">০</strong></div>
             <div>অনুচ্ছেদ: <strong id="statParaCount" style="color: #0f172a;">০</strong></div>
           </div>
-          <!-- Safe JSON data block for raw content initialization -->
-          <script type="application/json" id="rawPostContentJson"><%- JSON.stringify(post.content || '') %></script>
-          <!-- Hidden textarea holding the HTML content for form submission -->
-          <textarea name="content" id="postContentInput" style="display: none;"></textarea>
         </div>
       </div>
+
+      <!-- মোড ২: একগুচ্ছ কবিতা বিল্ডার (Group Poetry & Anthology Builder) -->
+      <div class="admin-card" id="groupPoetryCard" style="margin-bottom: 0; display: none;">
+        <div class="admin-card-header" style="background: #f0fdf4; border-bottom: 1px solid #bbf7d0;">
+          <div class="admin-card-title" style="color: #166534;">
+            <span>📖 একগুচ্ছ কবিতা ও কবি সংকলন বিল্ডার</span>
+          </div>
+          <button type="button" class="btn-new-action" onclick="addNewPoemCard()" style="padding: 6px 14px; font-size: 14px;">
+            ➕ নতুন কবিতা যোগ করুন
+          </button>
+        </div>
+        <div class="admin-card-body" style="padding: 16px;">
+          <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-left: 4px solid #1a5b4c; border-radius: 8px; padding: 12px 16px; margin-bottom: 20px; font-size: 14px; color: #334155;">
+            💡 <strong>সংকলন মোড:</strong> এই পোস্টটিতে একাধিক কবিতা ও কবি অন্তর্ভুক্ত রয়েছে। আপনি যেকোনো কবিতার শিরোনাম, কবি বা চরণ সম্পাদনা করতে পারেন অথবা নতুন কবিতা যোগ করতে পারেন।
+          </div>
+
+          <!-- Dynamic Poem Cards Container -->
+          <div id="poemCardsContainer">
+            <!-- Cards populated dynamically from existing content or newly added -->
+          </div>
+
+          <div style="text-align: center; margin-top: 16px; padding: 12px; background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 10px;">
+            <button type="button" class="btn-new-action" onclick="addNewPoemCard()" style="padding: 10px 22px; font-size: 15px;">
+              ➕ আরেকটি কবিতা যোগ করুন
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Safe JSON data block for raw content initialization -->
+      <script type="application/json" id="rawPostContentJson"><%- JSON.stringify(post.content || '') %></script>
+      <!-- Hidden textarea holding the HTML content for form submission -->
+      <textarea name="content" id="postContentInput" style="display: none;"></textarea>
     </div>
 
     <!-- ডান পাশের সাইডবার কলাম (মেটাডাটা ও অ্যাকশন বক্স) -->
@@ -251,6 +302,72 @@
 <!-- Safe Authors JSON data -->
 <script type="application/json" id="availableAuthorsData"><%- JSON.stringify(authors || []) %></script>
 
+<style>
+  .btn-mode-tab {
+    padding: 7px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid #cbd5e1;
+    background: #ffffff;
+    color: #475569;
+    transition: all 0.2s ease;
+  }
+  .btn-mode-tab.active {
+    background: #1a5b4c;
+    color: #ffffff;
+    border-color: #1a5b4c;
+    box-shadow: 0 2px 6px rgba(26,91,76,0.25);
+  }
+  .poem-entry-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 18px 20px;
+    margin-bottom: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    transition: border-color 0.2s;
+  }
+  .poem-entry-card:hover {
+    border-color: #cbd5e1;
+  }
+  .poem-entry-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #f1f5f9;
+  }
+  .poem-card-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 15px;
+    font-weight: 700;
+    color: #1a5b4c;
+    background: #ecfdf5;
+    padding: 4px 10px;
+    border-radius: 6px;
+  }
+  .btn-remove-poem {
+    background: #fef2f2;
+    border: 1px solid #fee2e2;
+    color: #dc2626;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-remove-poem:hover {
+    background: #fee2e2;
+    color: #b91c1c;
+  }
+</style>
+
 <!-- Quill Editor JS & Initialization -->
 <script src="/vendor/quill/quill.min.js"></script>
 <script src="/js/payasti-quill.js?v=3.0"></script>
@@ -263,6 +380,11 @@
     availableAuthors = [];
   }
 
+  function toBn(num) {
+    const bnDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+    return String(num).replace(/\d/g, d => bnDigits[d]);
+  }
+
   function escapeHtml(str) {
     if (!str) return '';
     return str
@@ -271,6 +393,127 @@
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#039;');
+  }
+
+  let currentMode = 'single';
+
+  function setPostMode(mode) {
+    currentMode = mode;
+    const modeInput = document.getElementById('postModeInput');
+    if (modeInput) modeInput.value = mode;
+
+    const btnSingle = document.getElementById('btnModeSingle');
+    const btnGroup = document.getElementById('btnModeGroup');
+    const cardSingle = document.getElementById('singleEditorCard');
+    const cardGroup = document.getElementById('groupPoetryCard');
+
+    if (mode === 'group') {
+      if (btnSingle) btnSingle.classList.remove('active');
+      if (btnGroup) btnGroup.classList.add('active');
+      if (cardSingle) cardSingle.style.display = 'none';
+      if (cardGroup) cardGroup.style.display = 'block';
+
+      // Auto-populate card if empty
+      const container = document.getElementById('poemCardsContainer');
+      if (container && container.children.length === 0) {
+        addNewPoemCard();
+      }
+    } else {
+      if (btnSingle) btnSingle.classList.add('active');
+      if (btnGroup) btnGroup.classList.remove('active');
+      if (cardSingle) cardSingle.style.display = 'block';
+      if (cardGroup) cardGroup.style.display = 'none';
+    }
+  }
+
+  function renderAuthorOptions(selectedId) {
+    let html = '';
+    availableAuthors.forEach(a => {
+      const isSel = selectedId && Number(selectedId) === Number(a.id);
+      const slug = a.nicename || a.username || '';
+      html += `<option value="${a.id}" data-slug="${escapeHtml(slug)}" ${isSel ? 'selected' : ''}>${escapeHtml(a.display_name)} (@${escapeHtml(a.username)})</option>`;
+    });
+    return html;
+  }
+
+  function reindexPoemCards() {
+    const container = document.getElementById('poemCardsContainer');
+    if (!container) return;
+    const cards = container.querySelectorAll('.poem-entry-card');
+    cards.forEach((card, idx) => {
+      const badge = card.querySelector('.poem-num-badge');
+      if (badge) badge.textContent = toBn(idx + 1);
+    });
+    syncPoemAuthorsToCoAuthors();
+  }
+
+  function addNewPoemCard(data) {
+    const container = document.getElementById('poemCardsContainer');
+    if (!container) return;
+    const count = container.children.length;
+    const initialTitle = data ? (data.title || '') : '';
+    const initialAuthorId = data ? (data.authorId || '') : (availableAuthors[0] ? availableAuthors[0].id : '');
+    const initialLines = data ? (data.lines || '') : '';
+
+    const initialAuthor = availableAuthors.find(a => String(a.id) === String(initialAuthorId)) || availableAuthors[0];
+    const initialAuthorText = initialAuthor ? `${initialAuthor.display_name} (@${initialAuthor.username})` : '';
+
+    const card = document.createElement('div');
+    card.className = 'poem-entry-card';
+    card.innerHTML = `
+      <div class="poem-entry-card-header">
+        <span class="poem-card-badge">
+          📖 কবিতা <span class="poem-num-badge">${toBn(count + 1)}</span>
+        </span>
+        <button type="button" class="btn-remove-poem" onclick="removePoemCard(this)" title="এই কবিতাটি তালিকা থেকে সরান">
+          🗑️ মুছে ফেলুন
+        </button>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+        <div>
+          <label style="display: block; font-size: 13px; font-weight: 600; color: #334155; margin-bottom: 5px;">কবিতার শিরোনাম *</label>
+          <input type="text" class="poem-title-input admin-form-input" placeholder="যেমন: বসন্তের গান" value="${escapeHtml(initialTitle)}" required>
+        </div>
+        <div class="searchable-card-author-wrapper" style="position: relative;">
+          <label style="display: block; font-size: 13px; font-weight: 600; color: #334155; margin-bottom: 5px;">কবি নির্বাচন (সার্চ করুন) *</label>
+          <div style="position: relative;">
+            <input 
+              type="text" 
+              class="poem-author-search-input admin-form-input" 
+              placeholder="🔍 টাইপ করে কবি খুঁজুন..." 
+              value="${escapeHtml(initialAuthorText)}" 
+              onfocus="openCardAuthorDropdown(this)" 
+              oninput="filterCardAuthorDropdown(this)" 
+              autocomplete="off"
+              style="padding-right: 28px; font-size: 14px;"
+            >
+            <span style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); pointer-events: none; color: #94a3b8; font-size: 11px;">▼</span>
+          </div>
+          <!-- Hidden select to hold value -->
+          <select class="poem-author-select" style="display: none;">
+            ${renderAuthorOptions(initialAuthorId)}
+          </select>
+          <div class="author-dropdown-menu" style="display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0; max-height: 220px; overflow-y: auto; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.12); z-index: 1050;"></div>
+        </div>
+      </div>
+      <div>
+        <label style="display: block; font-size: 13px; font-weight: 600; color: #334155; margin-bottom: 5px;">কবিতার পঙ্‌ক্তি / চরণ *</label>
+        <textarea class="poem-lines-input admin-form-input" rows="7" placeholder="এখানে কবিতার চরণগুলো লিখুন..." style="line-height: 1.8; font-family: inherit; resize: vertical; width: 100%;">${escapeHtml(initialLines)}</textarea>
+      </div>
+    `;
+    container.appendChild(card);
+    reindexPoemCards();
+  }
+
+  function removePoemCard(btn) {
+    const card = btn.closest('.poem-entry-card');
+    const container = document.getElementById('poemCardsContainer');
+    if (container && container.children.length <= 1) {
+      alert('সংকলনে অন্তত একটি কবিতা থাকা আবশ্যক।');
+      return;
+    }
+    card.remove();
+    reindexPoemCards();
   }
 
   // Filter co-authors checkboxes in sidebar
@@ -319,6 +562,41 @@
     menu.style.display = 'block';
   }
 
+  // Poem Card Author Dropdown Functions
+  function openCardAuthorDropdown(input) {
+    closeAllAuthorDropdowns();
+    const wrapper = input.closest('.searchable-card-author-wrapper');
+    const menu = wrapper.querySelector('.author-dropdown-menu');
+    const select = wrapper.querySelector('.poem-author-select');
+
+    renderAuthorDropdownItems(menu, '', (author) => {
+      input.value = `${author.display_name} (@${author.username})`;
+      if (select) {
+        select.value = author.id;
+        syncPoemAuthorsToCoAuthors();
+      }
+      menu.style.display = 'none';
+    });
+    menu.style.display = 'block';
+  }
+
+  function filterCardAuthorDropdown(input) {
+    const wrapper = input.closest('.searchable-card-author-wrapper');
+    const menu = wrapper.querySelector('.author-dropdown-menu');
+    const select = wrapper.querySelector('.poem-author-select');
+
+    renderAuthorDropdownItems(menu, input.value, (author) => {
+      input.value = `${author.display_name} (@${author.username})`;
+      if (select) {
+        select.value = author.id;
+        syncPoemAuthorsToCoAuthors();
+      }
+      menu.style.display = 'none';
+    });
+    menu.style.display = 'block';
+  }
+
+  // Render items into dropdown
   function renderAuthorDropdownItems(menuEl, query, onSelect) {
     const q = (query || '').toLowerCase().trim();
     const filtered = availableAuthors.filter(a => {
@@ -360,10 +638,53 @@
   }
 
   document.addEventListener('click', function(e) {
-    if (!e.target.closest('.searchable-author-container')) {
+    if (!e.target.closest('.searchable-author-container') && !e.target.closest('.searchable-card-author-wrapper')) {
       closeAllAuthorDropdowns();
     }
   });
+
+  function syncPoemAuthorsToCoAuthors() {
+    if (currentMode !== 'group') return;
+
+    const container = document.getElementById('poemCardsContainer');
+    if (!container) return;
+    const cards = container.querySelectorAll('.poem-entry-card');
+    const selectedAuthorIds = new Set();
+    let firstAuthorId = null;
+
+    cards.forEach((card, idx) => {
+      const select = card.querySelector('.poem-author-select');
+      if (select && select.value) {
+        const id = parseInt(select.value, 10);
+        if (id) {
+          selectedAuthorIds.add(id);
+          if (idx === 0) firstAuthorId = id;
+        }
+      }
+    });
+
+    // Check checkboxes in sidebar
+    const checkboxes = document.querySelectorAll('.coauthor-checkbox');
+    checkboxes.forEach(cb => {
+      const cbId = parseInt(cb.value, 10);
+      if (selectedAuthorIds.has(cbId)) {
+        cb.checked = true;
+      }
+    });
+
+    // Set main author select to first author
+    if (firstAuthorId) {
+      const mainSelect = document.getElementById('mainAuthorSelect');
+      if (mainSelect) {
+        mainSelect.value = firstAuthorId;
+        const opt = mainSelect.options[mainSelect.selectedIndex];
+        const mainInput = document.getElementById('mainAuthorSearchInput');
+        if (opt && mainInput) {
+          mainInput.value = opt.text.trim();
+        }
+      }
+    }
+  }
 
   document.addEventListener('DOMContentLoaded', function() {
     const quill = window.createPayastiEditor('#quillEditor', {
@@ -375,22 +696,13 @@
     const charCountEl = document.getElementById('statCharCount');
     const paraCountEl = document.getElementById('statParaCount');
 
-    function toBn(num) {
-      const bnDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
-      return String(num).replace(/\d/g, d => bnDigits[d]);
-    }
-
-    function getSanitizedHtml() {
-      let html = quill.root.innerHTML;
-      if (html) {
-        html = html.replace(/<span class="payasti-spell-error[^"]*"[^>]*>([\s\S]*?)<\/span>/gi, '$1');
-      }
-      return html;
-    }
-
-    function syncToInput() {
-      if (contentInput) {
-        contentInput.value = getSanitizedHtml();
+    function syncQuillToInput() {
+      if (contentInput && currentMode === 'single') {
+        let html = quill.root.innerHTML;
+        if (html) {
+          html = html.replace(/<span class="payasti-spell-error[^"]*"[^>]*>([\s\S]*?)<\/span>/gi, '$1');
+        }
+        contentInput.value = html;
       }
 
       const text = quill.getText().trim();
@@ -403,9 +715,8 @@
       if (paraCountEl) paraCountEl.textContent = toBn(paras);
     }
 
-    // Safely load and clean existing content preserving soft line breaks and paragraphs
+    // Safely load and clean existing content
     const jsonEl = document.getElementById('rawPostContentJson');
-    const rawEl = document.getElementById('rawPostContent');
     let rawContent = '';
     if (jsonEl && jsonEl.textContent) {
       try {
@@ -413,19 +724,68 @@
       } catch (e) {
         rawContent = jsonEl.textContent;
       }
-    } else if (rawEl) {
-      rawContent = rawEl.value;
     }
 
-    if (rawContent && rawContent.trim()) {
-      const cleanHtml = window.cleanArticleHtmlForEditor(rawContent);
-      quill.root.innerHTML = cleanHtml;
-      syncToInput();
+    // AUTO-DETECT GROUP POETRY CONTENT
+    if (rawContent && (rawContent.includes('group-poetry-container') || rawContent.includes('group-poetry-item'))) {
+      setPostMode('group');
+
+      const container = document.getElementById('poemCardsContainer');
+      if (container) container.innerHTML = '';
+
+      const doc = new DOMParser().parseFromString(rawContent, 'text/html');
+      const items = doc.querySelectorAll('.group-poetry-item');
+
+      if (items && items.length > 0) {
+        items.forEach(item => {
+          const titleEl = item.querySelector('.group-poem-title');
+          const authorLink = item.querySelector('.group-poem-author a');
+          const bodyEl = item.querySelector('.group-poem-body');
+
+          const pTitle = titleEl ? titleEl.textContent.trim() : '';
+          let authorId = null;
+
+          if (authorLink) {
+            const href = authorLink.getAttribute('href') || '';
+            const slug = decodeURIComponent(href.replace(/\/author\//, '').replace(/\/$/, '')).trim();
+            const authorText = authorLink.textContent.trim();
+
+            const matched = availableAuthors.find(a => 
+              (a.nicename && a.nicename.toLowerCase() === slug.toLowerCase()) || 
+              (a.username && a.username.toLowerCase() === slug.toLowerCase()) || 
+              (a.display_name === authorText)
+            );
+            if (matched) authorId = matched.id;
+          }
+
+          let lines = '';
+          if (bodyEl) {
+            lines = bodyEl.innerHTML
+              .replace(/<br\s*\/?>/gi, '\n')
+              .replace(/&nbsp;/gi, ' ')
+              .replace(/&amp;/g, '&')
+              .replace(/&lt;/g, '<')
+              .replace(/&gt;/g, '>')
+              .trim();
+          }
+
+          addNewPoemCard({ title: pTitle, authorId: authorId, lines: lines });
+        });
+      } else {
+        addNewPoemCard();
+      }
+    } else {
+      setPostMode('single');
+      if (rawContent && rawContent.trim()) {
+        const cleanHtml = window.cleanArticleHtmlForEditor(rawContent);
+        quill.root.innerHTML = cleanHtml;
+        syncQuillToInput();
+      }
     }
 
     // Keep form input synchronized on every change
     quill.on('text-change', function() {
-      syncToInput();
+      syncQuillToInput();
     });
 
     // Attach Bangla Spell Checker Assistant (Live Instant Zero-Lag Mode)
@@ -438,16 +798,84 @@
       if (window.activePayastiSpellChecker) {
         window.activePayastiSpellChecker.clearHighlights();
       }
-      syncToInput();
-      const text = quill.getText().trim();
-      if (!text || text.length === 0) {
-        alert('অনুগ্রহ করে মূল সাহিত্য বা লেখার বিষয়বস্তু লিখুন।');
-        e.preventDefault();
-        return false;
+
+      if (currentMode === 'single') {
+        syncQuillToInput();
+        const text = quill.getText().trim();
+        if (!text || text.length === 0) {
+          alert('অনুগ্রহ করে মূল সাহিত্য বা লেখার বিষয়বস্তু লিখুন।');
+          e.preventDefault();
+          return false;
+        }
+      } else {
+        // Group Poetry Mode Compilation
+        const container = document.getElementById('poemCardsContainer');
+        const cards = container.querySelectorAll('.poem-entry-card');
+
+        if (cards.length === 0) {
+          alert('অনুগ্রহ করে অন্তত একটি কবিতা যোগ করুন।');
+          e.preventDefault();
+          return false;
+        }
+
+        let compiledHtml = '<div class="group-poetry-container">\n';
+        let validPoemCount = 0;
+
+        for (let i = 0; i < cards.length; i++) {
+          const card = cards[i];
+          const titleInput = card.querySelector('.poem-title-input');
+          const authorSelect = card.querySelector('.poem-author-select');
+          const linesInput = card.querySelector('.poem-lines-input');
+
+          const pTitle = titleInput.value.trim();
+          const pLines = linesInput.value.trim();
+
+          if (!pTitle) {
+            alert(`কবিতা #${toBn(i + 1)} এর শিরোনাম লিখুন।`);
+            titleInput.focus();
+            e.preventDefault();
+            return false;
+          }
+
+          if (!pLines) {
+            alert(`"${pTitle}" কবিতার চরণ বা পঙ্‌ক্তি লিখুন।`);
+            linesInput.focus();
+            e.preventDefault();
+            return false;
+          }
+
+          const opt = authorSelect.options[authorSelect.selectedIndex];
+          const aName = opt ? opt.text.split('(')[0].trim() : '';
+          const aSlug = opt ? (opt.dataset.slug || '') : '';
+
+          const linesWithBr = pLines
+            .split('\n')
+            .map(line => escapeHtml(line.trim()))
+            .join('<br>\n');
+
+          compiledHtml += `  <div class="group-poetry-item">\n`;
+          compiledHtml += `    <h2 class="group-poem-title">${escapeHtml(pTitle)}</h2>\n`;
+          compiledHtml += `    <div class="group-poem-author">কবি: <a href="/author/${encodeURIComponent(aSlug)}">${escapeHtml(aName)}</a></div>\n`;
+          compiledHtml += `    <div class="group-poem-body">\n${linesWithBr}\n    </div>\n`;
+          compiledHtml += `  </div>\n\n`;
+          validPoemCount++;
+        }
+
+        compiledHtml += '</div>';
+
+        if (validPoemCount === 0) {
+          alert('অনুগ্রহ করে কবিতার তথ্য সঠিকভাবে পূরণ করুন।');
+          e.preventDefault();
+          return false;
+        }
+
+        // Set compiled HTML to content input
+        contentInput.value = compiledHtml;
+
+        // Ensure all co-authors are checked
+        syncPoemAuthorsToCoAuthors();
       }
     });
-
-    syncToInput();
   });
 </script>
 
