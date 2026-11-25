@@ -774,7 +774,7 @@
           const linesWithBr = pLines
             .split('\n')
             .map(line => escapeHtml(line.trim()))
-            .join('<br>\n');
+            .join('<br>');
 
           compiledHtml += `  <div class="group-poetry-item">\n`;
           compiledHtml += `    <h2 class="group-poem-title">${escapeHtml(pTitle)}</h2>\n`;

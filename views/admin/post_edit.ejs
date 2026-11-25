@@ -772,11 +772,20 @@
           let lines = '';
           if (bodyEl) {
             lines = bodyEl.innerHTML
-              .replace(/<br\s*\/?>/gi, '\n')
+              .replace(/<br\s*\/?>\r?\n?/gi, '\n')
+              .replace(/<\/p>\s*<p>/gi, '\n\n')
+              .replace(/<p>/gi, '')
+              .replace(/<\/p>/gi, '')
               .replace(/&nbsp;/gi, ' ')
               .replace(/&amp;/g, '&')
               .replace(/&lt;/g, '<')
               .replace(/&gt;/g, '>')
+              .replace(/&quot;/g, '"')
+              .replace(/&#039;/g, "'")
+              .split('\n')
+              .map(l => l.trim())
+              .join('\n')
+              .replace(/\n{3,}/g, '\n\n')
               .trim();
           }
 
@@ -863,7 +872,7 @@
           const linesWithBr = pLines
             .split('\n')
             .map(line => escapeHtml(line.trim()))
-            .join('<br>\n');
+            .join('<br>');
 
           compiledHtml += `  <div class="group-poetry-item">\n`;
           compiledHtml += `    <h2 class="group-poem-title">${escapeHtml(pTitle)}</h2>\n`;
